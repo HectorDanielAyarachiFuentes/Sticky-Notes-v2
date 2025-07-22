@@ -6,7 +6,8 @@
  */
 
 let statusBanner = null; // Referencia al elemento del banner
-let hideBannerTimeoutId = null; // NUEVA VARIABLE: Para almacenar el ID del temporizador de ocultamiento
+let hideBannerTimeoutId = null; // Para almacenar el ID del temporizador de ocultamiento
+let lastKnownOnlineStatus = null; // NUEVO: Para almacenar el último estado de conexión conocido
 
 /**
  * Crea e inicializa el elemento del banner de estado de red.
@@ -32,33 +33,44 @@ function createStatusBanner() {
 
 /**
  * Muestra u oculta el banner de estado de red con el mensaje y estilo adecuado.
- * @param {boolean} isOnline - True si está online, false si está offline.
+ * @param {boolean} currentOnlineStatus - True si está online, false si está offline.
  */
-function updateNetworkStatusDisplay(isOnline) {
+function updateNetworkStatusDisplay(currentOnlineStatus) {
     if (!statusBanner) {
         createStatusBanner(); // Asegúrate de que el banner exista
     }
 
-    // AÑADIDO: Limpiar cualquier temporizador de ocultamiento existente
+    // Limpiar cualquier temporizador de ocultamiento existente
     if (hideBannerTimeoutId) {
         clearTimeout(hideBannerTimeoutId);
         hideBannerTimeoutId = null;
     }
 
-    if (isOnline) {
-        statusBanner.style.backgroundColor = '#4CAF50'; // Verde
-        statusBanner.innerText = '¡Conexión restaurada! Estás online de nuevo.';
-        statusBanner.style.transform = 'translateY(0)'; // Mostrar
-        // Ocultar después de un breve tiempo
-        hideBannerTimeoutId = setTimeout(() => { // Almacenar el ID del temporizador
+    if (currentOnlineStatus) {
+        // Solo mostrar el mensaje de "Conexión restaurada" si la última vez que revisamos estábamos offline.
+        // Esto evita mostrarlo en una carga inicial si ya estamos online.
+        if (lastKnownOnlineStatus === false) {
+            statusBanner.style.backgroundColor = '#4CAF50'; // Verde
+            statusBanner.innerText = '¡Conexión restaurada! Estás online de nuevo.';
+            statusBanner.style.transform = 'translateY(0)'; // Mostrar
+            // Ocultar después de un breve tiempo
+            hideBannerTimeoutId = setTimeout(() => {
+                statusBanner.style.transform = 'translateY(-100%)';
+                hideBannerTimeoutId = null;
+            }, 3000);
+        } else {
+            // Si estamos online y el estado anterior también era online (o es la primera carga)
+            // Asegurarse de que el banner esté oculto.
             statusBanner.style.transform = 'translateY(-100%)';
-            hideBannerTimeoutId = null; // Limpiar el ID una vez que se ejecuta
-        }, 3000);
-    } else {
+        }
+    } else { // Offline
         statusBanner.style.backgroundColor = '#f44336'; // Rojo
         statusBanner.innerText = '¡Sin conexión! Revisa tu internet.';
         statusBanner.style.transform = 'translateY(0)'; // Mostrar
     }
+
+    // Actualizar el último estado conocido *después* de la lógica de visualización
+    lastKnownOnlineStatus = currentOnlineStatus;
 }
 
 /**
@@ -68,7 +80,12 @@ function updateNetworkStatusDisplay(isOnline) {
 export function initNetworkStatusMonitor() {
     createStatusBanner(); // Crea el banner al iniciar
 
-    // Verificar el estado inicial
+    // Inicializar el lastKnownOnlineStatus con el estado actual del navegador
+    lastKnownOnlineStatus = navigator.onLine;
+
+    // Actualizar la visualización en base al estado inicial
+    // Si estamos online al cargar, no mostrará el mensaje "Conexión restaurada"
+    // ya que lastKnownOnlineStatus será true y el if(lastKnownOnlineStatus === false) no se cumplirá.
     updateNetworkStatusDisplay(navigator.onLine);
 
     // Añadir listeners para los eventos online/offline
