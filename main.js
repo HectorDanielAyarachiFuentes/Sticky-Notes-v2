@@ -13,6 +13,9 @@ import Note from "./components/Note.js";
 import Zone from "./components/Zone.js";
 import { CONSTANTS } from "./config.js"; // Para usar constantes compartidas
 
+// IMPORTACIÓN NUEVA: Monitoreo de estado de red
+import { initNetworkStatusMonitor } from './utils/networkStatus.js';
+
 class App {
     constructor() {
         this.state = AppState; // Usa la instancia singleton de AppState
@@ -35,6 +38,9 @@ class App {
         }
         this.bindGlobalEvents();
         this.setupWidgets();
+        // NOTA: initNetworkStatusMonitor ya se llama en el DOMContentLoaded directamente,
+        // no es necesario llamarla aquí también a menos que se quiera re-inicializar
+        // en algún punto específico del ciclo de vida de la App, lo cual no es común.
     }
 
     cacheDOM() {
@@ -93,20 +99,10 @@ class App {
         this.widgets.youtube = new YoutubeWidget('#youtube-widget', this.state, this.handleYoutubeUrlChange.bind(this));
 
         // Clonar widgets para la barra lateral móvil
-        // Nota: Clonar elementos con IDs y lógica de JS asociada puede ser problemático.
-        // Lo ideal sería que los widgets móviles fueran instancias separadas o que la lógica
-        // del widget se encargara de múltiples contenedores si tienen la misma clase/selector.
-        // Para mantener la funcionalidad original:
         const widgetsToClone = this.DOMElements.bottomDashboard.querySelectorAll('.dashboard-widget');
         widgetsToClone.forEach(widget => {
             const clone = widget.cloneNode(true);
             this.DOMElements.sidebarContent.appendChild(clone);
-            // Re-inicializar los widgets en los clones si tienen interactividad.
-            // Los constructores de los widgets con querySelectorAll se encargarán de esto
-            // si los selectores globales son usados, pero es mejor ser explícito
-            // si son múltiples instancias activas.
-            // Para este ejemplo, como ya se usan querySelectorAll dentro de los widgets,
-            // y los botones tienen IDs globales, los widgets ya actúan sobre ambos conjuntos de botones.
         });
     }
 
@@ -416,6 +412,10 @@ class App {
 
 // Inicializa la aplicación cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
+    // Primero, inicializa el monitoreo de red, ya que crea un elemento DOM global.
+    initNetworkStatusMonitor();
+
+    // Luego, inicializa el resto de tu aplicación.
     const appInstance = new App();
     appInstance.init();
 });
