@@ -392,7 +392,7 @@ body:not(.dashboard-hidden) #dashboard-toggle svg { transform: rotate(180deg); }
 }
 
     /* --------------------------------------------------------------------------
-       7.2 VISTA MÓVIL (max-width: 768px) - VERSIÓN CORREGIDA PARA MOSTRAR BANDERA
+       7.2 VISTA MÓVIL (max-width: 768px) - VERSIÓN CORREGIDA Y MEJORADA
        -------------------------------------------------------------------------- */
 @media (max-width: 768px) {
     body { overflow-y: auto; overflow-x: hidden; height: auto; }
@@ -513,11 +513,27 @@ body:not(.dashboard-hidden) #dashboard-toggle svg { transform: rotate(180deg); }
     .zone.zone-fullscreen .add-note-in-zone-btn { top: 14px !important; right: 115px !important; }
 
     #mobile-fab-container { display: flex; position: fixed; bottom: 20px; right: 20px; z-index: 1050; flex-direction: column-reverse; align-items: center; gap: 15px; }
-    .fab-actions { display: flex; flex-direction: column-reverse; gap: 15px; }
+    
+    /* INICIO DE LA CORRECCIÓN */
+    .fab-actions { 
+        display: flex; 
+        flex-direction: column-reverse; 
+        gap: 15px; 
+        pointer-events: none; /* Evita que el contenedor invisible capture clics */
+    }
+    /* FIN DE LA CORRECCIÓN */
+
     .fab-action { width: 48px; height: 48px; background-color: var(--primary-accent-dark); color: white; border-radius: 50%; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s; transform: scale(0.5); opacity: 0; }
     #fab-toggle-btn { width: 56px; height: 56px; background-color: var(--primary-accent); color: white; border-radius: 50%; border: none; box-shadow: 0 6px 20px rgba(0,0,0,0.25); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.3s ease, background-color 0.3s ease; }
     #fab-toggle-btn svg { transition: transform 0.3s ease; }
     #mobile-fab-container.fab-active #fab-toggle-btn { transform: rotate(45deg); background-color: var(--danger-color); }
+    
+    /* INICIO DE LA CORRECCIÓN */
+    #mobile-fab-container.fab-active .fab-actions {
+        pointer-events: auto; /* Permite que el contenedor capture clics SÓLO cuando está activo */
+    }
+    /* FIN DE LA CORRECCIÓN */
+
     #mobile-fab-container.fab-active .fab-action { transform: scale(1); opacity: 1; }
     #mobile-fab-container.fab-active .fab-action:nth-child(1) { transition-delay: 0.1s; }
     #mobile-fab-container.fab-active .fab-action:nth-child(2) { transition-delay: 0.05s; }
