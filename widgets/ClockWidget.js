@@ -3,7 +3,7 @@ import { getElement } from "../utils/dom.js";
 
 class ClockWidget {
     constructor(containerSelector) {
-        this.container = getElement(containerSelector);
+        this.container = typeof containerSelector === 'string' ? getElement(containerSelector) : containerSelector;
         if (!this.container) return; // Si el widget no está en el DOM, no hacer nada
 
         this.timeEl = getElement('#current-time', this.container);

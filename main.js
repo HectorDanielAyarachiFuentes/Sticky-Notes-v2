@@ -92,16 +92,41 @@ class App {
     }
 
     setupWidgets() {
-        // Instancia los widgets, pasándoles el estado de la app y callbacks si es necesario
+        // Instancia los widgets del dashboard principal (desktop)
         this.widgets.clock = new ClockWidget('#clock-widget');
         this.widgets.calendar = new CalendarWidget('#calendar-widget', this.state, this.handleCalendarDateSelect.bind(this));
         this.widgets.timer = new TimerWidget('#timer-widget', this.state);
         this.widgets.youtube = new YoutubeWidget('#youtube-widget', this.state, this.handleYoutubeUrlChange.bind(this));
 
-        // Clonar widgets para la barra lateral móvil
-        const widgetsToClone = this.DOMElements.bottomDashboard.querySelectorAll('.dashboard-widget');
-        widgetsToClone.forEach(widget => {
-            const clone = widget.cloneNode(true);
+        // Clonar widgets para la barra lateral móvil y re-instanciar su lógica
+        const mainWidgets = this.DOMElements.bottomDashboard.querySelectorAll('.dashboard-widget');
+        
+        this.mobileWidgets = {}; // Almacenar las instancias de los widgets móviles
+
+        mainWidgets.forEach(mainWidget => {
+            const clone = mainWidget.cloneNode(true);
+            
+            // Instanciamos la lógica para el widget clonado.
+            // Usamos el ID del widget original para saber qué clase instanciar.
+            switch (mainWidget.id) {
+                case 'clock-widget':
+                    this.mobileWidgets.clock = new ClockWidget(clone); 
+                    break;
+                case 'calendar-widget':
+                    this.mobileWidgets.calendar = new CalendarWidget(clone, this.state, this.handleCalendarDateSelect.bind(this));
+                    break;
+                case 'timer-widget':
+                    this.mobileWidgets.timer = new TimerWidget(clone, this.state);
+                    break;
+                case 'youtube-widget':
+                    // YoutubeWidget necesita un tratamiento especial para el ID del reproductor
+                    const playerDiv = clone.querySelector('#youtube-player');
+                    if (playerDiv) {
+                        playerDiv.id = 'youtube-player-mobile'; // Asignar un ID único
+                    }
+                    this.mobileWidgets.youtube = new YoutubeWidget(clone, this.state, this.handleYoutubeUrlChange.bind(this));
+                    break;
+            }
             this.DOMElements.sidebarContent.appendChild(clone);
         });
     }
@@ -139,8 +164,10 @@ class App {
             this.state.setIsDataLoaded(true);
 
             this.renderWorkspace();
-            this.widgets.calendar.render(); // Asegura que el calendario refleje las notas cargadas
-            this.widgets.youtube.initializePlayer(); // Inicia el reproductor de YouTube con la URL cargada
+            this.widgets.calendar.render();
+            if (this.mobileWidgets.calendar) this.mobileWidgets.calendar.render(); // Actualizar calendario móvil
+            this.widgets.youtube.initializePlayer();
+            if (this.mobileWidgets.youtube) this.mobileWidgets.youtube.initializePlayer(); // Inicializar reproductor móvil
         } catch (error) {
             console.error("Error al cargar datos:", error);
             alertModal.open('Error de Carga', 'No se pudieron cargar tus datos. Intenta de nuevo más tarde.');
@@ -190,6 +217,7 @@ class App {
         this.debounceSave();
         this.updateStats();
         this.widgets.calendar.render();
+        if (this.mobileWidgets.calendar) this.mobileWidgets.calendar.render();
     }
 
     addZone() {
@@ -209,6 +237,7 @@ class App {
         this.debounceSave();
         this.updateStats();
         this.widgets.calendar.render();
+        if (this.mobileWidgets.calendar) this.mobileWidgets.calendar.render();
     }
 
     deleteZone(zoneId) {
@@ -391,6 +420,7 @@ class App {
         this.debounceSave(); // No se guarda la fecha seleccionada en DB, pero se fuerza un guardado general
         this.renderWorkspace();
         this.widgets.calendar.render(); // Re-renderizar calendario para desmarcar el día
+        if (this.mobileWidgets.calendar) this.mobileWidgets.calendar.render();
     }
 
     closeSidebar() {

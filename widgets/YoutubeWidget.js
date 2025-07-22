@@ -4,7 +4,7 @@ import { CONSTANTS } from "../config.js";
 
 class YoutubeWidget {
     constructor(containerSelector, appState, onUrlChangeCallback) {
-        this.container = getElement(containerSelector);
+        this.container = typeof containerSelector === 'string' ? getElement(containerSelector) : containerSelector;
         if (!this.container) return;
 
         this.appState = appState;
@@ -13,6 +13,9 @@ class YoutubeWidget {
         this.input = getElement('#youtube-url-input', this.container);
         this.playerContainer = getElement('#youtube-player-container', this.container);
         this.playPauseBtns = getElements('#yt-play-pause-btn', this.container);
+        
+        // Encuentra el div del reproductor, que ahora puede tener uno de dos IDs.
+        this.playerDiv = getElement('#youtube-player, #youtube-player-mobile', this.container);
         this.player = null; // YT.Player instance
 
         this.bindEvents();
@@ -34,9 +37,9 @@ class YoutubeWidget {
             if (this.player && typeof this.player.loadVideoById === 'function') {
                 this.player.loadVideoById(videoId);
             } else {
-                // Asegúrate de que YT.Player esté disponible
-                if (typeof YT !== 'undefined' && YT.Player) {
-                    this.player = new YT.Player('youtube-player', {
+                // Asegúrate de que YT.Player esté disponible y tengamos un div al que apuntar
+                if (typeof YT !== 'undefined' && YT.Player && this.playerDiv) {
+                    this.player = new YT.Player(this.playerDiv.id, { // Usa el ID del div encontrado
                         height: '100%',
                         width: '100%',
                         videoId: videoId,
@@ -58,29 +61,31 @@ class YoutubeWidget {
     }
 
     initializePlayer() {
-        // Cargar script de la API de YouTube si no está ya cargado
-        if (!window.YT) {
-            const tag = document.createElement('script');
-            tag.src = "https://www.youtube.com/iframe_api";
-            const firstScriptTag = document.getElementsByTagName('script')[0];
-            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        // Esta función se ejecutará para esta instancia una vez que la API esté lista.
+        const initFn = () => {
+            if (this.appState.getYoutubeUrl() && this.input) {
+                this.input.value = this.appState.getYoutubeUrl();
+                this.loadVideo(this.appState.getYoutubeUrl());
+            }
+        };
+
+        // Si la API ya está lista, ejecutar ahora.
+        if (typeof YT !== 'undefined' && YT.loaded) {
+            initFn();
+            return;
         }
 
-        if (this.appState.getYoutubeUrl() && this.input) {
-            this.input.value = this.appState.getYoutubeUrl();
-            // Esto se llamará cuando la API esté lista
+        // Si la API no está lista, agregar nuestra función a una cola.
+        // Configurar el callback global y la cola si es la primera vez.
+        if (!window.ytApiCallbacks) {
+            window.ytApiCallbacks = [];
             window.onYouTubeIframeAPIReady = () => {
-                this.loadVideo(this.appState.getYoutubeUrl());
+                window.ytApiCallbacks.forEach(callback => callback());
             };
-            // Si la API ya estaba lista (por ejemplo, después de una recarga suave)
-            if (typeof YT !== 'undefined' && YT.loaded) {
-                window.onYouTubeIframeAPIReady();
-            }
-        } else {
-            // Asegúrate de que onYouTubeIframeAPIReady siempre esté definido para evitar errores
-            window.onYouTubeIframeAPIReady = () => {};
         }
+        window.ytApiCallbacks.push(initFn);
     }
+
 
     onPlayerReady(event) {
         this.playPauseBtns.forEach(btn => {

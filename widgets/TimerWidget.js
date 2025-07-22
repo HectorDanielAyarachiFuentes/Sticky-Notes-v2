@@ -6,7 +6,7 @@ import { CONSTANTS } from "../config.js";
 
 class TimerWidget {
     constructor(containerSelector, appState) {
-        this.container = getElement(containerSelector);
+        this.container = typeof containerSelector === 'string' ? getElement(containerSelector) : containerSelector;
         if (!this.container) return;
 
         this.appState = appState;

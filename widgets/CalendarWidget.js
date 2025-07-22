@@ -3,7 +3,7 @@ import { getElement } from "../utils/dom.js";
 
 class CalendarWidget {
     constructor(containerSelector, appState, onDateSelectCallback) {
-        this.container = getElement(containerSelector);
+        this.container = typeof containerSelector === 'string' ? getElement(containerSelector) : containerSelector;
         if (!this.container) return;
 
         this.appState = appState;
