@@ -1,0 +1,23 @@
+project/
+├── index.html
+├── main.js             // Punto de entrada de la aplicación (nueva App.js)
+├── config.js           // Configuración de Firebase y constantes
+├── services/
+│   ├── AuthService.js
+│   └── FirestoreService.js
+├── state/
+│   └── AppState.js     // Gestión centralizada del estado
+├── utils/
+│   ├── dom.js          // Funciones helper para el DOM (getElement, createElement, etc.)
+│   └── helpers.js      // Debounce, etc.
+├── components/
+│   ├── Modal.js        // Clase base para modales y sus instancias
+│   ├── TimerModal.js   // Modal específico del temporizador
+│   ├── Note.js         // Componente de Nota
+│   └── Zone.js         // Componente de Zona
+│   └── DraggableResizable.js // Lógica de arrastre y redimensionamiento
+└── widgets/
+    ├── ClockWidget.js
+    ├── CalendarWidget.js
+    ├── TimerWidget.js
+    └── YoutubeWidget.js
