@@ -128,7 +128,20 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
             </button>
             <div id="stats-widget" class="dashboard-widget"><h3>Notas</h3><span id="note-count">0</span></div>
-            <div id="calendar-widget" class="dashboard-widget"><h3>Calendario</h3><div class="calendar-header"><button id="prev-month"><</button><h3 id="month-year"></h3><button id="next-month">></button></div><div class="calendar-grid" id="calendar-days"></div></div>
+            <!-- INICIO DE LA SECCIÓN DE CALENDARIO MODIFICADA -->
+            <div id="calendar-widget" class="dashboard-widget">
+                <h3>Calendario</h3>
+                <div class="calendar-header">
+                    <button id="prev-month"><</button>
+                    <div class="month-year-controls">
+                        <span id="month-year"></span>
+                        <button id="today-button" class="today-btn">Hoy</button>
+                    </div>
+                    <button id="next-month">></button>
+                </div>
+                <div class="calendar-grid" id="calendar-days"></div>
+            </div>
+            <!-- FIN DE LA SECCIÓN DE CALENDARIO MODIFICADA -->
             <div id="youtube-widget" class="dashboard-widget">
                 <h3>Música de Fondo</h3>
                 <input type="text" id="youtube-url-input" placeholder="Pega link de YouTube">
@@ -180,4 +193,5 @@
 
 
     <script type="module" src="main.js"></script>
+</body>
 </html>
