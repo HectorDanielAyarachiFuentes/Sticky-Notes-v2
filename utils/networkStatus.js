@@ -6,11 +6,13 @@
  */
 
 let statusBanner = null; // Referencia al elemento del banner
+let hideBannerTimeoutId = null; // NUEVA VARIABLE: Para almacenar el ID del temporizador de ocultamiento
 
 /**
  * Crea e inicializa el elemento del banner de estado de red.
  */
 function createStatusBanner() {
+    if (statusBanner) return; // Evita crear el banner múltiples veces
     statusBanner = document.createElement('div');
     statusBanner.id = 'network-status-banner';
     statusBanner.style.position = 'fixed';
@@ -37,13 +39,20 @@ function updateNetworkStatusDisplay(isOnline) {
         createStatusBanner(); // Asegúrate de que el banner exista
     }
 
+    // AÑADIDO: Limpiar cualquier temporizador de ocultamiento existente
+    if (hideBannerTimeoutId) {
+        clearTimeout(hideBannerTimeoutId);
+        hideBannerTimeoutId = null;
+    }
+
     if (isOnline) {
         statusBanner.style.backgroundColor = '#4CAF50'; // Verde
         statusBanner.innerText = '¡Conexión restaurada! Estás online de nuevo.';
         statusBanner.style.transform = 'translateY(0)'; // Mostrar
         // Ocultar después de un breve tiempo
-        setTimeout(() => {
+        hideBannerTimeoutId = setTimeout(() => { // Almacenar el ID del temporizador
             statusBanner.style.transform = 'translateY(-100%)';
+            hideBannerTimeoutId = null; // Limpiar el ID una vez que se ejecuta
         }, 3000);
     } else {
         statusBanner.style.backgroundColor = '#f44336'; // Rojo
