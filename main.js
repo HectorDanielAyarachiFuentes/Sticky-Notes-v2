@@ -1,32 +1,33 @@
-// project/main.js
+// main.js
 import AuthService from "./services/AuthService.js";
 import FirestoreService from "./services/FirestoreService.js";
-import AppState from "./state/AppState.js";
+import AppState from "./state/AppState.js"; // Importa la instancia singleton
 import { debounce } from "./utils/helpers.js";
 import { getElement, getElements } from "./utils/dom.js";
-import { alertModal } from "./components/Modal.js";
+import { alertModal } from "./components/Modal.js"; // Solo alertModal es global
 import ClockWidget from "./widgets/ClockWidget.js";
 import CalendarWidget from "./widgets/CalendarWidget.js";
 import TimerWidget from "./widgets/TimerWidget.js";
 import YoutubeWidget from "./widgets/YoutubeWidget.js";
-import StatsWidget from "./widgets/StatsWidget.js"; // NUEVO: Importa el StatsWidget
 import Note from "./components/Note.js";
 import Zone from "./components/Zone.js";
-import { CONSTANTS } from "./config.js";
+import { CONSTANTS } from "./config.js"; // Para usar constantes compartidas
 
+// IMPORTACIÓN NUEVA: Monitoreo de estado de red
 import { initNetworkStatusMonitor } from './utils/networkStatus.js';
 
 class App {
     constructor() {
-        this.state = AppState;
+        this.state = AppState; // Usa la instancia singleton de AppState
         this.authService = new AuthService(this.handleAuthStateChange.bind(this));
-        this.firestoreService = null;
+        this.firestoreService = null; // Se inicializará después de la autenticación
 
-        this.DOMElements = {};
-        this.widgets = {};
-        this.noteInstances = new Map();
-        this.zoneInstances = new Map();
+        this.DOMElements = {}; // Cache de los elementos DOM principales
+        this.widgets = {}; // Almacena instancias de los widgets
+        this.noteInstances = new Map(); // Almacena instancias de Note
+        this.zoneInstances = new Map(); // Almacena instancias de Zone
 
+        // Debounce para guardar datos en Firestore
         this.debounceSave = debounce(this._saveData.bind(this), 1500);
     }
 
@@ -37,6 +38,9 @@ class App {
         }
         this.bindGlobalEvents();
         this.setupWidgets();
+        // NOTA: initNetworkStatusMonitor ya se llama en el DOMContentLoaded directamente,
+        // no es necesario llamarla aquí también a menos que se quiera re-inicializar
+        // en algún punto específico del ciclo de vida de la App, lo cual no es común.
     }
 
     cacheDOM() {
@@ -62,9 +66,6 @@ class App {
         this.DOMElements.fabToggleBtn = getElement('#fab-toggle-btn');
         this.DOMElements.fabAddNoteBtn = getElement('#fab-add-note');
         this.DOMElements.fabAddZoneBtn = getElement('#fab-add-zone');
-
-        // Ya no necesitas obtener #note-count directamente aquí, StatsWidget lo manejará.
-        // this.DOMElements.noteCountEl = getElement('#note-count');
     }
 
     bindGlobalEvents() {
@@ -91,29 +92,17 @@ class App {
     }
 
     setupWidgets() {
+        // Instancia los widgets, pasándoles el estado de la app y callbacks si es necesario
         this.widgets.clock = new ClockWidget('#clock-widget');
         this.widgets.calendar = new CalendarWidget('#calendar-widget', this.state, this.handleCalendarDateSelect.bind(this));
         this.widgets.timer = new TimerWidget('#timer-widget', this.state);
         this.widgets.youtube = new YoutubeWidget('#youtube-widget', this.state, this.handleYoutubeUrlChange.bind(this));
-        // NUEVO: Instancia el StatsWidget
-        this.widgets.stats = new StatsWidget('#stats-widget', this.state);
 
         // Clonar widgets para la barra lateral móvil
-        // ATENCIÓN: Al clonar, si el StatsWidget ya está en el DOM principal, se clonará.
-        // Si quieres que el clon también sea funcional, deberías instanciarlo de nuevo
-        // para el clon y pasarle el ID del contenedor del clon.
-        // Por ahora, asumimos que solo necesitas que se vea, la funcionalidad principal estará en el original.
         const widgetsToClone = this.DOMElements.bottomDashboard.querySelectorAll('.dashboard-widget');
         widgetsToClone.forEach(widget => {
             const clone = widget.cloneNode(true);
             this.DOMElements.sidebarContent.appendChild(clone);
-            // Si el clon tiene el widget de stats, necesitas re-instanciarlo para que funcione
-            // const clonedStatsWidgetContainer = clone.querySelector('#stats-widget');
-            // if (clonedStatsWidgetContainer) {
-            //     new StatsWidget(clonedStatsWidgetContainer.id, this.state);
-            // }
-            // Esto se complicaría si tienes IDs duplicados, es mejor que el clonado sea solo para presentación
-            // o que los IDs sean únicos y se instancien widgets separados para la sidebar.
         });
     }
 
@@ -144,7 +133,7 @@ class App {
         if (!this.state.getCurrentUser()) return;
         try {
             const data = await this.firestoreService.loadUserData(this.state.getCurrentUser().uid);
-            this.state.setNotes(data.notes); // Esto emitirá 'notesChanged'
+            this.state.setNotes(data.notes);
             this.state.setZones(data.zones);
             this.state.setYoutubeUrl(data.youtubeUrl);
             this.state.setIsDataLoaded(true);
@@ -152,14 +141,13 @@ class App {
             this.renderWorkspace();
             this.widgets.calendar.render(); // Asegura que el calendario refleje las notas cargadas
             this.widgets.youtube.initializePlayer(); // Inicia el reproductor de YouTube con la URL cargada
-            // this.widgets.stats.render(); // Ya no es necesario llamar explícitamente, los listeners lo manejan
         } catch (error) {
             console.error("Error al cargar datos:", error);
             alertModal.open('Error de Carga', 'No se pudieron cargar tus datos. Intenta de nuevo más tarde.');
         }
     }
 
-    _saveData() {
+    _saveData() { // Función real de guardado (se llama a través de debounceSave)
         if (!this.state.getCurrentUser() || !this.state.isDataLoaded) return;
         this.DOMElements.saveStatus.textContent = 'Guardando...';
         try {
@@ -197,10 +185,10 @@ class App {
                 { name: 'Nota 5', content: '' },
             ]
         };
-        this.state.setNotes([...this.state.notes, newNote]); // Usa setNotes para emitir el cambio
+        this.state.notes.push(newNote); // Agrega directamente al array de estado
         this.renderWorkspace();
         this.debounceSave();
-        // this.updateStats(); // ELIMINADO: StatsWidget ahora se auto-actualiza
+        this.updateStats();
         this.widgets.calendar.render();
     }
 
@@ -210,27 +198,25 @@ class App {
             x: 50, y: 50, width: CONSTANTS.DEFAULT_ZONE_WIDTH, height: CONSTANTS.DEFAULT_ZONE_HEIGHT,
             date: this.state.getSelectedDate()
         };
-        this.state.setZones([...this.state.zones, newZone]); // Usa setZones para emitir el cambio
+        this.state.zones.push(newZone); // Agrega directamente al array de estado
         this.renderWorkspace();
         this.debounceSave();
     }
 
     deleteNote(noteId) {
-        this.state.setNotes(this.state.getNotes().filter(n => n.id !== noteId)); // Emitirá 'notesChanged'
+        this.state.setNotes(this.state.getNotes().filter(n => n.id !== noteId));
         this.renderWorkspace();
         this.debounceSave();
-        // this.updateStats(); // ELIMINADO
+        this.updateStats();
         this.widgets.calendar.render();
     }
 
     deleteZone(zoneId) {
         this.state.setZones(this.state.getZones().filter(z => z.id !== zoneId));
         // Desvincular notas de la zona eliminada
-        const notes = this.state.getNotes().map(n => {
-            if (n.zoneId === zoneId) return { ...n, zoneId: null };
-            return n;
+        this.state.getNotes().forEach(n => {
+            if (n.zoneId === zoneId) n.zoneId = null;
         });
-        this.state.setNotes(notes); // Emitirá 'notesChanged'
         this.renderWorkspace();
         this.debounceSave();
     }
@@ -239,8 +225,8 @@ class App {
         const notes = this.state.getNotes();
         const index = notes.findIndex(n => n.id === updatedNote.id);
         if (index !== -1) {
-            notes[index] = { ...notes[index], ...updatedNote };
-            this.state.setNotes([...notes]); // Emitirá 'notesChanged'
+            notes[index] = { ...notes[index], ...updatedNote }; // Fusionar actualizaciones
+            this.state.setNotes([...notes]); // Asegura que se actualice la referencia si AppState lo necesita
         }
         this.debounceSave();
     }
@@ -271,8 +257,9 @@ class App {
     // --- Métodos de Renderización del Espacio de Trabajo ---
     renderWorkspace() {
         const isMobile = window.innerWidth <= 768;
-        this.DOMElements.appContainer.innerHTML = '';
+        this.DOMElements.appContainer.innerHTML = ''; // Limpiar contenido anterior
 
+        // Limpiar instancias de componentes Note/Zone antes de re-renderizar
         this.noteInstances.clear();
         this.zoneInstances.clear();
 
@@ -286,7 +273,7 @@ class App {
         }
 
         this.updateWorkspaceTitle();
-        // this.updateStats(); // ELIMINADO: StatsWidget se auto-actualiza
+        this.updateStats();
         this.updateTopControlsVisibility();
     }
 
@@ -320,6 +307,7 @@ class App {
     }
 
     renderMobileLayout(notesToShow, zonesToShow) {
+        // En móvil, las zonas actúan como contenedores o se renderizan notas independientes
         zonesToShow.forEach(zoneData => {
             const zone = new Zone(zoneData, {
                 onDelete: this.deleteZone.bind(this),
@@ -336,7 +324,7 @@ class App {
                 const note = new Note(noteData, {
                     onDelete: this.deleteNote.bind(this),
                     onUpdate: this.updateNote.bind(this),
-                    findParentZone: this.findParentZone.bind(this)
+                    findParentZone: this.findParentZone.bind(this) // Aún se necesita para el manejo de zonas en la actualización de notas
                 });
                 this.noteInstances.set(noteData.id, note);
                 mobileNotesContainer.appendChild(note.getDomElement());
@@ -374,19 +362,17 @@ class App {
         this.state.setZones([]);
         this.noteInstances.clear();
         this.zoneInstances.clear();
-        // this.updateStats(); // ELIMINADO: StatsWidget se auto-actualiza
     }
 
-    // ELIMINADO: Este método ya no es necesario, StatsWidget lo maneja
-    // updateStats() {
-    //     const notesInView = this.state.getNotes().filter(n => n.date === this.state.getSelectedDate()).length;
-    //     getElements('#note-count').forEach(el => el.textContent = notesInView);
-    // }
+    updateStats() {
+        const notesInView = this.state.getNotes().filter(n => n.date === this.state.getSelectedDate()).length;
+        getElements('#note-count').forEach(el => el.textContent = notesInView);
+    }
 
     updateTopControlsVisibility() {
         const isMobile = window.innerWidth <= 768;
         const generalBtn = getElement('#show-general-btn');
-        const userProfileMenu = getElement('#user-profile-menu');
+        const userProfileMenu = getElement('#user-profile-menu'); // Asume que este elemento existe
 
         if (generalBtn) {
             if (isMobile) {
@@ -401,10 +387,10 @@ class App {
     }
 
     showGeneralDashboard() {
-        this.state.setSelectedDate(null); // Emitirá 'selectedDateChanged'
-        this.debounceSave();
+        this.state.setSelectedDate(null);
+        this.debounceSave(); // No se guarda la fecha seleccionada en DB, pero se fuerza un guardado general
         this.renderWorkspace();
-        this.widgets.calendar.render();
+        this.widgets.calendar.render(); // Re-renderizar calendario para desmarcar el día
     }
 
     closeSidebar() {
@@ -413,18 +399,23 @@ class App {
 
     // --- Callbacks de Widgets ---
     handleCalendarDateSelect(date) {
-        //setSelectedDate() ya emitirá 'selectedDateChanged', lo que activará StatsWidget.
-        this.renderWorkspace();
+        // La fecha ya está actualizada en AppState por CalendarWidget
+        this.renderWorkspace(); // Re-renderiza el workspace para la nueva fecha
         this.closeSidebar();
     }
 
     handleYoutubeUrlChange(url) {
-        this.debounceSave();
+        // La URL ya está actualizada en AppState por YoutubeWidget
+        this.debounceSave(); // Guarda el estado de la URL de YouTube
     }
 }
 
+// Inicializa la aplicación cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
+    // Primero, inicializa el monitoreo de red, ya que crea un elemento DOM global.
     initNetworkStatusMonitor();
+
+    // Luego, inicializa el resto de tu aplicación.
     const appInstance = new App();
     appInstance.init();
 });
