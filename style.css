@@ -1,5 +1,5 @@
 /* ==========================================================================
-   INICIO DE ESTILOS PARA EL LOGIN Y ELEMENTOS FIJOS
+   INICIO DE ESTILOS PARA EL LOGIN Y ELEMENTOS FIJOS (VERSIÓN CORREGIDA)
    ========================================================================== */
 #login-background {
     position: fixed;
@@ -19,15 +19,17 @@
     height: 100%;
 }
 
+/* NUEVO: Contenedor para el conjunto del mástil y la bandera */
 #flag-wrapper {
     position: fixed;
     top: 0;
-    left: 5%;
+    left: 5%; /* <-- ¡AQUÍ CONTROLAS LA POSICIÓN! Ajústala como desees */
     height: 100%;
-    width: 250px;
-    z-index: 2;
+    width: 250px; /* Un ancho suficiente para el mástil y la bandera ondeando */
+    z-index: 2; /* Por encima del cielo */
 }
 
+/* El SVG de la bandera ahora solo necesita llenar su nuevo contenedor */
 .flagpole { 
     width: 100%; 
     height: 100%; 
@@ -48,9 +50,9 @@ body.logged-out { background-image: none !important; }
     align-items: center;
     gap: 8px;
     padding: 8px 12px;
-    background-color: rgba(255, 255, 255, 0.4); /* Se mantiene traslúcido para efecto de fondo */
+    background-color: rgba(255, 255, 255, 0.4);
     backdrop-filter: blur(2px);
-    color: var(--text-color-primary); /* Nuevo: Utiliza la variable de color principal */
+    color: #2c3e50;
     text-decoration: none;
     font-size: 14px;
     font-family: 'Poppins', sans-serif;
@@ -60,18 +62,18 @@ body.logged-out { background-image: none !important; }
 }
 .github-link:hover {
     background-color: rgba(255, 255, 255, 0.7);
-    color: #000; /* Negro puro para máximo contraste en hover */
+    color: black;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     transform: translateY(-2px);
 }
 .github-link svg {
     width: 20px;
     height: 20px;
-    fill: var(--text-color-primary); /* Nuevo: Utiliza la variable de color principal */
+    fill: #2c3e50;
     transition: fill 0.3s;
 }
  .github-link:hover svg {
-    fill: #000; /* Negro puro en hover */
+    fill: black;
  }
 
 /* ==========================================================================
@@ -79,101 +81,30 @@ body.logged-out { background-image: none !important; }
    ========================================================================== */
 
 /* ==========================================================================
-   1. VARIABLES GLOBALES Y KEYFRAMES (PALETA DE COLORES PROFESIONAL)
+   1. VARIABLES GLOBALES Y KEYFRAMES
    ========================================================================== */
 :root {
-    /* Paleta Principal y Neutra */
-    --bg-color: #F8F9FA; /* Gris claro muy sutil */
-    --widget-bg-color: #FFFFFF; /* Blanco puro para la mayoría de widgets/paneles */
-    --panel-bg: rgba(255, 255, 255, 0.85); /* Transparencia para paneles flotantes */
-    --panel-border: rgba(220, 220, 220, 0.8); /* Borde suave */
-    --hover-color: #F0F4F8; /* Gris claro para estados hover */
-    --border-color: #E2E8F0; /* Borde gris sutil */
-    --shadow-small: 0 2px 5px rgba(0, 0, 0, 0.08);
-    --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.1);
-    --shadow-large: 0 10px 30px rgba(0, 0, 0, 0.15);
-
-
-    /* Colores de Texto */
-    --text-color-primary: #2D3748; /* Gris oscuro para texto principal */
-    --text-color-secondary: #718096; /* Gris medio para texto secundario */
-
-    /* Colores de Notas (Manteniendo el toque "sticky" pero más sutil) */
-    --note-color: #FFFCE0; /* Amarillo crema muy suave */
-    --note-shadow: rgba(0, 0, 0, 0.08); /* Sombra más sutil */
-
-    /* Colores de Acento (Reemplazando --primary-accent) */
-    --accent-blue: #4299E1; /* Azul corporativo vibrante */
-    --accent-blue-dark: #3182CE; /* Azul más oscuro para hover/activos */
-    
-    /* Colores de Zonas (Basados en el nuevo azul de acento) */
-    --zone-bg: rgba(66, 153, 225, 0.08); /* Fondo de zona azul muy claro */
-    --zone-border: rgba(66, 153, 225, 0.3); /* Borde de zona azul sutil */
-
-    /* Colores de Estado (Profesionales) */
-    --success-color: #48BB78; /* Verde éxito */
-    --danger-color: #FC8181; /* Rojo peligro (más suave) */
-    --warning-color: #F6AD55; /* Naranja advertencia */
-    --highlight-color: #ECC94B; /* Amarillo dorado para destacados */
-
-    /* COLORES ESPECÍFICOS DEL CALENDARIO (UNIFICADOS CON LA NUEVA PALETA) */
-    /* Usaremos --accent-blue para el día actual y --accent-blue-dark para el día seleccionado,
-       o un color complementario si se desea un contraste mayor. */
-    --calendar-day-current-border: var(--accent-blue);
-    --calendar-day-selected-bg: var(--accent-blue-dark);
-    --calendar-note-indicator: var(--warning-color); /* Indicador de notas en amarillo */
-}
-
-/* Modo Oscuro (Refinado) */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --bg-color: #1A202C;
-        --widget-bg-color: #2D3748;
-        --panel-bg: rgba(45, 55, 72, 0.85);
-        --panel-border: rgba(74, 85, 104, 0.8);
-        --hover-color: #4A5568;
-        --border-color: #4A5568;
-        --shadow-small: 0 2px 5px rgba(0, 0, 0, 0.3);
-        --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.4);
-        --shadow-large: 0 10px 30px rgba(0, 0, 0, 0.5);
-
-        --text-color-primary: #EDF2F7;
-        --text-color-secondary: #A0AEC0;
-
-        --note-color: #3D4858;
-        --note-shadow: rgba(0, 0, 0, 0.2);
-
-        --accent-blue: #63B3ED;
-        --accent-blue-dark: #4299E1;
-        --zone-bg: rgba(99, 179, 237, 0.1);
-        --zone-border: rgba(99, 179, 237, 0.4);
-
-        --success-color: #68D391;
-        --danger-color: #FEB2B2;
-        --warning-color: #FBD38D;
-        --highlight-color: #F6E05E;
-
-        --calendar-day-current-border: var(--accent-blue);
-        --calendar-day-selected-bg: var(--accent-blue-dark);
-        --calendar-note-indicator: var(--warning-color);
-    }
+    --bg-color: #f4f7f9;
+    --note-color: #fffde7;
+    --note-shadow: rgba(0, 0, 0, 0.1);
+    --primary-accent: #5a7dcb;
+    --primary-accent-dark: #405b9b;
+    --panel-bg: rgba(255, 255, 255, 0.6);
+    --panel-border: rgba(255, 255, 255, 0.8);
+    --text-dark: #2c3e50;
+    --text-light: #7f8c8d;
+    --zone-bg: rgba(90, 125, 203, 0.1);
+    --zone-border: rgba(90, 125, 203, 0.4);
+    --highlight-color: #ffc107;
+    --danger-color: #e74c3c;
+    --success-color: #27ae60;
+    --warning-color: #f39c12;
 }
 
 @keyframes pulse-green {
-    0% { box-shadow: 0 0 0 0 rgba(72, 187, 120, 0.4); } /* Usando nuevo success-color */
-    70% { box-shadow: 0 0 0 10px rgba(72, 187, 120, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(72, 187, 120, 0); }
-}
-
-/* NUEVOS KEYFRAMES PARA ANIMACIONES DE CALENDARIO */
-@keyframes fadeOut {
-    from { opacity: 1; }
-    to { opacity: 0; }
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    0% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(39, 174, 96, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0); }
 }
 
 /* ==========================================================================
@@ -189,18 +120,7 @@ body {
     height: 100vh;
 }
 
-#google-signin-btn { 
-    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-    padding: 15px 30px; font-size: 18px; font-weight: 600; 
-    color: white; background-color: #E53E3E; /* Rojo de Google más estándar */
-    border: none; border-radius: 8px; cursor: pointer; 
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 10000; 
-    transition: background-color 0.2s ease, transform 0.2s ease;
-}
-#google-signin-btn:hover {
-    background-color: #C53030;
-    transform: translate(-50%, -50%) scale(1.03);
-}
+#google-signin-btn { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 15px 30px; font-size: 18px; font-weight: 600; color: white; background-color: #DB4437; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 10000; }
 .logged-in #google-signin-btn { display: none; }
 .logged-out .main-content { display: none; }
 .main-content { opacity: 0; transition: opacity 0.5s ease-in-out; }
@@ -214,93 +134,31 @@ body {
     padding: 70px 20px 20px 20px; 
 }
 
-.draggable { position: absolute; z-index: 10; cursor: grab; } /* Cambiado a grab */
-.dragging { z-index: 999 !important; cursor: grabbing; } /* Cambiado a grabbing */
+.draggable { position: absolute; z-index: 10; cursor: move; }
+.dragging { z-index: 999 !important; }
 
 /* ==========================================================================
    3. COMPONENTES: CONTROLES SUPERIORES Y PERFIL
    ========================================================================== */
-#top-controls { 
-    position: fixed; top: 15px; left: 20px; right: 20px; z-index: 1001; 
-    display: flex; gap: 12px; align-items: center; 
-    background-color: var(--panel-bg); /* Nuevo: fondo traslúcido para la barra superior */
-    backdrop-filter: blur(8px); /* Nuevo: efecto de desenfoque */
-    border-radius: 12px; /* Nuevo: esquinas redondeadas */
-    padding: 10px 20px; /* Ajuste de padding */
-    box-shadow: var(--shadow-small); /* Nueva sombra */
-}
-#workspace-title { 
-    font-size: 24px; font-weight: 600; 
-    color: var(--text-color-primary); /* Nuevo: usa la variable de texto primario */
-    flex-grow: 1; 
-    margin: 0; /* Asegurar que no haya márgenes extra */
-}
-#save-status { 
-    font-size: 14px; 
-    color: var(--text-color-secondary); /* Nuevo: usa la variable de texto secundario */
-    transition: opacity 0.3s ease; margin-right: 10px; 
-}
+#top-controls { position: fixed; top: 15px; left: 20px; right: 20px; z-index: 1001; display: flex; gap: 12px; align-items: center; }
+#workspace-title { font-size: 24px; font-weight: 600; color: var(--text-dark); flex-grow: 1; }
+#save-status { font-size: 14px; color: var(--text-light); transition: opacity 0.3s ease; margin-right: 10px; }
 
-.control-btn { 
-    padding: 10px 22px; font-size: 14px; font-weight: 600; 
-    color: white; 
-    background-color: var(--accent-blue); /* Nuevo: usa la variable de acento azul */
-    border: none; border-radius: 50px; cursor: pointer; 
-    box-shadow: 0 5px 15px rgba(66, 153, 225, 0.3); /* Nueva sombra con el color de acento */
-    transition: all 0.3s ease; 
-}
-.control-btn:hover { 
-    background-color: var(--accent-blue-dark); /* Nuevo: usa la variable de acento azul oscuro */
-    transform: translateY(-2px); 
-    box-shadow: 0 7px 20px rgba(66, 153, 225, 0.4); /* Sombra ligeramente más grande en hover */
-}
-.control-btn.secondary { 
-    background-color: var(--text-color-secondary); /* Gris más neutro */
-    box-shadow: 0 5px 15px rgba(113, 128, 150, 0.3);
-}
-.control-btn.secondary:hover { 
-    background-color: #5F748C; /* Gris más oscuro en hover */
-    box-shadow: 0 7px 20px rgba(113, 128, 150, 0.4);
-}
+.control-btn { padding: 10px 22px; font-size: 14px; font-weight: 600; color: white; background-color: var(--primary-accent); border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 15px rgba(90, 125, 203, 0.3); transition: all 0.3s ease; }
+.control-btn:hover { background-color: var(--primary-accent-dark); transform: translateY(-2px); }
+.control-btn.secondary { background-color: #95a5a6; }
+.control-btn.secondary:hover { background-color: #7f8c8d; }
 #sidebar-toggle-btn { display: none; }
 
 .profile-menu-container { position: relative; }
-.profile-avatar { 
-    width: 45px; height: 45px; border-radius: 50%; cursor: pointer; 
-    border: 2px solid var(--border-color); /* Nuevo: Borde con variable */
-    box-shadow: var(--shadow-small); /* Nueva sombra */
-    transition: transform 0.2s ease; 
-}
+.profile-avatar { width: 45px; height: 45px; border-radius: 50%; cursor: pointer; border: 2px solid var(--panel-border); box-shadow: 0 2px 10px rgba(0,0,0,0.1); transition: transform 0.2s ease; }
 .profile-avatar:hover { transform: scale(1.05); }
-.profile-dropdown { 
-    position: absolute; top: 120%; right: 0; width: 220px; 
-    background-color: var(--widget-bg-color); /* Blanco de widget */
-    border-radius: 12px; box-shadow: var(--shadow-large); /* Sombra más grande */
-    padding: 15px; box-sizing: border-box; opacity: 0; visibility: hidden; 
-    transform: translateY(10px); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
-    z-index: 1005; 
-}
+.profile-dropdown { position: absolute; top: 120%; right: 0; width: 220px; background-color: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); padding: 15px; box-sizing: border-box; opacity: 0; visibility: hidden; transform: translateY(10px); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); z-index: 1005; }
 .profile-menu-container:hover .profile-dropdown { opacity: 1; visibility: visible; transform: translateY(0); }
-.profile-dropdown .user-info { 
-    text-align: center; padding-bottom: 15px; 
-    border-bottom: 1px solid var(--border-color); /* Nuevo: Borde con variable */
-    margin-bottom: 10px; 
-}
-.profile-dropdown .user-name { 
-    font-weight: 600; 
-    color: var(--text-color-primary); /* Nuevo: usa la variable de texto primario */
-    margin: 0; font-size: 16px; 
-}
-.profile-dropdown .signout-btn { 
-    width: 100%; display: flex; align-items: center; justify-content: center; 
-    gap: 8px; padding: 10px; border: none; background-color: transparent; 
-    font-size: 14px; font-weight: 500; 
-    color: var(--danger-color); /* Nuevo: usa la variable de peligro */
-    border-radius: 8px; cursor: pointer; transition: background-color 0.2s ease; 
-}
-.profile-dropdown .signout-btn:hover { 
-    background-color: rgba(var(--danger-color-rgb, 252, 129, 129), 0.1); /* Nuevo: Fondo más suave para hover */
-}
+.profile-dropdown .user-info { text-align: center; padding-bottom: 15px; border-bottom: 1px solid #f0f0f0; margin-bottom: 10px; }
+.profile-dropdown .user-name { font-weight: 600; color: var(--text-dark); margin: 0; font-size: 16px; }
+.profile-dropdown .signout-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border: none; background-color: transparent; font-size: 14px; font-weight: 500; color: var(--danger-color); border-radius: 8px; cursor: pointer; transition: background-color 0.2s ease; }
+.profile-dropdown .signout-btn:hover { background-color: #fef2f2; }
 
 /* ==========================================================================
    4. COMPONENTES: NOTAS Y ZONAS
@@ -317,7 +175,7 @@ body {
     font-family: 'Caveat', cursive;
     font-size: 22px;
     line-height: 1.5;
-    color: var(--text-color-primary); /* Nuevo: usa la variable de texto primario */
+    color: var(--text-dark);
     border: none;
     background: transparent;
     outline: none;
@@ -327,79 +185,38 @@ body {
     margin: 0;
 }
 .zone { 
-    background-color: var(--zone-bg); /* Nuevo: usa la variable de fondo de zona */
+    background-color: var(--zone-bg); 
     backdrop-filter: blur(5px); 
-    border: 1px solid var(--zone-border); /* Nuevo: usa la variable de borde de zona */
+    border: 1px solid var(--zone-border); 
     border-radius: 12px; 
     box-sizing: border-box; 
     padding: 45px 15px 15px 15px; 
     min-width: 250px; 
     min-height: 200px;
 }
-.zone-title { 
-    position: absolute; top: 12px; left: 15px; font-weight: 600; font-size: 16px; 
-    color: var(--accent-blue-dark); /* Nuevo: Usa el color de acento azul oscuro */
-    border: none; background: transparent; width: calc(100% - 60px); outline: none; 
-}
+.zone-title { position: absolute; top: 12px; left: 15px; font-weight: 600; font-size: 16px; color: var(--primary-accent-dark); border: none; background: transparent; width: calc(100% - 60px); outline: none; }
 .add-note-in-zone-btn, .view-full-zone-btn { display: none; }
-.delete-btn { 
-    width: 24px; height: 24px; text-align: center; line-height: 24px; 
-    font-size: 20px; border-radius: 50%; cursor: pointer; user-select: none; 
-    transition: background-color 0.2s, color 0.2s; 
-    color: var(--text-color-secondary); /* Nuevo: usa la variable de texto secundario */
-}
-.delete-btn:hover { 
-    background-color: var(--danger-color); /* Nuevo: usa la variable de peligro */
-    color: white; 
-}
+.delete-btn { width: 24px; height: 24px; text-align: center; line-height: 24px; font-size: 20px; border-radius: 50%; cursor: pointer; user-select: none; transition: background-color 0.2s, color 0.2s; color: var(--text-light); }
+.delete-btn:hover { background-color: var(--danger-color); color: white; }
 
 /* ==========================================================================
    5. COMPONENTES: DASHBOARD INFERIOR Y WIDGETS
    ========================================================================== */
 #bottom-dashboard { 
     position: fixed; bottom: 0; left: 0; width: 100%; 
-    background: var(--panel-bg); /* Nuevo: usa la variable de fondo de panel */
-    backdrop-filter: blur(10px); 
-    border-top: 1px solid var(--panel-border); /* Nuevo: usa la variable de borde de panel */
-    box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.05); 
+    background: rgba(239, 243, 245, 0.7); backdrop-filter: blur(10px); 
+    border-top: 1px solid rgba(255, 255, 255, 0.8); box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.05); 
     display: flex; align-items: flex-start; justify-content: center; 
     padding: 30px 20px; box-sizing: border-box; 
     z-index: 1002; gap: 25px; 
     transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); 
 }
-.dashboard-widget { 
-    height: auto; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; 
-    color: var(--text-color-primary); /* Nuevo: usa la variable de texto primario */
-    text-align: center; 
-    background-color: var(--widget-bg-color); /* Nuevo: usa la variable de fondo de widget */
-    border-radius: 12px; 
-    box-shadow: var(--shadow-small); /* Nueva sombra */
-    padding: 15px; 
-    border: 1px solid var(--border-color); /* Nuevo: usa la variable de borde */
-    transition: all 0.3s ease; transform: translateY(0); 
-}
-.dashboard-widget:hover { 
-    transform: translateY(-5px); 
-    box-shadow: var(--shadow-medium); /* Nueva sombra media en hover */
-}
-.dashboard-widget h3 { 
-    margin: 0 0 12px 0; padding-bottom: 8px; 
-    font-size: 11px; font-weight: 600; text-transform: uppercase; 
-    color: var(--text-color-secondary); /* Nuevo: usa la variable de texto secundario */
-    letter-spacing: 0.8px; width: 100%; 
-    border-bottom: 1px solid var(--border-color); /* Nuevo: usa la variable de borde */
-}
-#dashboard-toggle { 
-    position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); 
-    width: 60px; height: 30px; 
-    background-color: var(--accent-blue); /* Nuevo: usa la variable de acento azul */
-    border: none; border-radius: 15px 15px 0 0; 
-    box-shadow: 0 -4px 12px rgba(0,0,0,0.1); cursor: pointer; 
-    display: flex; align-items: center; justify-content: center; 
-    transition: background-color 0.3s ease; z-index: 1003; 
-}
-#dashboard-toggle:hover { background-color: var(--accent-blue-dark); } /* Nuevo: usa la variable de acento azul oscuro */
-#dashboard-toggle svg { stroke: white; transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+.dashboard-widget { height: auto; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; color: var(--text-dark); text-align: center; background-color: rgba(255, 255, 255, 0.8); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.07); padding: 15px; border: 1px solid rgba(255, 255, 255, 0.9); transition: all 0.3s ease; transform: translateY(0); }
+.dashboard-widget:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+.dashboard-widget h3 { margin: 0 0 12px 0; padding-bottom: 8px; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-light); letter-spacing: 0.8px; width: 100%; border-bottom: 1px solid rgba(0,0,0,0.08); }
+#dashboard-toggle { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 30px; background-color: var(--primary-accent); border: none; border-radius: 15px 15px 0 0; box-shadow: 0 -4px 12px rgba(0,0,0,0.1); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background-color 0.3s ease; z-index: 1003; }
+#dashboard-toggle:hover { background-color: var(--primary-accent-dark); }
+#dashboard-toggle svg { width: 20px; height: 20px; stroke: white; transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
 
 body.dashboard-hidden #bottom-dashboard { transform: translateY(calc(100% - 30px)); }
 body:not(.dashboard-hidden) #app { height: calc(100vh - 230px); }
@@ -408,291 +225,60 @@ body:not(.dashboard-hidden) #dashboard-toggle svg { transform: rotate(180deg); }
 
 #stats-widget span { font-size: 36px; font-weight: 600; }
 #clock-widget #current-time { font-size: 36px; font-weight: 600; }
-#clock-widget #current-date { 
-    font-size: 14px; 
-    color: var(--text-color-secondary); /* Nuevo: usa la variable de texto secundario */
-}
-
-/* ==========================================================================
-   5.1. COMPONENTE: CALENDARIO (ESTILOS MEJORADOS)
-   ========================================================================== */
-#calendar-widget {
-    background-color: var(--widget-bg-color);
-    border-radius: 8px;
-    box-shadow: var(--shadow-small);
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-    color: var(--text-color-primary);
-    position: relative;
-    overflow: hidden;
-    width: fit-content;
-    max-width: 300px;
-    min-width: 270px;
-}
-
-.calendar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.calendar-header button {
-    background: none;
-    border: none;
-    font-size: 1.2em;
-    cursor: pointer;
-    color: var(--text-color-primary);
-    padding: 5px 10px;
-    border-radius: 5px;
-    transition: background-color 0.2s ease;
-}
-
-.calendar-header button:hover {
-    background-color: var(--hover-color);
-}
-
-.month-year-controls {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-#month-year {
-    font-size: 1.1em;
-    font-weight: bold;
-    color: var(--text-color-primary);
-}
-
-.today-btn {
-    background-color: var(--accent-blue); /* Nuevo: usa el color de acento azul */
-    color: white;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 0.9em;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    border: none;
-}
-
-.today-btn:hover {
-    background-color: var(--accent-blue-dark); /* Nuevo: usa el color de acento azul oscuro */
-}
-
-.calendar-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 5px;
-    text-align: center;
-    font-size: 0.9em;
-    position: relative;
-    transition: opacity 0.3s ease;
-}
-
-.calendar-grid.fade-out {
-    opacity: 0;
-}
-
-.calendar-grid.fade-in {
-    opacity: 1;
-}
-
-.day-name {
-    font-weight: bold;
-    color: var(--text-color-secondary);
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 5px;
-}
-
-.day {
-    padding: 8px 5px;
-    cursor: pointer;
-    border-radius: 50%;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 35px;
-    width: 35px;
-    margin: 0 auto;
-    position: relative;
-}
-
-.day:hover {
-    background-color: var(--hover-color);
-    transform: translateY(-2px);
-}
-
-.day.current-day {
-    font-weight: bold;
-    color: var(--calendar-day-current-border); /* Nuevo: usa la variable específica del calendario */
-    border: 2px solid var(--calendar-day-current-border);
-    background-color: transparent;
-}
-
-.day.selected-day {
-    background-color: var(--calendar-day-selected-bg); /* Nuevo: usa la variable específica del calendario */
-    color: white;
-    font-weight: bold;
-    box-shadow: var(--shadow-small);
-}
-
-.day.has-notes::after {
-    content: '';
-    position: absolute;
-    bottom: 3px;
-    width: 6px;
-    height: 6px;
-    background-color: var(--calendar-note-indicator); /* Nuevo: usa la variable específica del calendario */
-    border-radius: 50%;
-}
-
-.calendar-grid span:not(.day):not(.day-name) {
-    visibility: hidden;
-}
-
-/* ==========================================================================
-   FIN DE ESTILOS PARA EL CALENDARIO
-   ========================================================================== */
-
+#clock-widget #current-date { font-size: 14px; color: var(--text-light); }
+#calendar-widget { min-width: 270px; }
+.calendar-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 8px; }
+.calendar-header h3 { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+.calendar-header button { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--primary-accent); }
+#month-year { font-size: 14px; font-weight: 600; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; width: 100%; }
+.calendar-grid span { text-align: center; padding: 2px; font-size: 12px; position: relative; }
+.day-name { font-weight: 600; color: var(--text-light); }
+.day { cursor: pointer; border-radius: 50%; transition: background-color 0.2s; }
+.day:hover { background-color: #e0e0e0; }
+.day.current-day { background-color: var(--highlight-color); color: white; font-weight: 600; }
+.day.selected-day { box-shadow: 0 0 0 2px var(--primary-accent); }
+.day.has-notes::after { content: ''; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background-color: var(--primary-accent); border-radius: 50%; }
 
 #timer-widget .timer-buttons { margin-top: 8px; }
-#timer-widget .timer-buttons button { 
-    margin: 0 4px; padding: 5px 10px; font-size: 14px; cursor: pointer; 
-    border: 1px solid var(--border-color); /* Nuevo: Usa la variable de borde */
-    border-radius: 4px; 
-    background: var(--widget-bg-color); /* Nuevo: Usa el color de fondo de widget */
-    color: var(--text-color-primary); /* Nuevo: Usa la variable de texto primario */
-    transition: background-color 0.2s ease, color 0.2s ease;
-}
-#timer-widget .timer-buttons button:hover {
-    background-color: var(--hover-color);
-}
+#timer-widget .timer-buttons button { margin: 0 4px; padding: 5px 10px; font-size: 14px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #fff; }
 #timer-widget .timer-buttons .hidden { display: none; }
-#timer-display-container { 
-    display: flex; align-items: center; justify-content: center; gap: 10px; 
-}
-#timer-display { 
-    font-size: 32px; font-weight: 600; font-family: 'Poppins', monospace; 
-    letter-spacing: 2px; 
-    color: var(--text-color-primary); /* Nuevo: Usa la variable de texto primario */
-    transition: color 0.4s ease, text-shadow 0.4s ease; 
-}
-#timer-display.timer-running { 
-    color: var(--success-color); /* Nuevo: Usa la variable de éxito */
-    animation: pulse-green 2s infinite; 
-}
-#timer-display.timer-paused { 
-    color: var(--warning-color); /* Nuevo: Usa la variable de advertencia */
-}
-#edit-timer-btn { 
-    background: none; border: none; cursor: pointer; 
-    font-size: 18px; 
-    color: var(--text-color-secondary); /* Nuevo: Usa la variable de texto secundario */
-    padding: 5px; border-radius: 50%; transition: background-color 0.2s; 
-}
-#edit-timer-btn:hover { 
-    background-color: var(--hover-color); /* Nuevo: Usa la variable de hover */
-}
+#timer-display-container { display: flex; align-items: center; justify-content: center; gap: 10px; }
+#timer-display { font-size: 32px; font-weight: 600; font-family: 'Poppins', monospace; letter-spacing: 2px; color: var(--text-dark); transition: color 0.4s ease, text-shadow 0.4s ease; }
+#timer-display.timer-running { color: var(--success-color); animation: pulse-green 2s infinite; }
+#timer-display.timer-paused { color: var(--warning-color); }
+#edit-timer-btn { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--text-light); padding: 5px; border-radius: 50%; transition: background-color 0.2s; }
+#edit-timer-btn:hover { background-color: #e0e0e0; }
 
-#youtube-widget input { 
-    border: 1px solid var(--border-color); /* Nuevo: Usa la variable de borde */
-    border-radius: 4px; padding: 6px 8px; width: 180px; font-size: 12px; margin-bottom: 0; 
-    color: var(--text-color-primary); /* Nuevo: Usa la variable de texto primario */
-    background-color: var(--widget-bg-color); /* Nuevo: Usa el color de fondo de widget */
-}
-#youtube-player-container { 
-    position: relative; width: 200px; height: 112px; background: #000; 
-    border-radius: 8px; overflow: hidden; margin-top: 8px; 
-    box-shadow: var(--shadow-small); /* Nueva sombra */
-}
+#youtube-widget input { border: 1px solid #ccc; border-radius: 4px; padding: 6px 8px; width: 180px; font-size: 12px; margin-bottom: 0; }
+#youtube-player-container { position: relative; width: 200px; height: 112px; background: #000; border-radius: 8px; overflow: hidden; margin-top: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 #youtube-player-container iframe { width: 100%; height: 100%; border: none; }
-#youtube-controls { 
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-    display: flex; align-items: center; justify-content: center; 
-    background-color: rgba(0, 0, 0, 0.4); /* Ligeramente más opaco para mejor visibilidad de controles */
-    opacity: 0; transition: opacity 0.3s ease; pointer-events: none; 
-}
+#youtube-controls { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background-color: rgba(0, 0, 0, 0.3); opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
 #youtube-player-container:hover #youtube-controls, #youtube-player-container.paused #youtube-controls { opacity: 1; pointer-events: all; }
-.yt-control-btn { 
-    background-color: rgba(255, 255, 255, 0.95); /* Menos transparente */
-    border: none; border-radius: 50%; width: 50px; height: 50px; cursor: pointer; 
-    display: flex; align-items: center; justify-content: center; 
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3); transition: transform 0.2s ease, background-color 0.2s ease; 
-}
-.yt-control-btn:hover { 
-    transform: scale(1.1); 
-    background-color: var(--widget-bg-color); /* Blanco de widget */
-}
-.yt-control-btn svg { 
-    fill: var(--text-color-primary); /* Nuevo: Usa la variable de texto primario */
-}
+.yt-control-btn { background-color: rgba(255, 255, 255, 0.9); border: none; border-radius: 50%; width: 50px; height: 50px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.3); transition: transform 0.2s ease, background-color 0.2s ease; }
+.yt-control-btn:hover { transform: scale(1.1); background-color: #fff; }
+.yt-control-btn svg { width: 24px; height: 24px; fill: var(--text-dark); }
 
 /* ==========================================================================
    6. COMPONENTES: MODALES
    ========================================================================== */
-.modal-overlay { 
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-    background-color: rgba(0, 0, 0, 0.7); z-index: 9999; 
-    display: flex; align-items: center; justify-content: center; 
-    opacity: 0; pointer-events: none; transition: opacity 0.3s ease; 
-}
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); z-index: 9999; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
 .modal-overlay.visible { opacity: 1; pointer-events: auto; }
-.modal-content { 
-    background-color: var(--widget-bg-color); /* Blanco de widget */
-    padding: 40px; border-radius: 12px; 
-    box-shadow: var(--shadow-large); /* Sombra más grande */
-    text-align: center; max-width: 90%; width: 450px; 
-    transform: scale(0.9); transition: transform 0.3s ease; 
-}
+.modal-content { background-color: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); text-align: center; max-width: 90%; width: 450px; transform: scale(0.9); transition: transform 0.3s ease; }
 .modal-overlay.visible .modal-content { transform: scale(1); }
-.modal-content h2 { 
-    margin-top: 0; 
-    color: var(--text-color-primary); /* Nuevo: Usa la variable de texto primario */
-    font-size: 28px; 
-}
-.modal-content p { 
-    font-size: 16px; 
-    color: var(--text-color-secondary); /* Nuevo: Usa la variable de texto secundario */
-    margin-bottom: 25px; 
-}
-.modal-content .action-btn { 
-    padding: 12px 30px; font-size: 16px; font-weight: 600; 
-    color: white; 
-    background-color: var(--accent-blue); /* Nuevo: Usa la variable de acento azul */
-    border: none; border-radius: 50px; cursor: pointer; transition: background-color 0.2s; 
-}
-.modal-content .action-btn:hover { 
-    background-color: var(--accent-blue-dark); /* Nuevo: Usa la variable de acento azul oscuro */
-}
+.modal-content h2 { margin-top: 0; color: var(--text-dark); font-size: 28px; }
+.modal-content p { font-size: 16px; color: var(--text-light); margin-bottom: 25px; }
+.modal-content .action-btn { padding: 12px 30px; font-size: 16px; font-weight: 600; color: white; background-color: var(--primary-accent); border: none; border-radius: 50px; cursor: pointer; transition: background-color 0.2s; }
+.modal-content .action-btn:hover { background-color: var(--primary-accent-dark); }
 .set-timer-inputs { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; }
-.set-timer-inputs input { 
-    width: 70px; padding: 10px; font-size: 24px; text-align: center; 
-    border: 1px solid var(--border-color); /* Nuevo: Usa la variable de borde */
-    border-radius: 8px; font-weight: 600; 
-    color: var(--text-color-primary); /* Nuevo: Usa la variable de texto primario */
-    background-color: var(--widget-bg-color); /* Nuevo: Usa el color de fondo de widget */
-}
+.set-timer-inputs input { width: 70px; padding: 10px; font-size: 24px; text-align: center; border: 1px solid #ccc; border-radius: 8px; font-weight: 600; }
 .set-timer-inputs input::-webkit-outer-spin-button, .set-timer-inputs input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .set-timer-inputs input[type=number] { -moz-appearance: textfield; }
 .modal-actions { display: flex; justify-content: center; gap: 15px; }
-.modal-actions .confirm-btn { 
-    background-color: var(--accent-blue); /* Nuevo: Usa la variable de acento azul */
-    color: white; 
-}
-.modal-actions .confirm-btn:hover { 
-    background-color: var(--accent-blue-dark); /* Nuevo: Usa la variable de acento azul oscuro */
-}
-.modal-actions .cancel-btn { 
-    background-color: var(--hover-color); /* Nuevo: Usa el color de hover */
-    color: var(--text-color-primary); /* Nuevo: Usa la variable de texto primario */
-}
-.modal-actions .cancel-btn:hover { 
-    background-color: var(--border-color); /* Nuevo: Usa el color de borde */
-}
+.modal-actions .confirm-btn { background-color: var(--primary-accent); color: white; }
+.modal-actions .confirm-btn:hover { background-color: var(--primary-accent-dark); }
+.modal-actions .cancel-btn { background-color: #ecf0f1; color: var(--text-dark); }
+.modal-actions .cancel-btn:hover { background-color: #bdc3c7; }
 
 /* ==========================================================================
    7. MEDIA QUERIES (VISTAS DE MÓVIL Y ESCRITORIO)
@@ -721,8 +307,8 @@ body:not(.dashboard-hidden) #dashboard-toggle svg { transform: rotate(180deg); }
         position: absolute;
         right: 5px; bottom: 5px;
         width: 8px; height: 8px;
-        border-bottom: 2px solid var(--accent-blue-dark); /* Nuevo: usa acento azul oscuro */
-        border-right: 2px solid var(--accent-blue-dark); /* Nuevo: usa acento azul oscuro */
+        border-bottom: 2px solid var(--primary-accent-dark);
+        border-right: 2px solid var(--primary-accent-dark);
         opacity: 0.6;
     }
     .note-tabs {
@@ -740,7 +326,7 @@ body:not(.dashboard-hidden) #dashboard-toggle svg { transform: rotate(180deg); }
         width: 14px;
         height: 14px;
         background-color: transparent;
-        border: 2px solid var(--text-color-secondary); /* Nuevo: usa texto secundario */
+        border: 2px solid var(--text-light);
         opacity: 0.5;
         border-radius: 50%;
         cursor: pointer;
@@ -752,8 +338,8 @@ body:not(.dashboard-hidden) #dashboard-toggle svg { transform: rotate(180deg); }
         transform: scale(1.1);
     }
     .note-tab-btn.active {
-        background-color: var(--accent-blue); /* Nuevo: usa acento azul */
-        border-color: var(--accent-blue); /* Nuevo: usa acento azul */
+        background-color: var(--primary-accent);
+        border-color: var(--primary-accent);
         opacity: 1;
     }
     .note-main-content {
@@ -774,13 +360,13 @@ body:not(.dashboard-hidden) #dashboard-toggle svg { transform: rotate(180deg); }
         font-family: 'Poppins', sans-serif;
         font-size: 14px;
         font-weight: 600;
-        color: var(--text-color-primary); /* Nuevo: usa texto primario */
+        color: var(--text-dark);
         flex-grow: 1;
         padding: 5px;
         border-radius: 4px;
     }
     .tab-name-display:focus {
-        outline: 1px dashed var(--accent-blue); /* Nuevo: usa acento azul */
+        outline: 1px dashed var(--primary-accent);
         background-color: rgba(255, 255, 255, 0.7);
     }
     .note .delete-btn {
@@ -805,9 +391,9 @@ body:not(.dashboard-hidden) #dashboard-toggle svg { transform: rotate(180deg); }
     }
 }
 
-/* --------------------------------------------------------------------------
-   7.2 VISTA MÓVIL (max-width: 768px) - VERSIÓN CORREGIDA PARA MOSTRAR BANDERA
-   -------------------------------------------------------------------------- */
+    /* --------------------------------------------------------------------------
+       7.2 VISTA MÓVIL (max-width: 768px) - VERSIÓN CORREGIDA PARA MOSTRAR BANDERA
+       -------------------------------------------------------------------------- */
 @media (max-width: 768px) {
     body { overflow-y: auto; overflow-x: hidden; height: auto; }
     body.sidebar-active, body.zone-view-active { overflow: hidden; }
@@ -815,8 +401,8 @@ body:not(.dashboard-hidden) #dashboard-toggle svg { transform: rotate(180deg); }
 
     /* CORRECCIÓN: Ajustamos la bandera para que se vea en móvil */
     #flag-wrapper {
-        width: 150px;
-        left: 10px;
+        width: 150px; /* Hacemos el contenedor más angosto */
+        left: 10px;   /* Lo posicionamos a 10px del borde izquierdo */
     }
 
     #app {
@@ -837,10 +423,9 @@ body:not(.dashboard-hidden) #dashboard-toggle svg { transform: rotate(180deg); }
         height: 60px;
         padding: 0 10px;
         gap: 8px;
-        background: var(--panel-bg); /* Nuevo: usa fondo de panel */
+        background: rgba(239, 243, 245, 0.8);
         backdrop-filter: blur(10px);
-        border-bottom: 1px solid var(--panel-border); /* Nuevo: usa borde de panel */
-        box-shadow: var(--shadow-small); /* Nueva sombra */
+        border-bottom: 1px solid rgba(255, 255, 255, 0.9);
     }
     
     #workspace-title { 
@@ -850,64 +435,26 @@ body:not(.dashboard-hidden) #dashboard-toggle svg { transform: rotate(180deg); }
         overflow: hidden; 
         text-overflow: ellipsis;
         transition: color 0.2s ease;
-        color: var(--text-color-primary); /* Nuevo: usa texto primario */
     }
     #workspace-title:hover {
         cursor: pointer;
-        color: var(--accent-blue); /* Nuevo: usa acento azul */
+        color: var(--primary-accent);
     }
 
-    #sidebar-toggle-btn { 
-        display: block; padding: 8px 12px; font-size: 18px; line-height: 1; 
-        color: var(--text-color-primary); /* Nuevo: usa texto primario */
-    }
+    #sidebar-toggle-btn { display: block; padding: 8px 12px; font-size: 18px; line-height: 1; }
     .profile-avatar { width: 40px; height: 40px; }
-    .control-btn.secondary { 
-        padding: 6px 10px; font-size: 13px; display: flex; 
-        background-color: var(--text-color-secondary); /* Nuevo: usa texto secundario */
-        box-shadow: 0 3px 8px rgba(113, 128, 150, 0.2); /* Sombra más pequeña */
-    }
-    .control-btn.secondary:hover {
-        background-color: #5F748C;
-        box-shadow: 0 4px 10px rgba(113, 128, 150, 0.3);
-    }
+    .control-btn.secondary { padding: 6px 10px; font-size: 13px; display: flex; }
     
     #mobile-sidebar-container { display: block; }
-    .sidebar-overlay { 
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-        background-color: rgba(0, 0, 0, 0.5); z-index: 1099; opacity: 0; visibility: hidden; 
-        transition: opacity 0.3s ease, visibility 0.3s ease; 
-    }
-    #mobile-sidebar { 
-        position: fixed; top: 0; left: -300px; width: 300px; max-width: 85%; height: 100%; 
-        background: var(--widget-bg-color); /* Blanco de widget */
-        z-index: 1100; box-shadow: 5px 0 15px rgba(0,0,0,0.1); 
-        transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; 
-    }
+    .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1099; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
+    #mobile-sidebar { position: fixed; top: 0; left: -300px; width: 300px; max-width: 85%; height: 100%; background: #ffffff; z-index: 1100; box-shadow: 5px 0 15px rgba(0,0,0,0.1); transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; }
     body.sidebar-active .sidebar-overlay { opacity: 1; visibility: visible; }
     body.sidebar-active #mobile-sidebar { left: 0; }
-    .sidebar-header { 
-        display: flex; justify-content: space-between; align-items: center; 
-        padding: 15px 20px; 
-        border-bottom: 1px solid var(--border-color); /* Nuevo: Usa la variable de borde */
-    }
-    .sidebar-header h3 { 
-        margin: 0; font-size: 18px; 
-        color: var(--text-color-primary); /* Nuevo: Usa la variable de texto primario */
-    }
-    #close-sidebar-btn { 
-        background: none; border: none; font-size: 28px; cursor: pointer; 
-        color: var(--text-color-secondary); /* Nuevo: Usa la variable de texto secundario */
-        padding: 0 5px; 
-    }
+    .sidebar-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid #e0e0e0; }
+    .sidebar-header h3 { margin: 0; font-size: 18px; color: var(--text-dark); }
+    #close-sidebar-btn { background: none; border: none; font-size: 28px; cursor: pointer; color: var(--text-light); padding: 0 5px; }
     .sidebar-content { overflow-y: auto; flex-grow: 1; }
-    .sidebar-content .dashboard-widget { 
-        flex-direction: column; align-items: flex-start; text-align: left; 
-        padding: 20px; 
-        border-bottom: 1px solid var(--border-color); /* Nuevo: Usa la variable de borde */
-        box-shadow: none; border-radius: 0; 
-        background-color: transparent; /* No fondo blanco en los widgets de la sidebar */
-    }
+    .sidebar-content .dashboard-widget { flex-direction: column; align-items: flex-start; text-align: left; padding: 20px; border-bottom: 1px solid #eee; box-shadow: none; border-radius: 0; }
     .sidebar-content .dashboard-widget:last-child { border-bottom: none; }
     .sidebar-content #stats-widget span, .sidebar-content #clock-widget #current-time, .sidebar-content #timer-display { font-size: 28px; }
     .sidebar-content .timer-display-container { justify-content: flex-start;}
@@ -917,20 +464,10 @@ body:not(.dashboard-hidden) #dashboard-toggle svg { transform: rotate(180deg); }
     .sidebar-content .yt-control-btn svg { width: 20px; height: 20px; }
     .sidebar-content .calendar-header { padding: 0 5px; }
     .sidebar-content .calendar-grid { gap: 1px; }
-    .sidebar-content .day { 
-        padding: 4px 0; 
-        height: 30px; width: 30px; 
-    }
+    .sidebar-content .day { padding: 4px 0; }
 
-    .note, .zone { 
-        position: relative; width: 100% !important; height: auto !important; 
-        transform: none !important; cursor: default !important; 
-        box-shadow: var(--shadow-small); /* Sombra más pequeña para móvil */
-    }
-    .zone { 
-        padding: 15px; padding-top: 55px; 
-        background: var(--zone-bg); /* Nuevo: usa fondo de zona */
-    }
+    .note, .zone { position: relative; width: 100% !important; height: auto !important; transform: none !important; cursor: default !important; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .zone { padding: 15px; padding-top: 55px; background: var(--zone-bg); }
     
     .zone .delete-btn {
         position: absolute;
@@ -942,30 +479,12 @@ body:not(.dashboard-hidden) #dashboard-toggle svg { transform: rotate(180deg); }
     .note { flex-direction: column-reverse; min-height: 180px; }
     .note .delete-btn { position: absolute; top: 8px; right: 8px; z-index: 5; }
     .note-main-content, .note-header { display: contents; }
-    .note-tabs { 
-        display: flex; flex-direction: row; width: 100%; 
-        border-top: 1px solid var(--border-color); /* Nuevo: usa borde */
-    }
-    .note-tab-btn { 
-        background-color: transparent; border: none; 
-        border-right: 1px solid var(--border-color); /* Nuevo: usa borde */
-        flex-grow: 1; padding: 10px 5px; cursor: pointer; text-align: center; 
-        font-family: 'Poppins', sans-serif; font-size: 12px; 
-        color: var(--text-color-secondary); /* Nuevo: usa texto secundario */
-        transition: all 0.2s ease; position: relative; 
-    }
+    .note-tabs { display: flex; flex-direction: row; width: 100%; border-top: 1px solid rgba(0, 0, 0, 0.08); }
+    .note-tab-btn { background-color: transparent; border: none; border-right: 1px solid rgba(0, 0, 0, 0.08); flex-grow: 1; padding: 10px 5px; cursor: pointer; text-align: center; font-family: 'Poppins', sans-serif; font-size: 12px; color: var(--text-light); transition: all 0.2s ease; position: relative; }
     .note-tab-btn::after { content: attr(title); }
     .note-tab-btn:last-child { border-right: none; }
-    .note-tab-btn.active { 
-        background-color: var(--widget-bg-color); /* Blanco de widget */
-        color: var(--accent-blue); /* Nuevo: usa acento azul */
-        font-weight: 600; 
-    }
-    .note-tab-btn.active::before { 
-        content: ''; position: absolute; width: 100%; height: 3px; 
-        background-color: var(--accent-blue); /* Nuevo: usa acento azul */
-        bottom: 0; left: 0; 
-    }
+    .note-tab-btn.active { background-color: #fff; color: var(--primary-accent); font-weight: 600; }
+    .note-tab-btn.active::before { content: ''; position: absolute; width: 100%; height: 3px; background-color: var(--primary-accent); bottom: 0; left: 0; }
     .note-content-panels { padding: 35px 15px 15px 15px; flex-grow: 1; }
     .note-content-panel { position: static; display: none; height: 100%; }
     .note-content-panel.active { display: block; }
@@ -976,85 +495,29 @@ body:not(.dashboard-hidden) #dashboard-toggle svg { transform: rotate(180deg); }
         resize: none;
     }
     
-    .zone .add-note-in-zone-btn { 
-        display: flex; align-items: center; justify-content: center; 
-        position: absolute; top: 14px; right: 48px; width: 28px; height: 28px; 
-        background-color: var(--success-color); /* Nuevo: usa éxito */
-        color: white; border: none; border-radius: 50%; cursor: pointer; 
-        font-size: 22px; line-height: 1; font-weight: 600; 
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.2s ease; 
-    }
-    .zone .add-note-in-zone-btn:hover { 
-        background-color: #38A169; /* Verde más oscuro en hover */
-        transform: scale(1.05); 
-    }
-    .zone .view-full-zone-btn { 
-        display: block; position: absolute; top: 14px; right: 85px; 
-        padding: 4px 10px; font-size: 11px; font-weight: 600; 
-        background-color: var(--accent-blue-dark); /* Nuevo: usa acento azul oscuro */
-        color: white; border: none; border-radius: 20px; cursor: pointer; 
-        transition: background-color 0.2s; 
-    }
-    .zone .view-full-zone-btn:hover { 
-        background-color: var(--accent-blue); /* Nuevo: usa acento azul */
-    }
+    .zone .add-note-in-zone-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 14px; right: 48px; width: 28px; height: 28px; background-color: var(--success-color); color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 22px; line-height: 1; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.2s ease; }
+    .zone .add-note-in-zone-btn:hover { background-color: #2ecc71; transform: scale(1.05); }
+    .zone .view-full-zone-btn { display: block; position: absolute; top: 14px; right: 85px; padding: 4px 10px; font-size: 11px; font-weight: 600; background-color: var(--primary-accent-dark); color: white; border: none; border-radius: 20px; cursor: pointer; transition: background-color 0.2s; }
+    .zone .view-full-zone-btn:hover { background-color: var(--primary-accent); }
     .zone .zone-title { width: calc(100% - 165px) !important; }
-    .zone .zone-notes-container-mobile { 
-        margin-top: 15px; display: flex; flex-direction: column; gap: 12px; 
-        padding-left: 15px; 
-        border-left: 3px solid var(--accent-blue); /* Nuevo: usa acento azul */
-    }
+    .zone .zone-notes-container-mobile { margin-top: 15px; display: flex; flex-direction: column; gap: 12px; padding-left: 15px; border-left: 3px solid var(--primary-accent); }
     
     body.zone-view-active #app > .zone:not(.zone-fullscreen),
     body.zone-view-active #app > .note,
     body.zone-view-active #mobile-fab-container { display: none !important; }
 
-    .zone.zone-fullscreen { 
-        position: fixed !important; top: 60px !important; left: 0 !important; 
-        width: 100% !important; height: calc(100vh - 60px) !important; 
-        z-index: 1060; overflow-y: auto; 
-        background: var(--bg-color); /* Nuevo: usa color de fondo general */
-        border-radius: 0 !important; border: none !important; 
-        padding: 20px !important; padding-top: 60px !important; 
-    }
-    .zone.zone-fullscreen .zone-title { 
-        top: 20px !important; left: 20px !important; width: calc(100% - 180px) !important; 
-    }
-    .zone.zone-fullscreen .view-full-zone-btn { 
-        top: 14px !important; right: 15px !important; width: auto; 
-        background-color: var(--danger-color); /* Nuevo: usa peligro */
-        font-size: 13px; 
-    }
+    .zone.zone-fullscreen { position: fixed !important; top: 60px !important; left: 0 !important; width: 100% !important; height: calc(100vh - 60px) !important; z-index: 1060; overflow-y: auto; background: var(--bg-color); border-radius: 0 !important; border: none !important; padding: 20px !important; padding-top: 60px !important; }
+    .zone.zone-fullscreen .zone-title { top: 20px !important; left: 20px !important; width: calc(100% - 180px) !important; }
+    .zone.zone-fullscreen .view-full-zone-btn { top: 14px !important; right: 15px !important; width: auto; background-color: var(--danger-color); font-size: 13px; }
     .zone.zone-fullscreen .delete-btn { top: 14px !important; right: 80px !important; }
     .zone.zone-fullscreen .add-note-in-zone-btn { top: 14px !important; right: 115px !important; }
 
-    #mobile-fab-container { 
-        display: flex; position: fixed; bottom: 20px; right: 20px; z-index: 1050; 
-        flex-direction: column-reverse; align-items: center; gap: 15px; 
-    }
+    #mobile-fab-container { display: flex; position: fixed; bottom: 20px; right: 20px; z-index: 1050; flex-direction: column-reverse; align-items: center; gap: 15px; }
     .fab-actions { display: flex; flex-direction: column-reverse; gap: 15px; }
-    .fab-action { 
-        width: 48px; height: 48px; 
-        background-color: var(--accent-blue-dark); /* Nuevo: usa acento azul oscuro */
-        color: white; border-radius: 50%; border: none; 
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2); display: flex; 
-        align-items: center; justify-content: center; cursor: pointer; 
-        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s; 
-        transform: scale(0.5); opacity: 0; 
-    }
-    #fab-toggle-btn { 
-        width: 56px; height: 56px; 
-        background-color: var(--accent-blue); /* Nuevo: usa acento azul */
-        color: white; border-radius: 50%; border: none; 
-        box-shadow: 0 6px 20px rgba(0,0,0,0.25); display: flex; 
-        align-items: center; justify-content: center; cursor: pointer; 
-        transition: transform 0.3s ease, background-color 0.3s ease; 
-    }
+    .fab-action { width: 48px; height: 48px; background-color: var(--primary-accent-dark); color: white; border-radius: 50%; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s; transform: scale(0.5); opacity: 0; }
+    #fab-toggle-btn { width: 56px; height: 56px; background-color: var(--primary-accent); color: white; border-radius: 50%; border: none; box-shadow: 0 6px 20px rgba(0,0,0,0.25); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.3s ease, background-color 0.3s ease; }
     #fab-toggle-btn svg { transition: transform 0.3s ease; }
-    #mobile-fab-container.fab-active #fab-toggle-btn { 
-        transform: rotate(45deg); 
-        background-color: var(--danger-color); /* Nuevo: usa peligro */
-    }
+    #mobile-fab-container.fab-active #fab-toggle-btn { transform: rotate(45deg); background-color: var(--danger-color); }
     #mobile-fab-container.fab-active .fab-action { transform: scale(1); opacity: 1; }
     #mobile-fab-container.fab-active .fab-action:nth-child(1) { transition-delay: 0.1s; }
     #mobile-fab-container.fab-active .fab-action:nth-child(2) { transition-delay: 0.05s; }
