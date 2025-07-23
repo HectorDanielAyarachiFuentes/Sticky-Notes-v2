@@ -102,7 +102,7 @@ body.logged-out { background-image: none !important; }
 }
 
 @keyframes pulse-green {
-    0% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.4); }
+    0% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.7); }
     70% { box-shadow: 0 0 0 10px rgba(39, 174, 96, 0); }
     100% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0); }
 }
@@ -266,6 +266,11 @@ body:not(.dashboard-hidden) #dashboard-toggle svg { transform: rotate(180deg); }
     font-size: 14px;
     color: var(--text-light);
     margin-top: 4px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+#clock-widget #current-date:hover {
+    color: var(--primary-accent);
 }
 /* FIN ESTILOS WIDGET RELOJ */
 
@@ -283,15 +288,49 @@ body:not(.dashboard-hidden) #dashboard-toggle svg { transform: rotate(180deg); }
 .day.selected-day { box-shadow: 0 0 0 2px var(--primary-accent); }
 .day.has-notes::after { content: ''; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background-color: var(--primary-accent); border-radius: 50%; }
 
-#timer-widget .timer-buttons { margin-top: 8px; }
-#timer-widget .timer-buttons button { margin: 0 4px; padding: 5px 10px; font-size: 14px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #fff; }
-#timer-widget .timer-buttons .hidden { display: none; }
+/* INICIO ESTILOS WIDGET CRONÓMETRO */
+#timer-widget.timer-running {
+    animation: pulse-green 2s infinite ease-out;
+}
+#timer-widget.timer-running #timer-display,
+#timer-widget.timer-running #edit-timer-btn {
+    color: var(--success-color);
+}
+#timer-widget.timer-paused #timer-display,
+#timer-widget.timer-paused #edit-timer-btn {
+    color: var(--warning-color);
+}
 #timer-display-container { display: flex; align-items: center; justify-content: center; gap: 10px; }
-#timer-display { font-size: 32px; font-weight: 600; font-family: 'Poppins', monospace; letter-spacing: 2px; color: var(--text-dark); transition: color 0.4s ease, text-shadow 0.4s ease; }
-#timer-display.timer-running { color: var(--success-color); animation: pulse-green 2s infinite; }
-#timer-display.timer-paused { color: var(--warning-color); }
-#edit-timer-btn { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--text-light); padding: 5px; border-radius: 50%; transition: background-color 0.2s; }
+#timer-display {
+    font-size: 32px;
+    font-weight: 600;
+    font-family: 'Poppins', monospace;
+    letter-spacing: 2px;
+    color: var(--text-dark);
+    transition: color 0.4s ease;
+}
+#edit-timer-btn { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--text-light); padding: 5px; border-radius: 50%; transition: color 0.2s, background-color 0.2s; }
 #edit-timer-btn:hover { background-color: #e0e0e0; }
+.timer-buttons { margin-top: 12px; display: flex; gap: 15px; }
+.timer-control-btn {
+    width: 40px; height: 40px; font-size: 20px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; border: 1px solid #ccc; border-radius: 50%; background: #fff;
+    color: var(--text-dark);
+    transition: all 0.2s ease;
+}
+.timer-control-btn:hover { border-color: var(--primary-accent); color: var(--primary-accent); }
+.timer-control-btn svg { width: 18px; height: 18px; fill: currentColor; }
+.timer-presets { display: flex; gap: 8px; margin-top: 12px; }
+.preset-btn {
+    font-size: 12px; font-weight: 600; color: var(--text-light);
+    padding: 4px 10px; border-radius: 20px; border: 1px solid #ccc; background: transparent;
+    cursor: pointer; transition: all 0.2s ease;
+}
+.preset-btn:hover, .preset-btn.active {
+    background-color: var(--primary-accent); color: white; border-color: var(--primary-accent);
+}
+/* FIN ESTILOS WIDGET CRONÓMETRO */
 
 #youtube-widget input { border: 1px solid #ccc; border-radius: 4px; padding: 6px 8px; width: 180px; font-size: 12px; margin-bottom: 0; }
 #youtube-player-container { position: relative; width: 200px; height: 112px; background: #000; border-radius: 8px; overflow: hidden; margin-top: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
@@ -499,7 +538,8 @@ body:not(.dashboard-hidden) #dashboard-toggle svg { transform: rotate(180deg); }
     .sidebar-content { overflow-y: auto; flex-grow: 1; }
     .sidebar-content .dashboard-widget { flex-direction: column; align-items: flex-start; text-align: left; padding: 20px; border-bottom: 1px solid #eee; box-shadow: none; border-radius: 0; }
     .sidebar-content .dashboard-widget:last-child { border-bottom: none; }
-    .sidebar-content #stats-widget span, .sidebar-content #timer-display { font-size: 28px; }
+    .sidebar-content #stats-widget span { font-size: 28px; }
+    .sidebar-content #timer-display { font-size: 28px; }
     .sidebar-content #clock-widget #current-time { font-size: 28px; }
     .sidebar-content #clock-widget #current-seconds { font-size: 16px; }
     .sidebar-content .timer-display-container { justify-content: flex-start;}

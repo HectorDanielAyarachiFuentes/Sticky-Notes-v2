@@ -151,19 +151,26 @@
                         <button id="yt-play-pause-btn" class="yt-control-btn" title="Reproducir/Pausar"></button>
                     </div>
                 </div>
-            </div>            
+            </div>
+            <!-- INICIO DE LA SECCIÓN DE CRONÓMETRO MODIFICADA -->
             <div id="timer-widget" class="dashboard-widget">
                 <h3>Cronómetro</h3>
                 <div class="timer-display-container">
-                    <span id="timer-display">00:25:00</span>
+                    <span id="timer-display">25:00</span>
                     <button id="edit-timer-btn" title="Configurar tiempo">✏️</button>
                 </div>
                 <div class="timer-buttons">
-                    <button id="start-timer">▶</button>
-                    <button id="stop-timer" class="hidden">❚❚</button>
-                    <button id="reset-timer">⟲</button>
+                    <button id="timer-play-pause-btn" class="timer-control-btn" title="Iniciar/Pausar"></button>
+                    <button id="timer-reset-btn" class="timer-control-btn" title="Reiniciar">⟲</button>
+                </div>
+                <div class="timer-presets">
+                    <button class="preset-btn" data-minutes="5">5m</button>
+                    <button class="preset-btn" data-minutes="15">15m</button>
+                    <button class="preset-btn" data-minutes="25">25m</button>
+                    <button class="preset-btn" data-minutes="45">45m</button>
                 </div>
             </div>
+            <!-- FIN DE LA SECCIÓN DE CRONÓMETRO MODIFICADA -->
             <!-- INICIO DE LA SECCIÓN DE RELOJ MODIFICADA -->
             <div id="clock-widget" class="dashboard-widget">
                 <h3 id="clock-greeting"></h3>
