@@ -224,8 +224,51 @@ body.dashboard-hidden #app { height: calc(100vh - 30px); }
 body:not(.dashboard-hidden) #dashboard-toggle svg { transform: rotate(180deg); }
 
 #stats-widget span { font-size: 36px; font-weight: 600; }
-#clock-widget #current-time { font-size: 36px; font-weight: 600; }
-#clock-widget #current-date { font-size: 14px; color: var(--text-light); }
+
+/* INICIO ESTILOS WIDGET RELOJ */
+#clock-widget {
+    cursor: pointer;
+    user-select: none;
+}
+#clock-greeting {
+    margin: 0 0 12px 0;
+    padding-bottom: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-light);
+    letter-spacing: 0.8px;
+    width: 100%;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+.time-display-wrapper {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    font-family: 'Poppins', monospace;
+}
+#clock-widget #current-time {
+    font-size: 36px;
+    font-weight: 600;
+    line-height: 1;
+}
+#clock-widget #current-seconds {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-light);
+    transition: opacity 0.3s ease;
+    opacity: 1;
+}
+#clock-widget #current-seconds.hidden {
+    opacity: 0;
+}
+#clock-widget #current-date {
+    font-size: 14px;
+    color: var(--text-light);
+    margin-top: 4px;
+}
+/* FIN ESTILOS WIDGET RELOJ */
+
 #calendar-widget { min-width: 270px; }
 .calendar-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 8px; }
 .calendar-header h3 { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
@@ -456,7 +499,9 @@ body:not(.dashboard-hidden) #dashboard-toggle svg { transform: rotate(180deg); }
     .sidebar-content { overflow-y: auto; flex-grow: 1; }
     .sidebar-content .dashboard-widget { flex-direction: column; align-items: flex-start; text-align: left; padding: 20px; border-bottom: 1px solid #eee; box-shadow: none; border-radius: 0; }
     .sidebar-content .dashboard-widget:last-child { border-bottom: none; }
-    .sidebar-content #stats-widget span, .sidebar-content #clock-widget #current-time, .sidebar-content #timer-display { font-size: 28px; }
+    .sidebar-content #stats-widget span, .sidebar-content #timer-display { font-size: 28px; }
+    .sidebar-content #clock-widget #current-time { font-size: 28px; }
+    .sidebar-content #clock-widget #current-seconds { font-size: 16px; }
     .sidebar-content .timer-display-container { justify-content: flex-start;}
     .sidebar-content #youtube-widget input { width: calc(100% - 16px); }
     .sidebar-content #youtube-player-container { width: 100%; height: 140px; }
@@ -542,75 +587,4 @@ body:not(.dashboard-hidden) #dashboard-toggle svg { transform: rotate(180deg); }
     .modal-content h2 { font-size: 22px; }
     .modal-content p { font-size: 14px; }
     .set-timer-inputs input { width: 50px; padding: 8px; font-size: 20px; }
-}
-
-
-
-
-
-
-
-
-
-/* ==========================================================================
-   9. ESTILOS PARA EL NAVEGADOR DE NOTAS
-   ========================================================================== */
-
-#top-controls #stats-widget {
-    cursor: pointer; /* Indica que el widget es interactivo */
-    transition: background-color 0.2s;
-    border-radius: 8px;
-    padding: 4px 8px !important;
-    margin: 0 10px !important;
-}
-
-#top-controls #stats-widget:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-}
-
-.notes-list-container {
-    max-height: 400px;
-    overflow-y: auto;
-    margin-bottom: 25px;
-    text-align: left;
-    border: 1px solid #eee;
-    border-radius: 8px;
-    padding: 10px;
-}
-
-.note-link-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 15px;
-    border-bottom: 1px solid #f0f0f0;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.note-link-item:last-child {
-    border-bottom: none;
-}
-
-.note-link-item:hover {
-    background-color: #f8f9fa;
-}
-
-.note-link-item .content-preview {
-    font-family: 'Caveat', cursive;
-    font-size: 18px;
-    color: var(--text-dark);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 70%;
-}
-
-.note-link-item .note-date {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--primary-accent);
-    background-color: rgba(90, 125, 203, 0.1);
-    padding: 4px 8px;
-    border-radius: 20px;
 }

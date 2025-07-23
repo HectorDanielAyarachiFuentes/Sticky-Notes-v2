@@ -38,6 +38,9 @@ class App {
         }
         this.bindGlobalEvents();
         this.setupWidgets();
+        // NOTA: initNetworkStatusMonitor ya se llama en el DOMContentLoaded directamente,
+        // no es necesario llamarla aquí también a menos que se quiera re-inicializar
+        // en algún punto específico del ciclo de vida de la App, lo cual no es común.
     }
 
     cacheDOM() {
@@ -63,11 +66,6 @@ class App {
         this.DOMElements.fabToggleBtn = getElement('#fab-toggle-btn');
         this.DOMElements.fabAddNoteBtn = getElement('#fab-add-note');
         this.DOMElements.fabAddZoneBtn = getElement('#fab-add-zone');
-
-        this.DOMElements.statsWidget = getElement('#stats-widget');
-        this.DOMElements.notesNavigatorModal = getElement('#notes-navigator-modal-overlay');
-        this.DOMElements.notesNavigatorList = getElement('#notes-navigator-list');
-        this.DOMElements.notesNavigatorCloseBtn = getElement('#notes-navigator-modal-close-btn');
     }
 
     bindGlobalEvents() {
@@ -91,38 +89,28 @@ class App {
         this.DOMElements.fabToggleBtn.addEventListener('click', () => this.DOMElements.fabContainer.classList.toggle('fab-active'));
         this.DOMElements.fabAddNoteBtn.addEventListener('click', () => { this.addNote(); this.DOMElements.fabContainer.classList.remove('fab-active'); });
         this.DOMElements.fabAddZoneBtn.addEventListener('click', () => { this.addZone(); this.DOMElements.fabContainer.classList.remove('fab-active'); });
-
-        if (this.DOMElements.statsWidget) {
-            this.DOMElements.statsWidget.addEventListener('click', () => this.openNotesNavigator());
-        }
-        if (this.DOMElements.notesNavigatorCloseBtn) {
-            this.DOMElements.notesNavigatorCloseBtn.addEventListener('click', () => this.closeNotesNavigator());
-        }
-        if (this.DOMElements.notesNavigatorModal) {
-             this.DOMElements.notesNavigatorModal.addEventListener('click', (e) => {
-                if (e.target === this.DOMElements.notesNavigatorModal) {
-                    this.closeNotesNavigator();
-                }
-            });
-        }
     }
 
     setupWidgets() {
-        this.widgets.clock = new ClockWidget('#clock-widget');
+        // Instancia los widgets del dashboard principal (desktop)
+        this.widgets.clock = new ClockWidget('#clock-widget', this.state);
         this.widgets.calendar = new CalendarWidget('#calendar-widget', this.state, this.handleCalendarDateSelect.bind(this));
         this.widgets.timer = new TimerWidget('#timer-widget', this.state);
         this.widgets.youtube = new YoutubeWidget('#youtube-widget', this.state, this.handleYoutubeUrlChange.bind(this));
 
+        // Clonar widgets para la barra lateral móvil y re-instanciar su lógica
         const mainWidgets = this.DOMElements.bottomDashboard.querySelectorAll('.dashboard-widget');
         
-        this.mobileWidgets = {};
+        this.mobileWidgets = {}; // Almacenar las instancias de los widgets móviles
 
         mainWidgets.forEach(mainWidget => {
             const clone = mainWidget.cloneNode(true);
             
+            // Instanciamos la lógica para el widget clonado.
+            // Usamos el ID del widget original para saber qué clase instanciar.
             switch (mainWidget.id) {
                 case 'clock-widget':
-                    this.mobileWidgets.clock = new ClockWidget(clone); 
+                    this.mobileWidgets.clock = new ClockWidget(clone, this.state); 
                     break;
                 case 'calendar-widget':
                     this.mobileWidgets.calendar = new CalendarWidget(clone, this.state, this.handleCalendarDateSelect.bind(this));
@@ -131,9 +119,10 @@ class App {
                     this.mobileWidgets.timer = new TimerWidget(clone, this.state);
                     break;
                 case 'youtube-widget':
+                    // YoutubeWidget necesita un tratamiento especial para el ID del reproductor
                     const playerDiv = clone.querySelector('#youtube-player');
                     if (playerDiv) {
-                        playerDiv.id = 'youtube-player-mobile';
+                        playerDiv.id = 'youtube-player-mobile'; // Asignar un ID único
                     }
                     this.mobileWidgets.youtube = new YoutubeWidget(clone, this.state, this.handleYoutubeUrlChange.bind(this));
                     break;
@@ -176,16 +165,16 @@ class App {
 
             this.renderWorkspace();
             this.widgets.calendar.render();
-            if (this.mobileWidgets.calendar) this.mobileWidgets.calendar.render();
+            if (this.mobileWidgets.calendar) this.mobileWidgets.calendar.render(); // Actualizar calendario móvil
             this.widgets.youtube.initializePlayer();
-            if (this.mobileWidgets.youtube) this.mobileWidgets.youtube.initializePlayer();
+            if (this.mobileWidgets.youtube) this.mobileWidgets.youtube.initializePlayer(); // Inicializar reproductor móvil
         } catch (error) {
             console.error("Error al cargar datos:", error);
             alertModal.open('Error de Carga', 'No se pudieron cargar tus datos. Intenta de nuevo más tarde.');
         }
     }
 
-    _saveData() {
+    _saveData() { // Función real de guardado (se llama a través de debounceSave)
         if (!this.state.getCurrentUser() || !this.state.isDataLoaded) return;
         this.DOMElements.saveStatus.textContent = 'Guardando...';
         try {
@@ -223,12 +212,12 @@ class App {
                 { name: 'Nota 5', content: '' },
             ]
         };
-        this.state.notes.push(newNote);
+        this.state.notes.push(newNote); // Agrega directamente al array de estado
         this.renderWorkspace();
         this.debounceSave();
         this.updateStats();
-        if(this.widgets.calendar) this.widgets.calendar.render();
-        if(this.mobileWidgets.calendar) this.mobileWidgets.calendar.render();
+        this.widgets.calendar.render();
+        if (this.mobileWidgets.calendar) this.mobileWidgets.calendar.render();
     }
 
     addZone() {
@@ -237,7 +226,7 @@ class App {
             x: 50, y: 50, width: CONSTANTS.DEFAULT_ZONE_WIDTH, height: CONSTANTS.DEFAULT_ZONE_HEIGHT,
             date: this.state.getSelectedDate()
         };
-        this.state.zones.push(newZone);
+        this.state.zones.push(newZone); // Agrega directamente al array de estado
         this.renderWorkspace();
         this.debounceSave();
     }
@@ -247,12 +236,13 @@ class App {
         this.renderWorkspace();
         this.debounceSave();
         this.updateStats();
-        if(this.widgets.calendar) this.widgets.calendar.render();
-        if(this.mobileWidgets.calendar) this.mobileWidgets.calendar.render();
+        this.widgets.calendar.render();
+        if (this.mobileWidgets.calendar) this.mobileWidgets.calendar.render();
     }
 
     deleteZone(zoneId) {
         this.state.setZones(this.state.getZones().filter(z => z.id !== zoneId));
+        // Desvincular notas de la zona eliminada
         this.state.getNotes().forEach(n => {
             if (n.zoneId === zoneId) n.zoneId = null;
         });
@@ -264,8 +254,8 @@ class App {
         const notes = this.state.getNotes();
         const index = notes.findIndex(n => n.id === updatedNote.id);
         if (index !== -1) {
-            notes[index] = { ...notes[index], ...updatedNote };
-            this.state.setNotes([...notes]);
+            notes[index] = { ...notes[index], ...updatedNote }; // Fusionar actualizaciones
+            this.state.setNotes([...notes]); // Asegura que se actualice la referencia si AppState lo necesita
         }
         this.debounceSave();
     }
@@ -283,6 +273,7 @@ class App {
     findParentZone(note) {
         const noteCenterX = note.x + (note.width / 2);
         const noteCenterY = note.y + (note.height / 2);
+        // Filtrar solo las zonas de la fecha seleccionada
         const zonesInView = this.state.getZones().filter(zone => zone.date === note.date);
         return zonesInView.find(zone =>
             noteCenterX >= zone.x &&
@@ -295,8 +286,9 @@ class App {
     // --- Métodos de Renderización del Espacio de Trabajo ---
     renderWorkspace() {
         const isMobile = window.innerWidth <= 768;
-        this.DOMElements.appContainer.innerHTML = '';
+        this.DOMElements.appContainer.innerHTML = ''; // Limpiar contenido anterior
 
+        // Limpiar instancias de componentes Note/Zone antes de re-renderizar
         this.noteInstances.clear();
         this.zoneInstances.clear();
 
@@ -344,6 +336,7 @@ class App {
     }
 
     renderMobileLayout(notesToShow, zonesToShow) {
+        // En móvil, las zonas actúan como contenedores o se renderizan notas independientes
         zonesToShow.forEach(zoneData => {
             const zone = new Zone(zoneData, {
                 onDelete: this.deleteZone.bind(this),
@@ -360,7 +353,7 @@ class App {
                 const note = new Note(noteData, {
                     onDelete: this.deleteNote.bind(this),
                     onUpdate: this.updateNote.bind(this),
-                    findParentZone: this.findParentZone.bind(this)
+                    findParentZone: this.findParentZone.bind(this) // Aún se necesita para el manejo de zonas en la actualización de notas
                 });
                 this.noteInstances.set(noteData.id, note);
                 mobileNotesContainer.appendChild(note.getDomElement());
@@ -401,18 +394,14 @@ class App {
     }
 
     updateStats() {
-        const notesWithContent = this.state.getNotes().filter(note => 
-            note.tabs.some(tab => tab.content.trim() !== '')
-        );
-        const totalNotesCount = notesWithContent.length;
-        
-        getElements('#note-count').forEach(el => el.textContent = totalNotesCount);
+        const notesInView = this.state.getNotes().filter(n => n.date === this.state.getSelectedDate()).length;
+        getElements('#note-count').forEach(el => el.textContent = notesInView);
     }
 
     updateTopControlsVisibility() {
         const isMobile = window.innerWidth <= 768;
         const generalBtn = getElement('#show-general-btn');
-        const userProfileMenu = getElement('#user-profile-menu');
+        const userProfileMenu = getElement('#user-profile-menu'); // Asume que este elemento existe
 
         if (generalBtn) {
             if (isMobile) {
@@ -428,10 +417,10 @@ class App {
 
     showGeneralDashboard() {
         this.state.setSelectedDate(null);
-        this.debounceSave();
+        this.debounceSave(); // No se guarda la fecha seleccionada en DB, pero se fuerza un guardado general
         this.renderWorkspace();
-        if(this.widgets.calendar) this.widgets.calendar.render();
-        if(this.mobileWidgets.calendar) this.mobileWidgets.calendar.render();
+        this.widgets.calendar.render(); // Re-renderizar calendario para desmarcar el día
+        if (this.mobileWidgets.calendar) this.mobileWidgets.calendar.render();
     }
 
     closeSidebar() {
@@ -440,77 +429,23 @@ class App {
 
     // --- Callbacks de Widgets ---
     handleCalendarDateSelect(date) {
-        this.renderWorkspace();
+        // La fecha ya está actualizada en AppState por CalendarWidget
+        this.renderWorkspace(); // Re-renderiza el workspace para la nueva fecha
         this.closeSidebar();
     }
 
     handleYoutubeUrlChange(url) {
-        this.debounceSave();
-    }
-
-    // --- Métodos para el Navegador de Notas ---
-    openNotesNavigator() {
-        const notesWithContent = this.state.getNotes().filter(note =>
-            note.tabs.some(tab => tab.content.trim() !== '')
-        ).sort((a, b) => new Date(b.date) - new Date(a.date));
-
-        this.DOMElements.notesNavigatorList.innerHTML = '';
-
-        if (notesWithContent.length === 0) {
-            this.DOMElements.notesNavigatorList.innerHTML = '<p style="text-align:center; color:#7f8c8d;">No hay notas con contenido.</p>';
-        } else {
-            notesWithContent.forEach(note => {
-                const firstTabWithContent = note.tabs.find(tab => tab.content.trim() !== '');
-                if (!firstTabWithContent || !note.date) return;
-                
-                const previewText = firstTabWithContent.content.trim().substring(0, 50) + '...';
-                const [y, m, d] = note.date.split('-');
-                const formattedDate = new Date(y, m - 1, d).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
-
-                const noteItem = document.createElement('div');
-                noteItem.className = 'note-link-item';
-                noteItem.dataset.date = note.date;
-                
-                noteItem.innerHTML = `
-                    <span class="content-preview">${previewText}</span>
-                    <span class="note-date">${formattedDate}</span>
-                `;
-
-                noteItem.addEventListener('click', () => this.navigateToNoteDate(note.date));
-                this.DOMElements.notesNavigatorList.appendChild(noteItem);
-            });
-        }
-        
-        this.DOMElements.notesNavigatorModal.classList.add('visible');
-    }
-    
-    closeNotesNavigator() {
-        this.DOMElements.notesNavigatorModal.classList.remove('visible');
-    }
-
-    navigateToNoteDate(dateString) {
-        if (!dateString) return;
-
-        // CORRECCIÓN APLICADA AQUÍ
-        this.state.setSelectedDate(dateString);
-        
-        const [year, month] = dateString.split('-').map(Number);
-        this.state.getCalendarDate().setFullYear(year);
-        this.state.getCalendarDate().setMonth(month - 1);
-
-        this.renderWorkspace();
-        
-        if (this.widgets.calendar) this.widgets.calendar.render();
-        if (this.mobileWidgets.calendar) this.mobileWidgets.calendar.render();
-
-        this.closeNotesNavigator();
-        this.closeSidebar();
+        // La URL ya está actualizada en AppState por YoutubeWidget
+        this.debounceSave(); // Guarda el estado de la URL de YouTube
     }
 }
 
 // Inicializa la aplicación cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
+    // Primero, inicializa el monitoreo de red, ya que crea un elemento DOM global.
     initNetworkStatusMonitor();
+
+    // Luego, inicializa el resto de tu aplicación.
     const appInstance = new App();
     appInstance.init();
 });
