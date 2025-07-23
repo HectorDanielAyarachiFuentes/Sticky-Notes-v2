@@ -127,7 +127,8 @@
             <button id="dashboard-toggle" title="Ocultar/Mostrar Dashboard">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
             </button>
-            <div id="stats-widget" class="dashboard-widget"><h3>Notas</h3><span id="note-count">0</span></div>
+            <!-- MODIFICACIÓN: Añadimos la clase 'clickable' al stats-widget -->
+            <div id="stats-widget" class="dashboard-widget clickable"><h3>Notas</h3><span id="note-count">0</span></div>
             <!-- INICIO DE LA SECCIÓN DE CALENDARIO MODIFICADA -->
             <div id="calendar-widget" class="dashboard-widget">
                 <h3>Calendario</h3>
@@ -187,6 +188,17 @@
         <div id="set-timer-modal-overlay" class="modal-overlay"><div class="modal-content"><h2>Configurar Temporizador</h2><p>Define la duración de tu temporizador.</p><div class="set-timer-inputs"><input type="number" id="set-hours" min="0" max="99" placeholder="HH" oninput="this.value = this.value ? Math.min(99, Math.max(0, parseInt(this.value))) : ''"><input type="number" id="set-minutes" min="0" max="59" placeholder="MM" oninput="this.value = this.value ? Math.min(59, Math.max(0, parseInt(this.value))) : ''"><input type="number" id="set-seconds" min="0" max="59" placeholder="SS" oninput="this.value = this.value ? Math.min(59, Math.max(0, parseInt(this.value))) : ''"></div><button id="save-timer-btn" class="action-btn">Guardar</button></div></div>
         <div id="confirm-modal-overlay" class="modal-overlay"><div class="modal-content"><h2 id="confirm-modal-title"></h2><p id="confirm-modal-message"></p><div class="modal-actions"><button id="confirm-modal-cancel-btn" class="action-btn cancel-btn">Cancelar</button><button id="confirm-modal-confirm-btn" class="action-btn confirm-btn">Confirmar</button></div></div></div>
         
+        <!-- NUEVO: Modal para listar todas las notas -->
+        <div id="note-list-modal-overlay" class="modal-overlay">
+            <div class="modal-content large-modal">
+                <h2 id="note-list-modal-title">Todas tus Notas</h2>
+                <div id="note-list-container" class="note-list-container">
+                    <p class="no-notes-message" style="display: none;">No tienes notas creadas aún.</p>
+                </div>
+                <button id="note-list-modal-close-btn" class="action-btn">Cerrar</button>
+            </div>
+        </div>
+
         <div id="mobile-sidebar-container"><div class="sidebar-overlay"></div><aside id="mobile-sidebar"><div class="sidebar-header"><h3>Panel de Control</h3><button id="close-sidebar-btn">×</button></div><div class="sidebar-content"></div></aside></div>
     
         <div id="mobile-fab-container">
@@ -199,7 +211,7 @@
                 </button>
             </div>
             <button id="fab-toggle-btn" title="Añadir">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y1="19"></line><line x1="5" y1="12" x2="19" y1="12"></line></svg>
             </button>
         </div>
     </div>

@@ -214,6 +214,17 @@ body {
 .dashboard-widget { height: auto; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; color: var(--text-dark); text-align: center; background-color: rgba(255, 255, 255, 0.8); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.07); padding: 15px; border: 1px solid rgba(255, 255, 255, 0.9); transition: all 0.3s ease; transform: translateY(0); }
 .dashboard-widget:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
 .dashboard-widget h3 { margin: 0 0 12px 0; padding-bottom: 8px; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-light); letter-spacing: 0.8px; width: 100%; border-bottom: 1px solid rgba(0,0,0,0.08); }
+/* NUEVO: Estilos para el widget de notas clickeable */
+.dashboard-widget.clickable {
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+.dashboard-widget.clickable:hover {
+    background-color: rgba(255, 255, 255, 0.95);
+    transform: translateY(-8px); /* More pronounced hover effect */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+/* FIN NUEVO */
 #dashboard-toggle { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 30px; background-color: var(--primary-accent); border: none; border-radius: 15px 15px 0 0; box-shadow: 0 -4px 12px rgba(0,0,0,0.1); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background-color 0.3s ease; z-index: 1003; }
 #dashboard-toggle:hover { background-color: var(--primary-accent-dark); }
 #dashboard-toggle svg { width: 20px; height: 20px; stroke: white; transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
@@ -361,6 +372,77 @@ body:not(.dashboard-hidden) #dashboard-toggle svg { transform: rotate(180deg); }
 .modal-actions .confirm-btn:hover { background-color: var(--primary-accent-dark); }
 .modal-actions .cancel-btn { background-color: #ecf0f1; color: var(--text-dark); }
 .modal-actions .cancel-btn:hover { background-color: #bdc3c7; }
+
+/* NUEVO: Estilos para el modal de lista de notas */
+.modal-content.large-modal {
+    width: 600px; /* Tamaño más grande para la lista */
+    max-width: 95%;
+    max-height: 80vh; /* Para que sea scrollable si hay muchas notas */
+    display: flex;
+    flex-direction: column;
+}
+
+#note-list-modal-title {
+    margin-bottom: 20px;
+}
+
+.note-list-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 10px; /* Espacio para el scrollbar */
+    margin-bottom: 20px;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+    text-align: left; /* Alineación del contenido de la lista */
+}
+
+.note-list-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    margin-bottom: 8px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+.note-list-item:hover {
+    background-color: #eef2f5;
+    transform: translateX(3px);
+}
+.note-list-item-date {
+    font-size: 12px;
+    color: var(--text-light);
+    margin-right: 15px;
+    flex-shrink: 0;
+    min-width: 100px; /* Para que la fecha tenga un ancho consistente */
+}
+.note-list-item-content {
+    flex-grow: 1;
+    font-size: 14px;
+    color: var(--text-dark);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Para cortar el texto largo */
+}
+.note-list-item-active-icon {
+    margin-left: 10px;
+    color: var(--primary-accent);
+    font-size: 18px;
+    display: none; /* Oculto por defecto */
+    flex-shrink: 0;
+}
+.note-list-item.is-active .note-list-item-active-icon {
+    display: block; /* Visible si la nota está activa */
+}
+.note-list-container .no-notes-message {
+    text-align: center;
+    color: var(--text-light);
+    font-style: italic;
+    padding: 20px;
+}
+/* FIN NUEVO */
 
 /* ==========================================================================
    7. MEDIA QUERIES (VISTAS DE MÓVIL Y ESCRITORIO)

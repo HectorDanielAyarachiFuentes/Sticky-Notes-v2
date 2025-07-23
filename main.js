@@ -4,7 +4,8 @@ import FirestoreService from "./services/FirestoreService.js";
 import AppState from "./state/AppState.js"; // Importa la instancia singleton
 import { debounce } from "./utils/helpers.js";
 import { getElement, getElements } from "./utils/dom.js";
-import { alertModal } from "./components/Modal.js"; // Solo alertModal es global
+import { alertModal, confirmModal } from "./components/Modal.js"; // alertModal y confirmModal
+import { noteListModal } from "./components/Modal.js"; // NUEVO: Importa el noteListModal
 import ClockWidget from "./widgets/ClockWidget.js";
 import CalendarWidget from "./widgets/CalendarWidget.js";
 import TimerWidget from "./widgets/TimerWidget.js";
@@ -66,6 +67,11 @@ class App {
         this.DOMElements.fabToggleBtn = getElement('#fab-toggle-btn');
         this.DOMElements.fabAddNoteBtn = getElement('#fab-add-note');
         this.DOMElements.fabAddZoneBtn = getElement('#fab-add-zone');
+        // NUEVO: Elementos para la funcionalidad de la lista de notas
+        this.DOMElements.statsWidget = getElement('#stats-widget');
+        this.DOMElements.noteListModalOverlay = getElement('#note-list-modal-overlay');
+        this.DOMElements.noteListContainer = getElement('#note-list-container', this.DOMElements.noteListModalOverlay);
+        this.DOMElements.noNotesMessage = getElement('.no-notes-message', this.DOMElements.noteListModalOverlay);
     }
 
     bindGlobalEvents() {
@@ -89,6 +95,11 @@ class App {
         this.DOMElements.fabToggleBtn.addEventListener('click', () => this.DOMElements.fabContainer.classList.toggle('fab-active'));
         this.DOMElements.fabAddNoteBtn.addEventListener('click', () => { this.addNote(); this.DOMElements.fabContainer.classList.remove('fab-active'); });
         this.DOMElements.fabAddZoneBtn.addEventListener('click', () => { this.addZone(); this.DOMElements.fabContainer.classList.remove('fab-active'); });
+
+        // NUEVO: Evento para el widget de notas
+        if (this.DOMElements.statsWidget) {
+            this.DOMElements.statsWidget.addEventListener('click', () => this.showAllNotesList());
+        }
     }
 
     setupWidgets() {
@@ -125,6 +136,15 @@ class App {
                         playerDiv.id = 'youtube-player-mobile'; // Asignar un ID único
                     }
                     this.mobileWidgets.youtube = new YoutubeWidget(clone, this.state, this.handleYoutubeUrlChange.bind(this));
+                    break;
+                // Si el stats-widget se clona para móvil, asegurarse de que también sea clickeable
+                case 'stats-widget':
+                    // Para el stats-widget, no es necesario instanciar una clase compleja,
+                    // solo asegurarse de que el evento de clic se propague o se re-asigne.
+                    // En este caso, el evento se maneja globalmente en App.js para el #stats-widget,
+                    // y como el clone es parte del sidebar-content, también lo será.
+                    // Si quisiera una lógica específica solo para el móvil, sería aquí.
+                    // Por ahora, el comportamiento de abrir la lista de notas es igual en ambos.
                     break;
             }
             this.DOMElements.sidebarContent.appendChild(clone);
@@ -394,8 +414,11 @@ class App {
     }
 
     updateStats() {
-        const notesInView = this.state.getNotes().filter(n => n.date === this.state.getSelectedDate()).length;
-        getElements('#note-count').forEach(el => el.textContent = notesInView);
+        // MODIFICACIÓN: Ahora cuenta TODAS las notas, no solo las de la vista actual.
+        // La idea es que el widget de "Notas" en el dashboard muestre el total de notas que tienes.
+        // Si el usuario quiere ver solo las de la vista actual, puede mirar el calendario.
+        const totalNotes = this.state.getNotes().length; 
+        getElements('#note-count').forEach(el => el.textContent = totalNotes);
     }
 
     updateTopControlsVisibility() {
@@ -427,11 +450,79 @@ class App {
         this.DOMElements.body.classList.remove('sidebar-active');
     }
 
+    // NUEVO: Método para mostrar la lista de todas las notas
+    showAllNotesList() {
+        const allNotes = this.state.getNotes();
+        const noteListContainer = this.DOMElements.noteListContainer;
+        noteListContainer.innerHTML = ''; // Limpiar lista anterior
+
+        // Ordenar notas por fecha (más reciente primero), y notas sin fecha al final
+        const sortedNotes = [...allNotes].sort((a, b) => {
+            if (!a.date && !b.date) return 0; // Si ambas no tienen fecha, no cambiar el orden relativo
+            if (!a.date) return 1; // Las notas sin fecha van al final
+            if (!b.date) return -1; // Las notas sin fecha van al final
+            return new Date(b.date) - new Date(a.date); // Más reciente primero
+        });
+
+        if (sortedNotes.length === 0) {
+            this.DOMElements.noNotesMessage.style.display = 'block'; // Mostrar mensaje si no hay notas
+        } else {
+            this.DOMElements.noNotesMessage.style.display = 'none'; // Ocultar mensaje
+            sortedNotes.forEach(note => {
+                const noteItem = document.createElement('div');
+                noteItem.className = 'note-list-item';
+                // Marcar la nota si es del día seleccionado actualmente en el dashboard
+                if (note.date === this.state.getSelectedDate()) {
+                    noteItem.classList.add('is-active');
+                }
+
+                // Formatear la fecha para mostrar en la lista
+                const dateDisplay = note.date 
+                    ? new Date(note.date + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
+                    : 'Sin Fecha'; // Si no tiene fecha, mostrar "Sin Fecha"
+                
+                // Obtener el contenido del tab activo o el primer tab, y mostrar una vista previa
+                const previewContent = note.tabs && note.tabs.length > 0 && note.tabs[note.activeTabIndex || 0] && note.tabs[note.activeTabIndex || 0].content
+                    ? note.tabs[note.activeTabIndex || 0].content.substring(0, 100).replace(/\n/g, ' ') + (note.tabs[note.activeTabIndex || 0].content.length > 100 ? '...' : '')
+                    : 'Nota vacía'; // Si no hay contenido, mostrar "Nota vacía"
+                
+                noteItem.innerHTML = `
+                    <span class="note-list-item-date">${dateDisplay}</span>
+                    <span class="note-list-item-content">${previewContent}</span>
+                    <span class="note-list-item-active-icon">✓</span>
+                `;
+                // Al hacer clic en un elemento de la lista, navegar a esa fecha
+                noteItem.addEventListener('click', () => {
+                    this.navigateToDate(note.date);
+                });
+                noteListContainer.appendChild(noteItem);
+            });
+        }
+        noteListModal.open('Todas tus Notas', ''); // Abre el modal. El mensaje se gestiona dentro de noteListContainer
+        this.closeSidebar(); // Cierra el sidebar si el modal se abre desde la versión móvil
+    }
+
+    // NUEVO: Método centralizado para navegar a una fecha específica
+    navigateToDate(date) {
+        // Establece la fecha seleccionada en el estado de la aplicación
+        this.state.setSelectedDate(date); 
+        // Re-renderiza el espacio de trabajo para mostrar las notas de la nueva fecha
+        this.renderWorkspace(); 
+        // Re-renderiza el widget de calendario para que el día seleccionado se marque visualmente
+        this.widgets.calendar.render(); 
+        if (this.mobileWidgets.calendar) this.mobileWidgets.calendar.render(); // Y el calendario móvil
+        // Cierra el modal de la lista de notas después de la navegación
+        noteListModal.close(); 
+        // Cierra el sidebar si se abrió desde ahí (importante para UX móvil)
+        this.closeSidebar(); 
+    }
+
     // --- Callbacks de Widgets ---
     handleCalendarDateSelect(date) {
-        // La fecha ya está actualizada en AppState por CalendarWidget
-        this.renderWorkspace(); // Re-renderiza el workspace para la nueva fecha
-        this.closeSidebar();
+        // Este callback es llamado por CalendarWidget cuando se selecciona un día.
+        // La fecha ya está actualizada en AppState por CalendarWidget (en su método _goToToday).
+        // Ahora usamos el nuevo método centralizado para navegar a esa fecha.
+        this.navigateToDate(date); 
     }
 
     handleYoutubeUrlChange(url) {

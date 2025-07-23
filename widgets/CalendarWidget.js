@@ -7,36 +7,38 @@ class CalendarWidget {
         if (!this.container) return;
 
         this.appState = appState;
-        this.onDateSelectCallback = onDateSelectCallback;
+        this.onDateSelectCallback = onDateSelectCallback; // Este callback es crucial para notificar a App.js
 
         this.prevBtn = getElement('#prev-month', this.container);
         this.nextBtn = getElement('#next-month', this.container);
         this.calendarDays = getElement('#calendar-days', this.container);
         this.monthYearEl = getElement('#month-year', this.container);
-        this.todayBtn = getElement('#today-button', this.container); // Ya lo tienes, ¡perfecto!
+        this.todayBtn = getElement('#today-button', this.container); 
 
         this.bindEvents();
-        this.render(); // Primera renderización
+        this.render(); // Primera renderización al iniciar
     }
 
     bindEvents() {
         this.prevBtn.addEventListener('click', () => {
             this.appState.getCalendarDate().setMonth(this.appState.getCalendarDate().getMonth() - 1);
-            this.render();
+            this.render(); // Re-renderiza el calendario para el nuevo mes
         });
         this.nextBtn.addEventListener('click', () => {
             this.appState.getCalendarDate().setMonth(this.appState.getCalendarDate().getMonth() + 1);
-            this.render();
+            this.render(); // Re-renderiza el calendario para el nuevo mes
         });
         if (this.todayBtn) {
             this.todayBtn.addEventListener('click', this._goToToday.bind(this));
         }
 
         this.calendarDays.addEventListener('click', e => {
-            if (e.target.classList.contains('day') && e.target.dataset.date) {
-                this.appState.setSelectedDate(e.target.dataset.date);
-                this.onDateSelectCallback(this.appState.getSelectedDate()); // Notifica a App.js
-                this.render(); // Re-renderizar para marcar el día seleccionado
+            const clickedDay = e.target.closest('.day'); // Usar closest para asegurar que es un día válido
+            if (clickedDay && clickedDay.dataset.date) {
+                // MODIFICACIÓN CLAVE: Llama al callback para que App.js maneje la selección de fecha.
+                // App.js se encargará de actualizar el estado, re-renderizar el workspace,
+                // y luego volverá a llamar a CalendarWidget.render() para actualizar la selección visual.
+                this.onDateSelectCallback(clickedDay.dataset.date); 
             }
         });
     }
@@ -45,61 +47,63 @@ class CalendarWidget {
     _goToToday() {
         const today = new Date();
 
-        // 1. Actualizar la fecha del calendario en AppState para que sea el mes y año actuales
+        // Actualizar la fecha del calendario en AppState para mostrar el mes y año actuales
         this.appState.getCalendarDate().setFullYear(today.getFullYear());
         this.appState.getCalendarDate().setMonth(today.getMonth());
-        // Establecemos el día a 1 para asegurar que la vista del mes sea consistente,
-        // la selección del día específico se maneja aparte.
+        // Establecemos el día a 1 para asegurar que la vista del mes sea consistente.
         this.appState.getCalendarDate().setDate(1); 
 
-        // 2. Formatear el día actual a la cadena de fecha esperada (YYYY-MM-DD)
-        const currentYear = today.getFullYear();
-        const currentMonth = today.getMonth(); // 0-indexed
-        const currentDay = today.getDate();
-        const dateString = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(currentDay).padStart(2, '0')}`;
+        // Formatear el día actual a la cadena de fecha esperada (YYYY-MM-DD)
+        const dateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-        // 3. Establecer el día actual como el día seleccionado en AppState
-        this.appState.setSelectedDate(dateString);
+        // MODIFICACIÓN CLAVE: Notificar a App.js sobre la nueva fecha seleccionada (el día de hoy).
+        // App.js manejará el resto: actualizará el estado global, re-renderizará el workspace,
+        // y luego llamará a CalendarWidget.render() para marcar el día.
+        this.onDateSelectCallback(dateString);
 
-        // 4. Notificar a App.js sobre la nueva fecha seleccionada (el día de hoy)
-        this.onDateSelectCallback(this.appState.getSelectedDate());
-
-        // 5. Re-renderizar el calendario para reflejar tanto el cambio de mes/año
-        // como la selección del día actual.
-        this.render();
+        // Volvemos a renderizar el calendario de inmediato para que el cambio de mes/año sea instantáneo.
+        // La clase 'selected-day' se aplicará en la siguiente renderización que App.js dispare.
+        this.render(); 
     }
 
     render() {
         if (!this.calendarDays || !this.monthYearEl) return;
 
-        this.calendarDays.innerHTML = '';
+        this.calendarDays.innerHTML = ''; // Limpiar el grid de días
         const currentMonth = this.appState.getCalendarDate().getMonth();
         const currentYear = this.appState.getCalendarDate().getFullYear();
         
         let monthName = new Date(currentYear, currentMonth).toLocaleDateString('es-ES', { month: 'long' });
-        monthName = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+        monthName = monthName.charAt(0).toUpperCase() + monthName.slice(1); // Capitalizar
         this.monthYearEl.textContent = `${monthName} de ${currentYear}`;
 
-        const noteDates = new Set(this.appState.getNotes().map(n => n.date).filter(Boolean));
-        const firstDayIndex = (new Date(currentYear, currentMonth, 1).getDay() + 6) % 7; // Lunes = 0
-        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-        const today = new Date();
+        const noteDates = new Set(this.appState.getNotes().map(n => n.date).filter(Boolean)); // Fechas con notas
+        const firstDayIndex = (new Date(currentYear, currentMonth, 1).getDay() + 6) % 7; // Lunes = 0, para ajustar el inicio
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate(); // Obtener el número de días en el mes
+        const today = new Date(); // Fecha actual para marcar "Hoy"
 
+        // Días de la semana
         ['L', 'M', 'X', 'J', 'V', 'S', 'D'].forEach(day => this.calendarDays.innerHTML += `<span class="day-name">${day}</span>`);
 
+        // Rellenar días vacíos al inicio del mes
         for (let i = 0; i < firstDayIndex; i++) {
             this.calendarDays.innerHTML += `<span></span>`;
         }
 
+        // Renderizar los días del mes
         for (let i = 1; i <= daysInMonth; i++) {
             const dateString = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
             let classes = 'day';
+            
+            // Marcar el día actual
             if (i === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear()) {
                 classes += ' current-day';
             }
-            if (dateString === this.appState.getSelectedDate()) { // Aquí se aplica la clase 'selected-day'
+            // Marcar el día seleccionado en AppState
+            if (dateString === this.appState.getSelectedDate()) { 
                 classes += ' selected-day';
             }
+            // Marcar si hay notas en esa fecha
             if (noteDates.has(dateString)) {
                 classes += ' has-notes';
             }
