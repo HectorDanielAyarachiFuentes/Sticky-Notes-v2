@@ -96,7 +96,8 @@ class App {
         this.DOMElements.fabAddNoteBtn.addEventListener('click', () => { this.addNote(); this.DOMElements.fabContainer.classList.remove('fab-active'); });
         this.DOMElements.fabAddZoneBtn.addEventListener('click', () => { this.addZone(); this.DOMElements.fabContainer.classList.remove('fab-active'); });
 
-        // NUEVO: Evento para el widget de notas
+        // Evento para el widget de notas (APLICADO AL ORIGINAL EN DESKTOP)
+        // El clonado en móvil tendrá su propio listener en setupWidgets()
         if (this.DOMElements.statsWidget) {
             this.DOMElements.statsWidget.addEventListener('click', () => this.showAllNotesList());
         }
@@ -137,14 +138,9 @@ class App {
                     }
                     this.mobileWidgets.youtube = new YoutubeWidget(clone, this.state, this.handleYoutubeUrlChange.bind(this));
                     break;
-                // Si el stats-widget se clona para móvil, asegurarse de que también sea clickeable
-                case 'stats-widget':
-                    // Para el stats-widget, no es necesario instanciar una clase compleja,
-                    // solo asegurarse de que el evento de clic se propague o se re-asigne.
-                    // En este caso, el evento se maneja globalmente en App.js para el #stats-widget,
-                    // y como el clone es parte del sidebar-content, también lo será.
-                    // Si quisiera una lógica específica solo para el móvil, sería aquí.
-                    // Por ahora, el comportamiento de abrir la lista de notas es igual en ambos.
+                case 'stats-widget': // NUEVO: Manejo específico para el stats-widget clonado
+                    // Asegurarse de que el widget clonado sea clickeable para abrir la lista de notas
+                    clone.addEventListener('click', () => this.showAllNotesList());
                     break;
             }
             this.DOMElements.sidebarContent.appendChild(clone);
@@ -416,7 +412,7 @@ class App {
     updateStats() {
         // MODIFICACIÓN: Ahora cuenta TODAS las notas, no solo las de la vista actual.
         // La idea es que el widget de "Notas" en el dashboard muestre el total de notas que tienes.
-        // Si el usuario quiere ver solo las de la vista actual, puede mirar el calendario.
+        // Si el usuario quiere ver las notas de un día específico, puede usar el calendario.
         const totalNotes = this.state.getNotes().length; 
         getElements('#note-count').forEach(el => el.textContent = totalNotes);
     }
@@ -506,7 +502,7 @@ class App {
     navigateToDate(date) {
         // Establece la fecha seleccionada en el estado de la aplicación
         this.state.setSelectedDate(date); 
-        // Re-renderiza el espacio de trabajo para mostrar las notas de la nueva fecha
+        // Re-renderiza el espacio de trabajo para mostrar las notas y zonas de la nueva fecha
         this.renderWorkspace(); 
         // Re-renderiza el widget de calendario para que el día seleccionado se marque visualmente
         this.widgets.calendar.render(); 
