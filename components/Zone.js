@@ -15,8 +15,10 @@ class Zone {
         const element = document.createElement('div');
         element.className = 'zone';
         element.id = `zone-${this.data.id}`;
+        // CAMBIO: Se reemplaza el <input> por un <h4> editable para consistencia con las notas.
+        // Se usa data-placeholder para el estilo CSS.
         element.innerHTML = `
-            <input class="zone-title" value="${this.data.title}" placeholder="Título de la Zona">
+            <h4 class="zone-title" contenteditable="true" data-placeholder="Título de la Zona">${this.data.title}</h4>
             <span class="delete-btn">×</span>
             <button class="add-note-in-zone-btn" title="Añadir Nota a Zona">+</button>
             <button class="view-full-zone-btn">Ver Zona</button>
@@ -34,8 +36,9 @@ class Zone {
     }
 
     bindEvents() {
+        // CAMBIO: El evento ahora escucha cambios en un elemento 'contenteditable' y usa 'innerText'.
         getElement('.zone-title', this.element).addEventListener('input', e => {
-            this.data.title = e.target.value;
+            this.data.title = e.target.innerText;
             this.callbacks.onUpdate(this.data);
         });
 

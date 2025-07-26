@@ -194,7 +194,13 @@ body {
     min-width: 250px; 
     min-height: 200px;
 }
-.zone-title { position: absolute; top: 12px; left: 15px; font-weight: 600; font-size: 16px; color: var(--primary-accent-dark); border: none; background: transparent; width: calc(100% - 60px); outline: none; }
+.zone-title { position: absolute; top: 12px; left: 15px; font-weight: 600; font-size: 16px; color: var(--primary-accent-dark); border: none; background: transparent; width: calc(100% - 60px); outline: none; margin: 0; padding: 0; }
+/* NUEVO: Estilo para simular placeholder en elementos contenteditable */
+.zone-title:empty::before {
+    content: attr(data-placeholder);
+    color: var(--text-light);
+    cursor: text;
+}
 .add-note-in-zone-btn, .view-full-zone-btn { display: none; }
 .delete-btn { width: 24px; height: 24px; text-align: center; line-height: 24px; font-size: 20px; border-radius: 50%; cursor: pointer; user-select: none; transition: background-color 0.2s, color 0.2s; color: var(--text-light); }
 .delete-btn:hover { background-color: var(--danger-color); color: white; }

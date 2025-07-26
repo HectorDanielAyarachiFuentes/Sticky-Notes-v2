@@ -5,8 +5,9 @@ import { CONSTANTS } from "../config.js";
 export function makeDraggable(element, item, onDragEndCallback) {
     element.addEventListener('mousedown', e => {
         const target = e.target;
-        // Evitar arrastrar si se hace clic en inputs, botones de borrar o handles de redimensionar
-        if (target.tagName.toLowerCase() === 'textarea' ||
+        // Evitar arrastrar si se hace clic en textareas, inputs, elementos editables, botones de borrar o handles de redimensionar
+        if (target.isContentEditable ||
+            target.tagName.toLowerCase() === 'textarea' ||
             target.tagName.toLowerCase() === 'input' ||
             target.classList.contains('delete-btn') ||
             target.classList.contains('resize-handle')) {
