@@ -1,12 +1,12 @@
 // config.js
 export const firebaseConfig = {
- apiKey: "AIzaSyCptS0stYpYu5GGLNXgtjNJD8NFzKZdEj0",
-  authDomain: "mi-dashboard-de-notas.firebaseapp.com",
-  projectId: "mi-dashboard-de-notas",
-  storageBucket: "mi-dashboard-de-notas.appspot.com",
-  messagingSenderId: "829232928135",
-  appId: "1:829232928135:web:04e2043af0d7f79d916f22",
-  measurementId: "G-T89JSJ7DEN"
+  apiKey: "AIzaSyDoS6KrY6V84IOed-1ePmsbLCUHCQWoY0g",
+  authDomain: "sticky-notes-v2-f352a.firebaseapp.com",
+  projectId: "sticky-notes-v2-f352a",
+  storageBucket: "sticky-notes-v2-f352a.appspot.com", // Corregido para usar el dominio correcto de storage
+  messagingSenderId: "1093833168954",
+  appId: "1:1093833168954:web:60cc9646d43f891ecc3d03",
+  measurementId: "G-331DWMF8ZR"
 };
 
 export const CONSTANTS = {
@@ -22,5 +22,3 @@ export const CONSTANTS = {
         PAUSE: `<svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>`
     }
 };
-
-
