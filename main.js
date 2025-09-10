@@ -1,6 +1,7 @@
 // main.js
 import AuthService from "./services/AuthService.js";
 import FirestoreService from "./services/FirestoreService.js";
+import LocalStorageService from "./services/LocalStorageService.js";
 import AppState from "./state/AppState.js"; // Importa la instancia singleton
 import { debounce } from "./utils/helpers.js";
 import { getElement, getElements } from "./utils/dom.js";
@@ -12,7 +13,7 @@ import TimerWidget from "./widgets/TimerWidget.js";
 import YoutubeWidget from "./widgets/YoutubeWidget.js";
 import Note from "./components/Note.js";
 import Zone from "./components/Zone.js";
-import { CONSTANTS } from "./config.js"; // Para usar constantes compartidas
+import { CONSTANTS, USE_FIREBASE } from "./config.js"; // Para usar constantes compartidas
 
 // IMPORTACIÓN NUEVA: Monitoreo de estado de red
 import { initNetworkStatusMonitor } from './utils/networkStatus.js';
@@ -21,7 +22,7 @@ class App {
     constructor() {
         this.state = AppState; // Usa la instancia singleton de AppState
         this.authService = new AuthService(this.handleAuthStateChange.bind(this));
-        this.firestoreService = null; // Se inicializará después de la autenticación
+        this.dataService = null; // Servicio de datos (Firestore o LocalStorage)
 
         this.DOMElements = {}; // Cache de los elementos DOM principales
         this.widgets = {}; // Almacena instancias de los widgets
@@ -172,7 +173,12 @@ class App {
     handleAuthStateChange(user) {
         this.state.setCurrentUser(user);
         if (user) {
-            this.firestoreService = new FirestoreService(this.authService.getFirebaseApp());
+            if (USE_FIREBASE) {
+                this.dataService = new FirestoreService(this.authService.getFirebaseApp());
+            } else {
+                this.dataService = new LocalStorageService();
+                this.DOMElements.body.classList.add('local-mode'); // Añadir clase para modo local
+            }
             this.updateUserProfile(user);
             this.DOMElements.body.classList.remove('logged-out');
             this.DOMElements.body.classList.add('logged-in');
@@ -194,7 +200,7 @@ class App {
     async loadData() {
         if (!this.state.getCurrentUser()) return;
         try {
-            const data = await this.firestoreService.loadUserData(this.state.getCurrentUser().uid);
+            const data = await this.dataService.loadUserData(this.state.getCurrentUser().uid);
             this.state.setNotes(data.notes);
             this.state.setZones(data.zones);
             this.state.setYoutubeUrl(data.youtubeUrl);
@@ -220,7 +226,7 @@ class App {
                 zones: this.state.getZones(),
                 youtubeUrl: this.state.getYoutubeUrl()
             };
-            this.firestoreService.saveUserData(this.state.getCurrentUser().uid, dataToSave)
+            this.dataService.saveUserData(this.state.getCurrentUser().uid, dataToSave)
                 .then(() => {
                     this.DOMElements.saveStatus.textContent = 'Guardado ✓';
                     setTimeout(() => this.DOMElements.saveStatus.textContent = '', 2000);

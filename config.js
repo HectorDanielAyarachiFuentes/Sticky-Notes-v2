@@ -9,6 +9,11 @@ export const firebaseConfig = {
   measurementId: "G-331DWMF8ZR"
 };
 
+// INTERRUPTOR DE MODO:
+// Cambia a 'true' para conectar con Firebase (producción/online).
+// Cambia a 'false' para usar el almacenamiento local del navegador (desarrollo/offline).
+export const USE_FIREBASE = false;
+
 export const CONSTANTS = {
     TIMER_LS_KEY: 'timerData',
     DEFAULT_NOTE_WIDTH: 320,

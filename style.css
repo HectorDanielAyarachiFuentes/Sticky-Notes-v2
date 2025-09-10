@@ -811,3 +811,8 @@ body:not(.dark-mode) .note-list-item:hover {
     .modal-content p { font-size: 14px; }
     .set-timer-inputs input { width: 50px; padding: 8px; font-size: 20px; }
 }
+
+/* Oculta el botón de inicio de sesión de Google cuando se está en modo local */
+body.local-mode #google-signin-btn {
+    display: none;
+}
