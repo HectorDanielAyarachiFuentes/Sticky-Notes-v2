@@ -9,7 +9,6 @@
     height: 100vh;
     z-index: 1; 
     overflow: hidden;
-    background-color: skyblue; /* Asegura un fondo claro constante para el cielo */
     pointer-events: none;
 }
 
@@ -18,6 +17,7 @@
     z-index: 1; 
     width: 100%;
     height: 100%;
+    transition: opacity 2s ease-in-out; /* Transición suave para la opacidad de las nubes */
 }
 
 /* NUEVO: Contenedor para el conjunto del mástil y la bandera */
@@ -35,6 +35,18 @@
     width: 100%; 
     height: 100%; 
 }
+
+/* NUEVO: Estilos para las estrellas */
+#stars circle {
+    fill: white;
+    animation: twinkle 4s infinite ease-in-out;
+}
+
+@keyframes twinkle {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+/* FIN NUEVO */
 
 body.logged-in #login-background,
 body.logged-in .github-link { 

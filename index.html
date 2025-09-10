@@ -29,10 +29,10 @@
     <div id="login-background">
         <svg height="100%" width="100%" id="skyBG">
             <defs>
-                <linearGradient id="grad" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stop-color="skyblue" stop-opacity="1" />
-                    <stop offset="70%" stop-color="skyblue" stop-opacity="0.3" />
-                    <stop offset="100%" stop-color="skyblue" stop-opacity="0" />
+                <linearGradient id="skyGradient" x1="0" x2="0" y1="0" y2="1">
+                    <stop id="skyGradient-stop1" offset="0%" stop-color="#87CEEB" />
+                    <stop id="skyGradient-stop2" offset="70%" stop-color="#87CEEB" />
+                    <stop id="skyGradient-stop3" offset="100%" stop-color="#ADD8E6" />
                 </linearGradient>
                 <filter id="sky">
                     <feTurbulence baseFrequency="0.003 0.005" numOctaves="10">
@@ -49,12 +49,20 @@
                     <stop offset="70%" stop-color="#FFD700" stop-opacity="0.6" />
                     <stop offset="100%" stop-color="#FFD700" stop-opacity="0" />
                 </radialGradient>
+                <!-- NUEVO: Gradiente para la luna -->
+                <radialGradient id="moonGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                    <stop offset="0%" stop-color="#FFFFFF" />
+                    <stop offset="80%" stop-color="#E0E0E0" />
+                    <stop offset="100%" stop-color="#C0C0C0" />
+                </radialGradient>
             </defs>
-            <rect height="100%" width="100%" fill="url(#grad)" />
-            <!-- MEJORA: Círculo único con gradiente y animación para el sol -->
-            <circle cx="80%" cy="25%" r="120" fill="url(#sunGradient)">
-                <animate attributeName="opacity" dur="8s" values="0.7;1;0.7" repeatCount="indefinite" />
-            </circle>
+            <rect height="100%" width="100%" fill="url(#skyGradient)" />
+            <!-- Contenedor para las estrellas -->
+            <g id="stars"></g>
+            <!-- Luna -->
+            <circle id="moon" cx="50%" cy="50%" r="50" fill="url(#moonGradient)" opacity="0" />
+            <!-- Sol -->
+            <circle id="sun" cx="80%" cy="25%" r="60" fill="url(#sunGradient)" />
             <rect height="100%" width="100%" filter="url(#sky)" />
         </svg>
     

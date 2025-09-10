@@ -17,6 +17,8 @@ import { CONSTANTS, USE_FIREBASE } from "./config.js"; // Para usar constantes c
 
 // IMPORTACIÓN NUEVA: Monitoreo de estado de red
 import { initNetworkStatusMonitor } from './utils/networkStatus.js';
+// IMPORTACIÓN NUEVA: Animación del cielo
+import { initSkyAnimation } from './utils/sky-animation.js';
 
 class App {
     constructor() {
@@ -325,7 +327,11 @@ class App {
                 if (loginBackground) {
                     const backgroundHTML = loginBackground.innerHTML;
                     loginBackground.innerHTML = '';
-                    setTimeout(() => { loginBackground.innerHTML = backgroundHTML; }, 0);
+                    setTimeout(() => { 
+                        loginBackground.innerHTML = backgroundHTML; 
+                        // Re-inicializar la animación del cielo después de reconstruir el DOM
+                        initSkyAnimation();
+                    }, 0);
                 }
             }
             // Adaptar UI para modo local al estar deslogueado
@@ -1329,6 +1335,9 @@ class App {
 document.addEventListener('DOMContentLoaded', () => {
     // Primero, inicializa el monitoreo de red, ya que crea un elemento DOM global.
     initNetworkStatusMonitor();
+
+    // NUEVO: Inicializa la animación del cielo en la pantalla de login.
+    initSkyAnimation();
 
     // Luego, inicializa el resto de tu aplicación.
     const appInstance = new App();
