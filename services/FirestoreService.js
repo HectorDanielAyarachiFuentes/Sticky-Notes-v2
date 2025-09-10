@@ -29,9 +29,12 @@ class FirestoreService {
                     if (note.width === undefined) { note.width = 320; }
                     if (note.height === undefined) { note.height = 240; }
                 });
-                return { notes: loadedNotes, zones: data.zones || [], youtubeUrl: data.youtubeUrl || '' };
+                // Devolver todos los datos del usuario. main.js ya maneja los valores por defecto si faltan campos.
+                data.notes = loadedNotes;
+                return data;
             } else {
-                return { notes: [], zones: [], youtubeUrl: '' };
+                // Si el usuario es nuevo, devolver una estructura de datos vacía y completa.
+                return { notes: [], zones: [], youtubeUrl: '', youtubeUrlHistory: [], panX: 0, panY: 0, zoom: 1 };
             }
         } catch (error) {
             console.error("Error loading data:", error);
