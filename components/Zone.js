@@ -23,6 +23,9 @@ class Zone {
             <button class="add-note-in-zone-btn" title="Añadir Nota a Zona">+</button>
             <button class="view-full-zone-btn">Ver Zona</button>
             <div class="resize-handle"></div>
+            <div class="zone-grid-container">
+                ${Array(8).fill().map((_, i) => `<div class="zone-grid-cell" data-cell-index="${i}"></div>`).join('')}
+            </div>
             <div class="zone-notes-container-desktop"></div>
             <div class="zone-notes-container-mobile"></div>
         `;

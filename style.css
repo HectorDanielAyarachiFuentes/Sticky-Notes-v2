@@ -235,6 +235,8 @@ body.dark-mode .sun-icon { display: none; }
     border: 1px solid var(--zone-border); 
     border-radius: 12px; 
     box-sizing: border-box; 
+    overflow: hidden; /* Oculta cualquier desbordamiento de las líneas de la cuadrícula */
+    transition: box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out;
     padding: 45px 15px 15px 15px; 
     min-width: 250px; 
     min-height: 200px;
@@ -246,7 +248,47 @@ body.dark-mode .sun-icon { display: none; }
     color: var(--text-light);
     cursor: text;
 }
+
+/* NUEVO: Estilos para la cuadrícula de la zona */
+.zone-grid-container {
+    position: absolute;
+    top: 45px; /* Empieza debajo del título/padding superior */
+    left: 15px; /* Empieza después del padding izquierdo */
+    width: calc(100% - 30px); /* Ancho completo menos padding izquierdo/derecho */
+    height: calc(100% - 60px); /* Alto completo menos padding superior/inferior */
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 columnas */
+    grid-template-rows: repeat(2, 1fr);    /* 2 filas */
+    gap: 0;
+    pointer-events: none; /* Permite que los eventos de ratón pasen a los elementos subyacentes */
+    z-index: 0; /* Asegura que esté detrás de las notas */
+}
+
+.zone-grid-cell {
+    box-sizing: border-box;
+    border-right: 1px dashed rgba(0, 0, 0, 0.1);
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
+    transition: background-color 0.1s ease-in-out;
+}
+
+/* Eliminar borde derecho de las celdas de la última columna */
+.zone-grid-cell:nth-child(4n) {
+    border-right: none;
+}
+/* Eliminar borde inferior de las celdas de la última fila (celdas 5, 6, 7, 8) */
+.zone-grid-cell:nth-child(n + 5) {
+    border-bottom: none;
+}
+/* NUEVO: Estilo para resaltar la zona cuando una nota se arrastra sobre ella */
+.zone.drop-target {
+    box-shadow: 0 0 0 3px var(--primary-accent), 0 8px 25px rgba(90, 125, 203, 0.4);
+    border-color: var(--primary-accent-dark);
+}
 .add-note-in-zone-btn, .view-full-zone-btn { display: none; }
+/* NUEVO: Estilo para resaltar la celda de la cuadrícula */
+.zone-grid-cell.highlight {
+    background-color: rgba(90, 125, 203, 0.1);
+}
 .delete-btn { width: 24px; height: 24px; text-align: center; line-height: 24px; font-size: 20px; border-radius: 50%; cursor: pointer; user-select: none; transition: background-color 0.2s, color 0.2s; color: var(--text-light); }
 .delete-btn:hover { background-color: var(--danger-color); color: white; }
 

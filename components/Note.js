@@ -114,12 +114,27 @@ class Note {
 
         // En escritorio, todas las notas son arrastrables y redimensionables.
         if (window.innerWidth > CONSTANTS.MOBILE_BREAKPOINT) {
-            makeDraggable(this.element, this.data, (item) => {
-                const parentZone = this.callbacks.findParentZone(item);
-                item.zoneId = parentZone ? parentZone.id : null;
-                this.callbacks.onUpdate(item);
+            makeDraggable(this.element, this.data, {
+                onDragMove: (x, y) => {
+                    if (this.callbacks.onNoteDragMove) {
+                        // Pasa la posición actual y recibe la posición ajustada (snapped)
+                        return this.callbacks.onNoteDragMove(this.data, x, y);
+                    }
+                    return { x, y }; // Devuelve las originales si no hay callback o no hay snapping
+                },
+                onDragEnd: (item) => {
+                    const parentZone = this.callbacks.findParentZone(item);
+                    item.zoneId = parentZone ? parentZone.id : null;
+                    this.callbacks.onUpdate(item);
+                },
+                onDragStop: () => {
+                    if (this.callbacks.onNoteDragStop) {
+                        this.callbacks.onNoteDragStop();
+                    }
+                }
             });
-            makeResizable(this.element, this.data, this.callbacks.onUpdate); // Ahora se aplica a todas las notas
+            // La redimensión se mantiene igual
+            makeResizable(this.element, this.data, this.callbacks.onUpdate);
         }
 
         // Añadir evento de doble clic para zoom en escritorio (tanto para notas sueltas como dentro de zonas)

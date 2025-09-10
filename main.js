@@ -451,6 +451,95 @@ class App {
         );
     }
 
+    // Maneja el resaltado de zonas y el snapping a la cuadrícula mientras se arrastra una nota
+    handleNoteDragMove(noteData, x, y) {
+        const noteWidth = noteData.width || CONSTANTS.DEFAULT_NOTE_WIDTH;
+        const noteHeight = noteData.height || CONSTANTS.DEFAULT_NOTE_HEIGHT;
+        const noteCenterX = x + (noteWidth / 2);
+        const noteCenterY = y + (noteHeight / 2);
+
+        let targetZone = null;
+        let targetCellIndex = -1;
+        let snappedX = x;
+        let snappedY = y;
+
+        // Encuentra sobre qué zona se está arrastrando la nota
+        const zonesInView = Array.from(this.zoneInstances.values()).filter(zone => zone.data.date === this.state.getSelectedDate());
+
+        // Primero, determina la zona objetivo
+        for (const zInstance of zonesInView) {
+            const zoneData = zInstance.data;
+            if (
+                noteCenterX >= zoneData.x &&
+                noteCenterX <= (zoneData.x + zoneData.width) &&
+                noteCenterY >= zoneData.y &&
+                noteCenterY <= (zoneData.y + zoneData.height)
+            ) {
+                targetZone = zInstance;
+                break; // Se encontró una zona, no es necesario seguir buscando
+            }
+        }
+
+        // Resalta la zona completa si hay una zona objetivo
+        zonesInView.forEach(zone => {
+            zone.getDomElement().classList.toggle('drop-target', zone.data.id === (targetZone ? targetZone.data.id : null));
+        });
+
+        // Si hay una zona objetivo, calcula el snapping a la cuadrícula
+        if (targetZone) {
+            const zoneEl = targetZone.getDomElement();
+            const gridContainer = getElement('.zone-grid-container', zoneEl);
+            const gridContainerRect = gridContainer.getBoundingClientRect();
+
+            // Definir la cuadrícula (4 columnas, 2 filas)
+            const numCols = 4; // Asumiendo 4 columnas
+            const numRows = 2; // Asumiendo 2 filas
+            const cellWidth = gridContainerRect.width / numCols;
+            const cellHeight = gridContainerRect.height / numRows;
+
+            // Determinar la celda de la cuadrícula
+            // Calculamos la posición del centro de la nota relativa al contenedor de la cuadrícula
+            const colIndex = Math.floor((noteCenterX - gridContainerRect.left) / cellWidth);
+            const rowIndex = Math.floor((noteCenterY - gridContainerRect.top) / cellHeight);
+
+            // Asegurarse de que los índices estén dentro de los límites
+            const clampedColIndex = Math.max(0, Math.min(colIndex, numCols - 1));
+            const clampedRowIndex = Math.max(0, Math.min(rowIndex, numRows - 1));
+
+            targetCellIndex = clampedRowIndex * numCols + clampedColIndex;
+
+            // Calcular las coordenadas de snapping al centro de la celda (en coordenadas de la ventana)
+            const snapToCellCenterX = gridContainerRect.left + (clampedColIndex * cellWidth) + (cellWidth / 2);
+            const snapToCellCenterY = gridContainerRect.top + (clampedRowIndex * cellHeight) + (cellHeight / 2);
+
+            // Ajustar las coordenadas de la nota para que su esquina superior izquierda esté en el centro de la celda
+            snappedX = snapToCellCenterX - (noteWidth / 2);
+            snappedY = snapToCellCenterY - (noteHeight / 2);
+
+            // Resaltar la celda de la cuadrícula
+            const gridCells = Array.from(gridContainer.children);
+            gridCells.forEach((cell, index) => {
+                cell.classList.toggle('highlight', index === targetCellIndex);
+            });
+        } else {
+            // Si no hay zona objetivo, limpiar cualquier resaltado de celda
+            this.zoneInstances.forEach(zone => {
+                const gridContainer = getElement('.zone-grid-container', zone.getDomElement());
+                if (gridContainer) { // Asegurarse de que el contenedor de la cuadrícula exista
+                    Array.from(gridContainer.children).forEach(cell => cell.classList.remove('highlight'));
+                }
+            });
+        }
+        return { x: snappedX, y: snappedY }; // Devuelve las coordenadas (snapped o originales)
+    }
+
+    // Limpia el resaltado de todas las zonas y celdas de la cuadrícula cuando se suelta una nota
+    handleNoteDragStop() {
+        this.zoneInstances.forEach(zone => {
+            zone.getDomElement().classList.remove('drop-target');
+        });
+    }
+
     // --- Métodos de Renderización del Espacio de Trabajo ---
     renderWorkspace() {
         const isMobile = window.innerWidth <= CONSTANTS.MOBILE_BREAKPOINT;
@@ -498,7 +587,9 @@ class App {
             const note = new Note(noteData, {
                 onDelete: this.deleteNote.bind(this),
                 onUpdate: this.updateNote.bind(this),
-                findParentZone: this.findParentZone.bind(this)
+                findParentZone: this.findParentZone.bind(this),
+                onNoteDragMove: this.handleNoteDragMove.bind(this),
+                onNoteDragStop: this.handleNoteDragStop.bind(this)
             });
             this.noteInstances.set(noteData.id, note);
 
@@ -523,7 +614,10 @@ class App {
                 const note = new Note(noteData, {
                     onDelete: this.deleteNote.bind(this),
                     onUpdate: this.updateNote.bind(this),
-                    findParentZone: this.findParentZone.bind(this)
+                findParentZone: this.findParentZone.bind(this),
+                // onNoteDragMove ahora espera un retorno de coordenadas
+                onNoteDragMove: this.handleNoteDragMove.bind(this),
+                onNoteDragStop: this.handleNoteDragStop.bind(this)
                 });
                 this.noteInstances.set(noteData.id, note);
                 notesContainer.appendChild(note.getDomElement());

@@ -2,7 +2,9 @@
 import { getElement } from "../utils/dom.js";
 import { CONSTANTS } from "../config.js";
 
-export function makeDraggable(element, item, onDragEndCallback) {
+export function makeDraggable(element, item, callbacks) {
+    const { onDragEnd, onDragMove, onDragStop } = callbacks || {};
+
     element.addEventListener('mousedown', e => {
         const target = e.target;
         // Evitar arrastrar si se hace clic en textareas, inputs, elementos editables, botones de borrar o handles de redimensionar
@@ -30,17 +32,33 @@ export function makeDraggable(element, item, onDragEndCallback) {
             newX = Math.max(0, Math.min(newX, appRect.width - element.offsetWidth));
             newY = Math.max(0, Math.min(newY, appRect.height - element.offsetHeight));
 
-            element.style.left = `${newX}px`;
-            element.style.top = `${newY}px`;
+            if (onDragMove) {
+                // Permite que el callback onDragMove devuelva coordenadas ajustadas (snapped)
+                const snappedCoords = onDragMove(newX, newY);
+                if (snappedCoords && typeof snappedCoords.x === 'number' && typeof snappedCoords.y === 'number') {
+                    element.style.left = `${snappedCoords.x}px`;
+                    element.style.top = `${snappedCoords.y}px`;
+                } else {
+                    element.style.left = `${newX}px`;
+                    element.style.top = `${newY}px`;
+                }
+            }
         };
 
         const onMouseUp = () => {
             document.removeEventListener('mousemove', onMouseMove);
             document.removeEventListener('mouseup', onMouseUp);
             element.classList.remove('dragging');
+
             item.x = parseInt(element.style.left);
             item.y = parseInt(element.style.top);
-            onDragEndCallback(item);
+
+            if (onDragEnd) {
+                onDragEnd(item);
+            }
+            if (onDragStop) {
+                onDragStop();
+            }
         };
 
         document.addEventListener('mousemove', onMouseMove);
