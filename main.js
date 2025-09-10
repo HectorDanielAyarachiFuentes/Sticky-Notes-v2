@@ -34,6 +34,7 @@ class App {
 
     init() {
         this.cacheDOM();
+        this.applyInitialTheme();
         if (localStorage.getItem('dashboardIsHidden') === 'true') {
             this.DOMElements.body.classList.add('dashboard-hidden');
         }
@@ -67,6 +68,7 @@ class App {
         this.DOMElements.fabToggleBtn = getElement('#fab-toggle-btn');
         this.DOMElements.fabAddNoteBtn = getElement('#fab-add-note');
         this.DOMElements.fabAddZoneBtn = getElement('#fab-add-zone');
+        this.DOMElements.themeToggleBtn = getElement('#theme-toggle-btn');
         // NUEVO: Elementos para la funcionalidad de la lista de notas
         this.DOMElements.statsWidget = getElement('#stats-widget');
         this.DOMElements.noteListModalOverlay = getElement('#note-list-modal-overlay');
@@ -81,6 +83,7 @@ class App {
         this.DOMElements.addZoneBtn.addEventListener('click', () => this.addZone());
         this.DOMElements.showGeneralBtn.addEventListener('click', () => { this.showGeneralDashboard(); this.closeSidebar(); });
         this.DOMElements.workspaceTitle.addEventListener('click', () => { if (window.innerWidth <= CONSTANTS.MOBILE_BREAKPOINT) { this.showGeneralDashboard(); this.closeSidebar(); } });
+        this.DOMElements.themeToggleBtn.addEventListener('click', () => this.toggleTheme());
 
         const toggleSidebar = () => this.DOMElements.body.classList.toggle('sidebar-active');
         this.DOMElements.sidebarToggleBtn.addEventListener('click', toggleSidebar);
@@ -145,6 +148,24 @@ class App {
             }
             this.DOMElements.sidebarContent.appendChild(clone);
         });
+    }
+
+    // --- Métodos de Tema (Modo Oscuro/Claro) ---
+    applyInitialTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        // Comprobar preferencia del sistema si no hay nada guardado
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            this.DOMElements.body.classList.add('dark-mode');
+        } else {
+            this.DOMElements.body.classList.remove('dark-mode');
+        }
+    }
+
+    toggleTheme() {
+        const isDarkMode = this.DOMElements.body.classList.toggle('dark-mode');
+        localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
     }
 
     // --- Métodos de Autenticación y Carga de Datos ---
