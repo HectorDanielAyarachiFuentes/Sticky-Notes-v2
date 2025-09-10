@@ -12,7 +12,7 @@ export const firebaseConfig = {
 // INTERRUPTOR DE MODO:
 // Cambia a 'true' para conectar con Firebase (producción/online).
 // Cambia a 'false' para usar el almacenamiento local del navegador (desarrollo/offline).
-export const USE_FIREBASE = false;
+export const USE_FIREBASE = true;
 
 export const CONSTANTS = {
     TIMER_LS_KEY: 'timerData',
