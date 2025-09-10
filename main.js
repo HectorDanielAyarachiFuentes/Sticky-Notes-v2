@@ -115,7 +115,12 @@ class App {
         this.DOMElements.workspaceTitle.addEventListener('click', () => { if (window.innerWidth <= CONSTANTS.MOBILE_BREAKPOINT) { this.showGeneralDashboard(); this.closeSidebar(); } });
         this.DOMElements.themeToggleBtn.addEventListener('click', () => this.toggleTheme());
 
-        const toggleSidebar = () => this.DOMElements.body.classList.toggle('sidebar-active');
+        const toggleSidebar = () => {
+            const isActive = this.DOMElements.body.classList.toggle('sidebar-active');
+            if (isActive && this.mobileWidgets.youtube) {
+                this.mobileWidgets.youtube.manualInit();
+            }
+        };
         this.DOMElements.sidebarToggleBtn.addEventListener('click', toggleSidebar);
         this.DOMElements.sidebarOverlay.addEventListener('click', toggleSidebar);
         this.DOMElements.closeSidebarBtn.addEventListener('click', toggleSidebar);

@@ -13,7 +13,7 @@ class YoutubeWidget {
         this.input = getElement('#youtube-url-input', this.container);
         this.playerContainer = getElement('#youtube-player-container', this.container);
         this.loader = getElement('.yt-loader', this.container);
-        this.playPauseBtns = getElements('#yt-play-pause-btn', this.container);
+        this.playPauseBtns = getElements('.yt-play-pause-btn', this.container);
         
         // Encuentra el div del reproductor, que ahora puede tener uno de dos IDs.
         this.playerDiv = getElement('#youtube-player, #youtube-player-mobile', this.container);
@@ -49,7 +49,7 @@ class YoutubeWidget {
                             'controls': 0, 
                             'modestbranding': 1, 
                             'rel': 0,
-                            'origin': window.location.origin
+                            'origin': `${window.location.protocol}//${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}`
                         },
                         events: {
                             'onReady': this.onPlayerReady.bind(this),
@@ -68,6 +68,13 @@ class YoutubeWidget {
     }
 
     initializePlayer() {
+        // Si el widget no está en el sidebar móvil, inicializar automáticamente.
+        if (!this.container.closest('#mobile-sidebar')) {
+            this.manualInit();
+        }
+    }
+
+    manualInit() {
         // Esta función se ejecutará para esta instancia una vez que la API esté lista.
         const initFn = () => {
             if (this.appState.getYoutubeUrl() && this.input) {
@@ -112,15 +119,13 @@ class YoutubeWidget {
     onPlayerStateChange(event) {
         const isLoading = event.data === YT.PlayerState.BUFFERING;
         this.playerContainer.classList.toggle('loading', isLoading);
-
+        
+        const isPlaying = event.data === YT.PlayerState.PLAYING;
+        const icon = isPlaying ? CONSTANTS.ICONS.PAUSE : CONSTANTS.ICONS.PLAY;
         this.playPauseBtns.forEach(btn => {
-            if (event.data === YT.PlayerState.PLAYING) {
-                btn.innerHTML = CONSTANTS.ICONS.PAUSE;
-            } else {
-                btn.innerHTML = CONSTANTS.ICONS.PLAY;
-            }
+            btn.innerHTML = icon;
         });
-        this.playerContainer.classList.toggle('paused', event.data !== YT.PlayerState.PLAYING);
+        this.playerContainer.classList.toggle('paused', !isPlaying);
     }
 }
 
