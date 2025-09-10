@@ -10,10 +10,11 @@ class YoutubeWidget {
         this.appState = appState;
         this.onUrlChangeCallback = onUrlChangeCallback;
 
-        this.input = getElement('#youtube-url-input', this.container);
+        this.input = getElement('#youtube-url-input, #youtube-url-input-mobile', this.container);
         this.playerContainer = getElement('#youtube-player-container', this.container);
         this.loader = getElement('.yt-loader', this.container);
         this.playPauseBtns = getElements('.yt-control-btn', this.container);
+        this.historyDataList = getElement('#youtube-history-list, #youtube-history-list-mobile', this.container);
         
         // Encuentra el div del reproductor, que ahora puede tener uno de dos IDs.
         this.playerDiv = getElement('#youtube-player, #youtube-player-mobile', this.container);
@@ -72,6 +73,7 @@ class YoutubeWidget {
         if (!this.container.closest('#mobile-sidebar')) {
             this.manualInit();
         }
+        this.renderHistory();
     }
 
     manualInit() {
@@ -81,6 +83,7 @@ class YoutubeWidget {
                 this.input.value = this.appState.getYoutubeUrl();
                 this.loadVideo(this.appState.getYoutubeUrl());
             }
+            this.renderHistory();
         };
 
         // Si la API ya está lista, ejecutar ahora.
@@ -126,6 +129,21 @@ class YoutubeWidget {
             btn.innerHTML = icon;
         });
         this.playerContainer.classList.toggle('paused', !isPlaying);
+    }
+
+    renderHistory() {
+        if (!this.historyDataList) return;
+
+        this.historyDataList.innerHTML = '';
+        const history = this.appState.youtubeUrlHistory;
+
+        if (history && history.length > 0) {
+            history.forEach(url => {
+                const option = document.createElement('option');
+                option.value = url;
+                this.historyDataList.appendChild(option);
+            });
+        }
     }
 }
 

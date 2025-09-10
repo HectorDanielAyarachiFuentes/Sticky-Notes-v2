@@ -268,6 +268,15 @@ class App {
                     if (playerDiv) {
                         playerDiv.id = 'youtube-player-mobile'; // Asignar un ID único
                     }
+                    const input = clone.querySelector('#youtube-url-input');
+                    if (input) {
+                        input.id = 'youtube-url-input-mobile';
+                        input.setAttribute('list', 'youtube-history-list-mobile');
+                    }
+                    const dataList = clone.querySelector('#youtube-history-list');
+                    if (dataList) {
+                        dataList.id = 'youtube-history-list-mobile';
+                    }
                     this.mobileWidgets.youtube = new YoutubeWidget(clone, this.state, this.handleYoutubeUrlChange.bind(this));
                     break;
                 case 'stats-widget': // NUEVO: Manejo específico para el stats-widget clonado
@@ -361,6 +370,7 @@ class App {
             this.state.setNotes(data.notes);
             this.state.setZones(data.zones);
             this.state.setYoutubeUrl(data.youtubeUrl);
+            this.state.youtubeUrlHistory = data.youtubeUrlHistory || []; // Cargar historial
             // NUEVO: Cargar estado de pan y zoom
             this.pan.x = data.panX || 0;
             this.pan.y = data.panY || 0;
@@ -390,6 +400,7 @@ class App {
                 notes: this.state.getNotes(),
                 zones: this.state.getZones(),
                 youtubeUrl: this.state.getYoutubeUrl(),
+                youtubeUrlHistory: this.state.youtubeUrlHistory || [], // Guardar historial
                 panX: this.pan.x,
                 panY: this.pan.y,
                 zoom: this.pan.scale
@@ -1340,8 +1351,37 @@ class App {
     }
 
     handleYoutubeUrlChange(url) {
-        // La URL ya está actualizada en AppState por YoutubeWidget
-        this.debounceSave(); // Guarda el estado de la URL de YouTube
+        // La URL ya está en AppState. Este callback ahora gestiona el historial.
+
+        // 1. Actualizar el historial
+        const history = this.state.youtubeUrlHistory || [];
+        const YOUTUBE_HISTORY_LIMIT = 10;
+
+        // Crear una nueva copia para trabajar con ella
+        let newHistory = [...history];
+
+        // Eliminar la URL si ya existe para moverla al principio
+        const existingIndex = newHistory.findIndex(item => item === url);
+        if (existingIndex > -1) {
+            newHistory.splice(existingIndex, 1);
+        }
+
+        // Añadir la URL al principio
+        newHistory.unshift(url);
+
+        // Limitar el tamaño del historial
+        if (newHistory.length > YOUTUBE_HISTORY_LIMIT) {
+            newHistory = newHistory.slice(0, YOUTUBE_HISTORY_LIMIT);
+        }
+
+        this.state.youtubeUrlHistory = newHistory; // Actualizar el estado
+
+        // 2. Re-renderizar el historial en los widgets
+        this.widgets.youtube.renderHistory();
+        if (this.mobileWidgets.youtube) this.mobileWidgets.youtube.renderHistory();
+
+        // 3. Guardar los datos
+        this.debounceSave();
     }
 }
 
