@@ -13,7 +13,7 @@ class YoutubeWidget {
         this.input = getElement('#youtube-url-input', this.container);
         this.playerContainer = getElement('#youtube-player-container', this.container);
         this.loader = getElement('.yt-loader', this.container);
-        this.playPauseBtns = getElements('.yt-play-pause-btn', this.container);
+        this.playPauseBtns = getElements('.yt-control-btn', this.container);
         
         // Encuentra el div del reproductor, que ahora puede tener uno de dos IDs.
         this.playerDiv = getElement('#youtube-player, #youtube-player-mobile', this.container);
