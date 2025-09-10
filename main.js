@@ -110,9 +110,15 @@ class App {
         document.addEventListener('click', (e) => {
             if (this.DOMElements.body.classList.contains('note-view-active')) {
                 const zoomedNote = getElement('.note-zoomed');
-                // Si existe una nota con zoom y el clic fue fuera de ella, se cierra la vista.
+                // Escenario 1: Hay una nota con zoom y el clic fue fuera de ella.
                 if (zoomedNote && !zoomedNote.contains(e.target)) {
                     zoomedNote.classList.remove('note-zoomed');
+                    this.DOMElements.body.classList.remove('note-view-active');
+                }
+                // Escenario 2 (CORRECCIÓN DE BUG): Si por alguna razón el cuerpo tiene la clase de "vista activa"
+                // pero ya no hay ninguna nota con zoom, forzamos la limpieza del estado para desbloquear la UI.
+                // Esto soluciona el problema del "desenfoque" que no desaparece.
+                else if (!zoomedNote) {
                     this.DOMElements.body.classList.remove('note-view-active');
                 }
             }
@@ -486,7 +492,8 @@ class App {
             zonesContainer.appendChild(zone.getDomElement());
         });
 
-        // Renderizar notas, colocándolas en el contenedor correcto (general o dentro de una zona)
+        // Renderizar notas. TODAS las notas se renderizan en el contenedor principal en escritorio.
+        // Su pertenencia a una zona es visual (clase 'is-in-zone') y lógica, no estructural en el DOM.
         notesToShow.forEach(noteData => {
             const note = new Note(noteData, {
                 onDelete: this.deleteNote.bind(this),
@@ -495,15 +502,8 @@ class App {
             });
             this.noteInstances.set(noteData.id, note);
 
-            if (noteData.zoneId) {
-                const parentZoneInstance = this.zoneInstances.get(noteData.zoneId);
-                if (parentZoneInstance) {
-                    const zoneNotesContainer = getElement('.zone-notes-container-desktop', parentZoneInstance.getDomElement());
-                    zoneNotesContainer?.appendChild(note.getDomElement());
-                }
-            } else {
-                notesContainer.appendChild(note.getDomElement());
-            }
+            // Siempre se añade al contenedor principal de notas, que permite el posicionamiento absoluto.
+            notesContainer.appendChild(note.getDomElement());
         });
     }
 

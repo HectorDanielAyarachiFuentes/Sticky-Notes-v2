@@ -28,16 +28,17 @@ class Note {
             <div class="resize-handle"></div>
         `;
 
-        // En escritorio, las notas son draggables por defecto, a menos que estén en una zona.
+        // En escritorio, las notas son draggables y tienen posición absoluta.
         if (window.innerWidth > CONSTANTS.MOBILE_BREAKPOINT) {
             element.classList.add('draggable');
+            // Aplicar siempre la posición y tamaño para el layout de escritorio
+            element.style.left = `${this.data.x || 20}px`;
+            element.style.top = `${this.data.y || 20}px`;
+            element.style.width = `${this.data.width || CONSTANTS.DEFAULT_NOTE_WIDTH}px`;
+            element.style.height = `${this.data.height || CONSTANTS.DEFAULT_NOTE_HEIGHT}px`;
+
             if (this.data.zoneId) {
                 element.classList.add('is-in-zone');
-            } else {
-                element.style.left = `${this.data.x || 20}px`;
-                element.style.top = `${this.data.y || 20}px`;
-                element.style.width = `${this.data.width || CONSTANTS.DEFAULT_NOTE_WIDTH}px`;
-                element.style.height = `${this.data.height || CONSTANTS.DEFAULT_NOTE_HEIGHT}px`;
             }
         }
         return element;
@@ -111,14 +112,14 @@ class Note {
 
         deleteBtn.addEventListener('click', () => this.callbacks.onDelete(this.data.id));
 
-        // Solo hacer que las notas sean arrastrables y redimensionables si NO están en una zona.
-        if (window.innerWidth > CONSTANTS.MOBILE_BREAKPOINT && !this.data.zoneId) {
+        // En escritorio, todas las notas son arrastrables y redimensionables.
+        if (window.innerWidth > CONSTANTS.MOBILE_BREAKPOINT) {
             makeDraggable(this.element, this.data, (item) => {
                 const parentZone = this.callbacks.findParentZone(item);
                 item.zoneId = parentZone ? parentZone.id : null;
                 this.callbacks.onUpdate(item);
             });
-            makeResizable(this.element, this.data, this.callbacks.onUpdate);
+            makeResizable(this.element, this.data, this.callbacks.onUpdate); // Ahora se aplica a todas las notas
         }
 
         // Añadir evento de doble clic para zoom en escritorio (tanto para notas sueltas como dentro de zonas)
