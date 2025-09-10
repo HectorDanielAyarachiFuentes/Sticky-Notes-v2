@@ -373,40 +373,62 @@ class App {
     }
 
     renderMobileLayout(notesToShow, zonesToShow) {
-        // En móvil, las zonas actúan como contenedores o se renderizan notas independientes
-        zonesToShow.forEach(zoneData => {
-            const zone = new Zone(zoneData, {
-                onDelete: this.deleteZone.bind(this),
-                onUpdate: this.updateZone.bind(this),
-                onAddNoteToZone: this.addNote.bind(this)
-            });
-            this.zoneInstances.set(zoneData.id, zone);
-            const zoneEl = zone.getDomElement();
-            this.DOMElements.appContainer.appendChild(zoneEl);
+        const standaloneNotes = notesToShow.filter(note => !note.zoneId || !zonesToShow.some(z => z.id === note.zoneId));
 
-            const mobileNotesContainer = getElement('.zone-notes-container-mobile', zoneEl);
-            const notesInThisZone = notesToShow.filter(note => note.zoneId === zoneData.id);
-            notesInThisZone.forEach(noteData => {
+        // 1. Render Standalone Notes Section
+        if (standaloneNotes.length > 0) {
+            const standaloneSection = document.createElement('div');
+            standaloneSection.className = 'mobile-layout-section';
+            standaloneSection.innerHTML = `<h3 class="mobile-section-title">Notas Generales</h3>`;
+            const notesContainer = document.createElement('div');
+            notesContainer.className = 'mobile-notes-container';
+            standaloneSection.appendChild(notesContainer);
+
+            standaloneNotes.forEach(noteData => {
                 const note = new Note(noteData, {
                     onDelete: this.deleteNote.bind(this),
                     onUpdate: this.updateNote.bind(this),
-                    findParentZone: this.findParentZone.bind(this) // Aún se necesita para el manejo de zonas en la actualización de notas
+                    findParentZone: this.findParentZone.bind(this)
                 });
                 this.noteInstances.set(noteData.id, note);
-                mobileNotesContainer.appendChild(note.getDomElement());
+                notesContainer.appendChild(note.getDomElement());
             });
-        });
+            this.DOMElements.appContainer.appendChild(standaloneSection);
+        }
 
-        const standaloneNotes = notesToShow.filter(note => !note.zoneId || !zonesToShow.some(z => z.id === note.zoneId));
-        standaloneNotes.forEach(noteData => {
-            const note = new Note(noteData, {
-                onDelete: this.deleteNote.bind(this),
-                onUpdate: this.updateNote.bind(this),
-                findParentZone: this.findParentZone.bind(this)
+        // 2. Render Zones Section
+        if (zonesToShow.length > 0) {
+            const zonesSection = document.createElement('div');
+            zonesSection.className = 'mobile-layout-section';
+            zonesSection.innerHTML = `<h3 class="mobile-section-title">Zonas de Trabajo</h3>`;
+            const zonesContainer = document.createElement('div');
+            zonesContainer.className = 'mobile-zones-container';
+            zonesSection.appendChild(zonesContainer);
+            
+            zonesToShow.forEach(zoneData => {
+                const zone = new Zone(zoneData, {
+                    onDelete: this.deleteZone.bind(this),
+                    onUpdate: this.updateZone.bind(this),
+                    onAddNoteToZone: this.addNote.bind(this)
+                });
+                this.zoneInstances.set(zoneData.id, zone);
+                const zoneEl = zone.getDomElement();
+                zonesContainer.appendChild(zoneEl);
+
+                const mobileNotesContainer = getElement('.zone-notes-container-mobile', zoneEl);
+                const notesInThisZone = notesToShow.filter(note => note.zoneId === zoneData.id);
+                notesInThisZone.forEach(noteData => {
+                    const note = new Note(noteData, {
+                        onDelete: this.deleteNote.bind(this),
+                        onUpdate: this.updateNote.bind(this),
+                        findParentZone: this.findParentZone.bind(this)
+                    });
+                    this.noteInstances.set(noteData.id, note);
+                    mobileNotesContainer.appendChild(note.getDomElement());
+                });
             });
-            this.noteInstances.set(noteData.id, note);
-            this.DOMElements.appContainer.appendChild(note.getDomElement());
-        });
+            this.DOMElements.appContainer.appendChild(zonesSection);
+        }
     }
 
     updateWorkspaceTitle() {

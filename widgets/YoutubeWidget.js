@@ -12,6 +12,7 @@ class YoutubeWidget {
 
         this.input = getElement('#youtube-url-input', this.container);
         this.playerContainer = getElement('#youtube-player-container', this.container);
+        this.loader = getElement('.yt-loader', this.container);
         this.playPauseBtns = getElements('#yt-play-pause-btn', this.container);
         
         // Encuentra el div del reproductor, que ahora puede tener uno de dos IDs.
@@ -19,7 +20,6 @@ class YoutubeWidget {
         this.player = null; // YT.Player instance
 
         this.bindEvents();
-        this.initializePlayer();
     }
 
     bindEvents() {
@@ -34,6 +34,7 @@ class YoutubeWidget {
     loadVideo(url) {
         const videoId = this.getVideoId(url);
         if (videoId) {
+            this.playerContainer.classList.add('loading');
             if (this.player && typeof this.player.loadVideoById === 'function') {
                 this.player.loadVideoById(videoId);
             } else {
@@ -43,7 +44,13 @@ class YoutubeWidget {
                         height: '100%',
                         width: '100%',
                         videoId: videoId,
-                        playerVars: { 'playsinline': 1, 'controls': 0, 'modestbranding': 1, 'rel': 0 },
+                        playerVars: { 
+                            'playsinline': 1, 
+                            'controls': 0, 
+                            'modestbranding': 1, 
+                            'rel': 0,
+                            'origin': window.location.origin
+                        },
                         events: {
                             'onReady': this.onPlayerReady.bind(this),
                             'onStateChange': this.onPlayerStateChange.bind(this)
@@ -88,6 +95,7 @@ class YoutubeWidget {
 
 
     onPlayerReady(event) {
+        this.playerContainer.classList.remove('loading');
         this.playPauseBtns.forEach(btn => {
             btn.innerHTML = CONSTANTS.ICONS.PLAY; // Ícono inicial de Play
             btn.onclick = () => {
@@ -102,6 +110,9 @@ class YoutubeWidget {
     }
 
     onPlayerStateChange(event) {
+        const isLoading = event.data === YT.PlayerState.BUFFERING;
+        this.playerContainer.classList.toggle('loading', isLoading);
+
         this.playPauseBtns.forEach(btn => {
             if (event.data === YT.PlayerState.PLAYING) {
                 btn.innerHTML = CONSTANTS.ICONS.PAUSE;
