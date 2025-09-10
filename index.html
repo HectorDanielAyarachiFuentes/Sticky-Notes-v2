@@ -212,6 +212,23 @@
             </div>
         </div>
 
+        <!-- NUEVO: Slider lateral para ver las notas de una zona -->
+        <div id="zone-notes-slider" class="slider-panel">
+            <div class="slider-header">
+                <h2 id="slider-zone-title"></h2>
+                <button id="slider-close-btn" class="slider-close-btn">&times;</button>
+            </div>
+            <div class="slider-body">
+                <div id="slider-notes-list" class="slider-notes-list">
+                    <!-- La lista de notas se inyectará aquí -->
+                </div>
+                <div id="slider-note-content" class="slider-note-content">
+                    <!-- El contenido de la nota seleccionada se inyectará aquí -->
+                </div>
+            </div>
+        </div>
+        <div id="slider-overlay" class="slider-overlay"></div> <!-- Overlay para el fondo -->
+
         <div id="mobile-sidebar-container"><div class="sidebar-overlay"></div><aside id="mobile-sidebar"><div class="sidebar-header"><h3>Panel de Control</h3><button id="close-sidebar-btn" aria-label="Cerrar panel de control">×</button></div><div class="sidebar-content"></div></aside></div>
     
         <div id="mobile-fab-container">

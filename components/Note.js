@@ -6,7 +6,7 @@ import { CONSTANTS } from "../config.js";
 class Note {
     constructor(noteData, callbacks) {
         this.data = noteData;
-        this.callbacks = callbacks; // { onDelete, onUpdate, findParentZone }
+        this.callbacks = callbacks; // { onDelete, onUpdate, findParentZone, onZoomToggle, ... }
         this.element = this.createDomElement();
         this.bindEvents();
         this.renderTabs(); // Render initial tabs/content
@@ -151,9 +151,9 @@ class Note {
             if (zoomHandle) {
                 zoomHandle.addEventListener('click', (e) => {
                     // Detener la propagación para evitar que otros listeners (como el de arrastre) se activen.
-                    e.stopPropagation(); 
-                    this.element.classList.toggle('note-zoomed');
-                    document.body.classList.toggle('note-view-active');
+                    e.stopPropagation();
+                    // Notificar a la app principal para que gestione el estado del zoom de forma centralizada
+                    if (this.callbacks.onZoomToggle) this.callbacks.onZoomToggle(this.data.id);
                 });
             }
         }

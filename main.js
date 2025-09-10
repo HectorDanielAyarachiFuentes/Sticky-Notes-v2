@@ -87,6 +87,13 @@ class App {
         this.DOMElements.noteListModalOverlay = getElement('#note-list-modal-overlay');
         this.DOMElements.noteListContainer = getElement('#note-list-container', this.DOMElements.noteListModalOverlay);
         this.DOMElements.noNotesMessage = getElement('.no-notes-message', this.DOMElements.noteListModalOverlay);
+        // NUEVO: Elementos para el slider de notas de zona
+        this.DOMElements.sliderOverlay = getElement('#slider-overlay');
+        this.DOMElements.sliderPanel = getElement('#zone-notes-slider');
+        this.DOMElements.sliderTitle = getElement('#slider-zone-title');
+        this.DOMElements.sliderCloseBtn = getElement('#slider-close-btn');
+        this.DOMElements.sliderNotesList = getElement('#slider-notes-list');
+        this.DOMElements.sliderNoteContent = getElement('#slider-note-content');
     }
 
     bindGlobalEvents() {
@@ -139,16 +146,39 @@ class App {
         document.addEventListener('click', (e) => {
             if (this.DOMElements.body.classList.contains('note-view-active')) {
                 const zoomedNote = getElement('.note-zoomed');
-                // Escenario 1: Hay una nota con zoom y el clic fue fuera de ella.
+                // Si hay una nota con zoom y el clic fue fuera de ella, o si no hay nota con zoom (estado fantasma), limpiar.
                 if (zoomedNote && !zoomedNote.contains(e.target)) {
-                    zoomedNote.classList.remove('note-zoomed');
-                    this.DOMElements.body.classList.remove('note-view-active');
+                    this.clearZoomState();
+                } else if (!zoomedNote) { // Corrige el estado de "desenfoque" si no hay nota ampliada
+                    this.clearZoomState();
                 }
-                // Escenario 2 (CORRECCIÓN DE BUG): Si por alguna razón el cuerpo tiene la clase de "vista activa"
-                // pero ya no hay ninguna nota con zoom, forzamos la limpieza del estado para desbloquear la UI.
-                // Esto soluciona el problema del "desenfoque" que no desaparece.
-                else if (!zoomedNote) {
-                    this.DOMElements.body.classList.remove('note-view-active');
+            }
+        });
+
+        // NUEVO: Eventos para el slider de notas de zona
+        this.DOMElements.sliderCloseBtn.addEventListener('click', () => this.closeZoneNotesViewer());
+        this.DOMElements.sliderOverlay.addEventListener('click', () => this.closeZoneNotesViewer());
+
+        // Evento para seleccionar una nota de la lista en el slider
+        this.DOMElements.sliderNotesList.addEventListener('click', e => {
+            const noteItem = e.target.closest('.slider-note-item');
+            if (noteItem && noteItem.dataset.noteId) {
+                const noteId = parseFloat(noteItem.dataset.noteId);
+                this.renderSliderContent(noteId);
+            }
+        });
+
+        // Evento para guardar el contenido de la nota al escribir en el slider
+        this.DOMElements.sliderNoteContent.addEventListener('input', e => {
+            if (e.target.tagName.toLowerCase() === 'textarea') {
+                const noteId = parseFloat(e.target.dataset.noteId);
+                const tabIndex = parseInt(e.target.dataset.tabIndex);
+                const content = e.target.value;
+
+                const noteToUpdate = this.state.getNotes().find(n => n.id === noteId);
+                if (noteToUpdate && noteToUpdate.tabs[tabIndex]) {
+                    noteToUpdate.tabs[tabIndex].content = content;
+                    this.debounceSave(); // Guarda el estado actualizado
                 }
             }
         });
@@ -397,6 +427,95 @@ class App {
         this.pan.scale = 1;
         this.applyWorkspaceTransform();
         this.debounceSave();
+    }
+
+    // --- Métodos de gestión de la vista de Zoom ---
+
+    handleNoteZoomToggle(noteId) {
+        const noteInstance = this.noteInstances.get(noteId);
+        const noteData = this.state.getNotes().find(n => n.id === noteId);
+        if (!noteData) return;
+
+        // NUEVO: Si la nota pertenece a una zona, abre el nuevo slider lateral.
+        if (noteData.zoneId) {
+            this.openZoneNotesViewer(noteId);
+        } else {
+            // Si es una nota independiente, usa el comportamiento de zoom anterior.
+            const isZoomed = noteInstance.getDomElement().classList.contains('note-zoomed');
+            if (isZoomed) {
+                this.clearZoomState();
+            } else {
+                this.clearZoomState();
+                noteInstance.getDomElement().classList.add('note-zoomed');
+                this.DOMElements.body.classList.add('note-view-active');
+                // El resaltado de la zona padre ya no es necesario aquí,
+                // porque esta ruta solo se toma para notas sin zona.
+            }
+        }
+    }
+
+    clearZoomState() {
+        getElement('.note-zoomed')?.classList.remove('note-zoomed');
+        getElement('.parent-of-zoomed')?.classList.remove('parent-of-zoomed');
+        this.DOMElements.body.classList.remove('note-view-active');
+    }
+
+    // --- Métodos para el slider de notas de zona ---
+
+    openZoneNotesViewer(clickedNoteId) {
+        const clickedNoteData = this.state.getNotes().find(n => n.id === clickedNoteId);
+        if (!clickedNoteData || !clickedNoteData.zoneId) return;
+
+        const zoneData = this.state.getZones().find(z => z.id === clickedNoteData.zoneId);
+        if (!zoneData) return;
+
+        const notesInZone = this.state.getNotes().filter(n => n.zoneId === zoneData.id);
+
+        this.DOMElements.sliderTitle.textContent = zoneData.title;
+        const listContainer = this.DOMElements.sliderNotesList;
+        listContainer.innerHTML = ''; // Limpiar
+
+        notesInZone.forEach(noteData => {
+            const activeTab = noteData.tabs[noteData.activeTabIndex || 0];
+            const tabName = activeTab.name || 'Nota sin título';
+
+            const item = document.createElement('div');
+            item.className = 'slider-note-item';
+            item.dataset.noteId = noteData.id;
+            item.textContent = tabName;
+            item.title = tabName;
+            listContainer.appendChild(item);
+        });
+
+        // Renderizar el contenido de la nota en la que se hizo clic
+        this.renderSliderContent(clickedNoteId);
+
+        // Mostrar el slider
+        this.DOMElements.body.classList.add('slider-active');
+        this.DOMElements.body.style.overflow = 'hidden';
+    }
+
+    renderSliderContent(noteId) {
+        // Resaltar el item activo en la lista
+        this.DOMElements.sliderNotesList.querySelectorAll('.slider-note-item').forEach(item => {
+            item.classList.toggle('active', parseFloat(item.dataset.noteId) === noteId);
+        });
+
+        // Renderizar el contenido en el panel derecho
+        const noteData = this.state.getNotes().find(n => n.id === noteId);
+        const contentContainer = this.DOMElements.sliderNoteContent;
+
+        if (noteData) {
+            const activeTab = noteData.tabs[noteData.activeTabIndex || 0];
+            contentContainer.innerHTML = `<textarea data-note-id="${noteData.id}" data-tab-index="${noteData.activeTabIndex || 0}" placeholder="Escribe algo...">${activeTab.content || ''}</textarea>`;
+        } else {
+            contentContainer.innerHTML = ''; // Limpiar si no se encuentra la nota
+        }
+    }
+
+    closeZoneNotesViewer() {
+        this.DOMElements.body.classList.remove('slider-active');
+        this.DOMElements.body.style.overflow = '';
     }
 
     // NUEVO: Proporciona el estado de pan/zoom a los componentes que lo necesiten
@@ -778,6 +897,7 @@ class App {
                 onNoteDragMove: this.handleNoteDragMove.bind(this),
                 onNoteDragStop: this.handleNoteDragStop.bind(this),
                 onNoteDrop: this.handleNoteDrop.bind(this),
+                onZoomToggle: this.handleNoteZoomToggle.bind(this),
                 getPanState: this.getPanState.bind(this)
             });
             this.noteInstances.set(noteData.id, note);
