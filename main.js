@@ -399,27 +399,40 @@ class App {
         this.debounceSave();
     }
 
+    // NUEVO: Proporciona el estado de pan/zoom a los componentes que lo necesiten
+    getPanState() {
+        return this.pan;
+    }
+
     _getNewItemDesktopPosition(newItemIsZone = false) {
         // --- Parámetros del layout inteligente ---
+
+        // NUEVO: Calcular el área visible del workspace en coordenadas del workspace
+        const viewRect = {
+            x: -this.pan.x / this.pan.scale,
+            y: -this.pan.y / this.pan.scale,
+            width: this.DOMElements.appContainer.clientWidth / this.pan.scale,
+            height: this.DOMElements.appContainer.clientHeight / this.pan.scale
+        };
+
         const layout = {
-            startX: 20,
-            startY: 80, // Debajo de los controles superiores
+            // El punto de inicio de la búsqueda ahora está dentro de la vista actual
+            startX: viewRect.x + 80,
+            startY: viewRect.y + 80,
             gap: 30,
-            // El ancho de la columna se basa en el ancho de una nota + el espacio.
             columnWidth: CONSTANTS.DEFAULT_NOTE_WIDTH + 30,
-            // El número de columnas se calcula dinámicamente según el espacio disponible.
-            numColumns: Math.max(1, Math.floor((window.innerWidth - 40) / (CONSTANTS.DEFAULT_NOTE_WIDTH + 30)))
+            // El número de columnas se basa en el ancho visible
+            numColumns: Math.max(1, Math.floor(viewRect.width / (CONSTANTS.DEFAULT_NOTE_WIDTH + 30)))
         };
 
         const notesOnDate = this.state.getNotes().filter(note => note.date === this.state.getSelectedDate());
         const zonesOnDate = this.state.getZones().filter(zone => zone.date === this.state.getSelectedDate());
-
         const topLevelItems = [
             ...notesOnDate.filter(n => !n.zoneId),
             ...zonesOnDate
         ];
 
-        // Si no hay elementos, colocar en la primera posición.
+        // Si no hay elementos en la fecha actual, colocar en la esquina superior de la vista.
         if (topLevelItems.length === 0) {
             return { x: layout.startX, y: layout.startY };
         }
@@ -427,8 +440,9 @@ class App {
         // Encontrar el punto más bajo de todos los elementos para saber hasta dónde buscar.
         const layoutHeight = topLevelItems.reduce((max, item) => Math.max(max, item.y + (item.height || CONSTANTS.DEFAULT_NOTE_HEIGHT)), 0);
 
-        // Bucle para encontrar el primer hueco disponible en una cuadrícula conceptual.
-        for (let y = layout.startY; y < layoutHeight + 1000; y += layout.gap) { // Iterar por filas
+        // El bucle de búsqueda ahora comienza desde la parte superior de la vista actual.
+        // Y busca hasta el final del contenido existente o el final de la vista, lo que sea mayor.
+        for (let y = layout.startY; y < Math.max(layoutHeight, viewRect.y + viewRect.height) + 1000; y += layout.gap) { // Iterar por filas
             for (let col = 0; col < layout.numColumns; col++) { // Iterar por columnas
                 const probeX = layout.startX + col * layout.columnWidth;
                 const probeY = y;
@@ -457,42 +471,42 @@ class App {
             }
         }
 
-        // Fallback por si todo lo demás falla (layout muy denso), apila al final.
+        // Fallback: si no se encuentra hueco, apilar al final del contenido existente, pero no por encima de la vista actual.
         const lowestPoint = topLevelItems.reduce((maxY, item) => Math.max(maxY, (item.y || 0) + (item.height || 240)), 0);
-        return { x: layout.startX, y: lowestPoint + layout.gap };
+        return { x: layout.startX, y: Math.max(lowestPoint + layout.gap, layout.startY) };
     }
 
     // --- Métodos de Gestión de Notas/Zonas ---
     addNote(zoneId = null) {
-        const isMobile = window.innerWidth <= CONSTANTS.MOBILE_BREAKPOINT;
-        let position = { x: 20, y: 20 }; // Posición por defecto
+        let position;
 
-        if (isMobile) {
-            if (zoneId) {
-                // NOTA CREADA DENTRO DE UNA ZONA EN MÓVIL:
-                // Calcular una posición inicial ordenada DENTRO de la zona para la vista de escritorio.
-                const parentZone = this.state.getZones().find(z => z.id === zoneId);
-                if (parentZone) {
-                    const notesInZone = this.state.getNotes().filter(n => n.zoneId === zoneId);
-                    const startYInZone = 60; // Empezar a apilar debajo del título de la zona (aprox. 45px) + un margen.
-                    const gap = 15;
+        if (zoneId) {
+            // Lógica para añadir una nota DENTRO de una zona (funciona para móvil y escritorio)
+            const parentZone = this.state.getZones().find(z => z.id === zoneId);
+            if (parentZone) {
+                const notesInZone = this.state.getNotes().filter(n => n.zoneId === zoneId);
+                const startYInZone = 60; // Empezar a apilar debajo del título de la zona.
+                const gap = 15;
 
-                    // Encontrar el punto más bajo ocupado por una nota dentro de la zona.
-                    const lowestPointInZone = notesInZone.reduce((maxY, note) => {
-                        const relativeY = note.y - parentZone.y; // La 'y' de la nota es absoluta, la convertimos a relativa.
-                        const noteBottom = relativeY + (note.height || CONSTANTS.DEFAULT_NOTE_HEIGHT);
-                        return Math.max(maxY, noteBottom);
-                    }, startYInZone - gap); // Empezar desde justo encima de la primera posición posible.
+                // Encontrar el punto más bajo ocupado por una nota dentro de la zona.
+                const lowestPointInZone = notesInZone.reduce((maxY, note) => {
+                    const relativeY = note.y - parentZone.y;
+                    const noteBottom = relativeY + (note.height || CONSTANTS.DEFAULT_NOTE_HEIGHT);
+                    return Math.max(maxY, noteBottom);
+                }, startYInZone - gap);
 
-                    position = {
-                        x: parentZone.x + 20, // Posición X fija dentro de la zona.
-                        y: parentZone.y + lowestPointInZone + gap // Apilar debajo de la última nota.
-                    };
-                }
+                position = {
+                    x: parentZone.x + 20, // Posición X fija dentro de la zona.
+                    y: parentZone.y + lowestPointInZone + gap // Apilar debajo de la última nota.
+                };
             } else {
-                // NOTA INDEPENDIENTE CREADA EN MÓVIL: Usar el layout de cuadrícula inteligente.
-                position = this._getNewItemDesktopPosition(false); // false porque no es una zona
+                // Fallback si la zona no se encuentra (no debería pasar)
+                position = this._getNewItemDesktopPosition(false);
             }
+        } else {
+            // Lógica para añadir una nota INDEPENDIENTE (funciona para móvil y escritorio)
+            // Usa el layout inteligente que ahora considera la vista actual.
+            position = this._getNewItemDesktopPosition(false);
         }
 
         const newNote = {
@@ -516,10 +530,9 @@ class App {
     }
 
     addZone() {
-        const isMobile = window.innerWidth <= CONSTANTS.MOBILE_BREAKPOINT;
-        // Si se crea en móvil, calcular una posición ordenada para la vista de escritorio.
-        const position = isMobile ? this._getNewItemDesktopPosition(true) : { x: 50, y: 50 }; // true porque es una zona
-
+        // La lógica es la misma para móvil y escritorio: encontrar una posición inteligente
+        // que ahora considera la vista actual.
+        const position = this._getNewItemDesktopPosition(true); // true porque es una zona
         const newZone = {
             id: Date.now() + Math.random(), title: 'Nueva Zona',
             x: position.x, y: position.y, width: CONSTANTS.DEFAULT_ZONE_WIDTH, height: CONSTANTS.DEFAULT_ZONE_HEIGHT,
@@ -547,6 +560,52 @@ class App {
         });
         this.renderWorkspace();
         this.debounceSave();
+    }
+
+    handleNoteDrop(item) {
+        const parentZoneData = this.findParentZone(item);
+        item.zoneId = parentZoneData ? parentZoneData.id : null;
+
+        if (parentZoneData) {
+            // Si se suelta en una zona, calcular la posición final ajustada.
+            const noteWidth = item.width || CONSTANTS.DEFAULT_NOTE_WIDTH;
+            const noteHeight = item.height || CONSTANTS.DEFAULT_NOTE_HEIGHT;
+            
+            // Posición y tamaño de la cuadrícula en coordenadas del espacio de trabajo
+            const gridX = parentZoneData.x + 15;
+            const gridY = parentZoneData.y + 45;
+            const gridW = parentZoneData.width - 30;
+            const gridH = parentZoneData.height - 60;
+
+            const numCols = 4;
+            const numRows = 2;
+            const cellWidth = gridW / numCols;
+            const cellHeight = gridH / numRows;
+
+            // Centro de la nota en coordenadas del espacio de trabajo
+            const noteCenterX = item.x + noteWidth / 2;
+            const noteCenterY = item.y + noteHeight / 2;
+
+            // Posición del centro de la nota relativa a la cuadrícula
+            const relativeX = noteCenterX - gridX;
+            const relativeY = noteCenterY - gridY;
+
+            const colIndex = Math.floor(relativeX / cellWidth);
+            const rowIndex = Math.floor(relativeY / cellHeight);
+
+            const clampedColIndex = Math.max(0, Math.min(colIndex, numCols - 1));
+            const clampedRowIndex = Math.max(0, Math.min(rowIndex, numRows - 1));
+
+            // Centro de la celda objetivo en coordenadas del espacio de trabajo
+            const cellCenterX = gridX + (clampedColIndex * cellWidth) + (cellWidth / 2);
+            const cellCenterY = gridY + (clampedRowIndex * cellHeight) + (cellHeight / 2);
+
+            // Nueva esquina superior izquierda para que la nota se centre en la celda
+            item.x = cellCenterX - (noteWidth / 2);
+            item.y = cellCenterY - (noteHeight / 2);
+        }
+
+        this.updateNote(item);
     }
 
     updateNote(updatedNote) {
@@ -598,10 +657,7 @@ class App {
         const noteCenterX = x + (noteWidth / 2);
         const noteCenterY = y + (noteHeight / 2);
 
-        let targetZone = null;
-        let targetCellIndex = -1;
-        let snappedX = x;
-        let snappedY = y;
+        let targetZoneInstance = null;
 
         // Encuentra sobre qué zona se está arrastrando la nota
         const zonesInView = Array.from(this.zoneInstances.values()).filter(zone => zone.data.date === this.state.getSelectedDate());
@@ -615,62 +671,40 @@ class App {
                 noteCenterY >= zoneData.y &&
                 noteCenterY <= (zoneData.y + zoneData.height)
             ) {
-                targetZone = zInstance;
+                targetZoneInstance = zInstance;
                 break; // Se encontró una zona, no es necesario seguir buscando
             }
         }
 
         // Resalta la zona completa si hay una zona objetivo
         zonesInView.forEach(zone => {
-            zone.getDomElement().classList.toggle('drop-target', zone.data.id === (targetZone ? targetZone.data.id : null));
+            zone.getDomElement().classList.toggle('drop-target', zone === targetZoneInstance);
         });
 
-        // Si hay una zona objetivo, calcula el snapping a la cuadrícula
-        if (targetZone) {
-            const zoneEl = targetZone.getDomElement();
-            const gridContainer = getElement('.zone-grid-container', zoneEl);
-            const gridContainerRect = gridContainer.getBoundingClientRect();
-
-            // Definir la cuadrícula (4 columnas, 2 filas)
-            const numCols = 4; // Asumiendo 4 columnas
-            const numRows = 2; // Asumiendo 2 filas
-            const cellWidth = gridContainerRect.width / numCols;
-            const cellHeight = gridContainerRect.height / numRows;
-
-            // Determinar la celda de la cuadrícula
-            // Calculamos la posición del centro de la nota relativa al contenedor de la cuadrícula
-            const colIndex = Math.floor((noteCenterX - gridContainerRect.left) / cellWidth);
-            const rowIndex = Math.floor((noteCenterY - gridContainerRect.top) / cellHeight);
-
-            // Asegurarse de que los índices estén dentro de los límites
-            const clampedColIndex = Math.max(0, Math.min(colIndex, numCols - 1));
-            const clampedRowIndex = Math.max(0, Math.min(rowIndex, numRows - 1));
-
-            targetCellIndex = clampedRowIndex * numCols + clampedColIndex;
-
-            // Calcular las coordenadas de snapping al centro de la celda (en coordenadas de la ventana)
-            const snapToCellCenterX = gridContainerRect.left + (clampedColIndex * cellWidth) + (cellWidth / 2);
-            const snapToCellCenterY = gridContainerRect.top + (clampedRowIndex * cellHeight) + (cellHeight / 2);
-
-            // Ajustar las coordenadas de la nota para que su esquina superior izquierda esté en el centro de la celda
-            snappedX = snapToCellCenterX - (noteWidth / 2);
-            snappedY = snapToCellCenterY - (noteHeight / 2);
-
-            // Resaltar la celda de la cuadrícula
+        // Resalta la celda específica de la cuadrícula
+        this.zoneInstances.forEach(zoneInstance => {
+            const gridContainer = getElement('.zone-grid-container', zoneInstance.getDomElement());
+            if (!gridContainer) return;
             const gridCells = Array.from(gridContainer.children);
-            gridCells.forEach((cell, index) => {
-                cell.classList.toggle('highlight', index === targetCellIndex);
-            });
-        } else {
-            // Si no hay zona objetivo, limpiar cualquier resaltado de celda
-            this.zoneInstances.forEach(zone => {
-                const gridContainer = getElement('.zone-grid-container', zone.getDomElement());
-                if (gridContainer) { // Asegurarse de que el contenedor de la cuadrícula exista
-                    Array.from(gridContainer.children).forEach(cell => cell.classList.remove('highlight'));
-                }
-            });
-        }
-        return { x: snappedX, y: snappedY }; // Devuelve las coordenadas (snapped o originales)
+
+            if (zoneInstance === targetZoneInstance) {
+                const zoneData = zoneInstance.data;
+                const gridX = zoneData.x + 15, gridY = zoneData.y + 45;
+                const gridW = zoneData.width - 30, gridH = zoneData.height - 60;
+                const numCols = 4, numRows = 2;
+                const cellWidth = gridW / numCols, cellHeight = gridH / numRows;
+                const relativeX = noteCenterX - gridX, relativeY = noteCenterY - gridY;
+                const colIndex = Math.max(0, Math.min(Math.floor(relativeX / cellWidth), numCols - 1));
+                const rowIndex = Math.max(0, Math.min(Math.floor(relativeY / cellHeight), numRows - 1));
+                const targetCellIndex = rowIndex * numCols + colIndex;
+                gridCells.forEach((cell, index) => cell.classList.toggle('highlight', index === targetCellIndex));
+            } else {
+                gridCells.forEach(cell => cell.classList.remove('highlight'));
+            }
+        });
+
+        // Devuelve las coordenadas originales para permitir un movimiento libre.
+        return { x, y };
     }
 
     // Limpia el resaltado de todas las zonas y celdas de la cuadrícula cuando se suelta una nota
@@ -726,7 +760,9 @@ class App {
             const zone = new Zone(zoneData, {
                 onDelete: this.deleteZone.bind(this),
                 onUpdate: this.updateZone.bind(this),
-                onAddNoteToZone: this.addNote.bind(this)
+                onAddNoteToZone: this.addNote.bind(this),
+                // Pasar el getter del estado de pan/zoom
+                getPanState: this.getPanState.bind(this)
             });
             this.zoneInstances.set(zoneData.id, zone);
             zonesContainer.appendChild(zone.getDomElement());
@@ -740,7 +776,9 @@ class App {
                 onUpdate: this.updateNote.bind(this),
                 findParentZone: this.findParentZone.bind(this),
                 onNoteDragMove: this.handleNoteDragMove.bind(this),
-                onNoteDragStop: this.handleNoteDragStop.bind(this)
+                onNoteDragStop: this.handleNoteDragStop.bind(this),
+                onNoteDrop: this.handleNoteDrop.bind(this),
+                getPanState: this.getPanState.bind(this)
             });
             this.noteInstances.set(noteData.id, note);
 

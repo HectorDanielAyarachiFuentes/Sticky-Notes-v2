@@ -118,20 +118,20 @@ class Note {
                 onDragMove: (x, y) => {
                     if (this.callbacks.onNoteDragMove) {
                         // Pasa la posición actual y recibe la posición ajustada (snapped)
-                        return this.callbacks.onNoteDragMove(this.data, x, y);
+                        return this.callbacks.onNoteDragMove(this.data, x, y) || { x, y };
                     }
                     return { x, y }; // Devuelve las originales si no hay callback o no hay snapping
                 },
                 onDragEnd: (item) => {
-                    const parentZone = this.callbacks.findParentZone(item);
-                    item.zoneId = parentZone ? parentZone.id : null;
-                    this.callbacks.onUpdate(item);
+                    // El nuevo manejador se encargará de encontrar el padre, ajustar y actualizar.
+                    if (this.callbacks.onNoteDrop) this.callbacks.onNoteDrop(item);
                 },
                 onDragStop: () => {
                     if (this.callbacks.onNoteDragStop) {
                         this.callbacks.onNoteDragStop();
                     }
-                }
+                },
+                getPanState: this.callbacks.getPanState
             });
             // La redimensión se mantiene igual
             makeResizable(this.element, this.data, this.callbacks.onUpdate);

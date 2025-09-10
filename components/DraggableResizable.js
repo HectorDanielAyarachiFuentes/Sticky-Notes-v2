@@ -3,7 +3,7 @@ import { getElement } from "../utils/dom.js";
 import { CONSTANTS } from "../config.js";
 
 export function makeDraggable(element, item, callbacks) {
-    const { onDragEnd, onDragMove, onDragStop } = callbacks || {};
+    const { onDragEnd, onDragMove, onDragStop, getPanState } = callbacks || {};
 
     element.addEventListener('mousedown', e => {
         const target = e.target;
@@ -19,29 +19,49 @@ export function makeDraggable(element, item, callbacks) {
         e.preventDefault(); // Previene la selección de texto
         element.classList.add('dragging');
 
-        const offsetX = e.clientX - element.getBoundingClientRect().left;
-        const offsetY = e.clientY - element.getBoundingClientRect().top;
+        // Obtener el estado actual de pan/zoom. Por defecto si no se proporciona.
+        const panState = getPanState ? getPanState() : { x: 0, y: 0, scale: 1 };
+
+        // Posición inicial del elemento en coordenadas del espacio de trabajo
+        const startItemX = item.x;
+        const startItemY = item.y;
+        
+        // Posición inicial del ratón en coordenadas de la ventana
+        const initialMouseX = e.clientX;
+        const initialMouseY = e.clientY;
 
         const onMouseMove = (moveEvent) => {
-            let newX = moveEvent.clientX - offsetX;
-            let newY = moveEvent.clientY - offsetY;
+            // Calcular el delta del ratón en coordenadas de la ventana
+            const dx = moveEvent.clientX - initialMouseX;
+            const dy = moveEvent.clientY - initialMouseY;
 
-            const appRect = getElement('#app').getBoundingClientRect(); // Necesita saber el contenedor
-            
-            // Limitar el movimiento dentro de los límites del contenedor
-            newX = Math.max(0, Math.min(newX, appRect.width - element.offsetWidth));
-            newY = Math.max(0, Math.min(newY, appRect.height - element.offsetHeight));
+            // Convertir el delta de la ventana al delta del espacio de trabajo escalando
+            const workspaceDx = dx / panState.scale;
+            const workspaceDy = dy / panState.scale;
+
+            // Calcular la nueva posición en coordenadas del espacio de trabajo
+            let newX = startItemX + workspaceDx;
+            let newY = startItemY + workspaceDy;
+
+            // Opcional: Limitar a coordenadas no negativas.
+            newX = Math.max(0, newX);
+            newY = Math.max(0, newY);
 
             if (onDragMove) {
-                // Permite que el callback onDragMove devuelva coordenadas ajustadas (snapped)
-                const snappedCoords = onDragMove(newX, newY);
-                if (snappedCoords && typeof snappedCoords.x === 'number' && typeof snappedCoords.y === 'number') {
-                    element.style.left = `${snappedCoords.x}px`;
-                    element.style.top = `${snappedCoords.y}px`;
+                // onDragMove ahora devuelve las coordenadas a usar, ya sean ajustadas o no.
+                // Si devuelve nulo/indefinido, usamos las calculadas.
+                const newCoords = onDragMove(newX, newY);
+                if (newCoords && typeof newCoords.x === 'number' && typeof newCoords.y === 'number') {
+                    element.style.left = `${newCoords.x}px`;
+                    element.style.top = `${newCoords.y}px`;
                 } else {
                     element.style.left = `${newX}px`;
                     element.style.top = `${newY}px`;
                 }
+            } else {
+                // Si no hay onDragMove, simplemente aplicar la posición calculada
+                element.style.left = `${newX}px`;
+                element.style.top = `${newY}px`;
             }
         };
 
@@ -50,8 +70,9 @@ export function makeDraggable(element, item, callbacks) {
             document.removeEventListener('mouseup', onMouseUp);
             element.classList.remove('dragging');
 
-            item.x = parseInt(element.style.left);
-            item.y = parseInt(element.style.top);
+            // La posición ya está en coordenadas del espacio de trabajo
+            item.x = parseFloat(element.style.left);
+            item.y = parseFloat(element.style.top);
 
             if (onDragEnd) {
                 onDragEnd(item);

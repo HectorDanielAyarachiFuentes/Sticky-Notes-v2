@@ -64,7 +64,10 @@ class Zone {
         });
 
         if (window.innerWidth > 768) {
-            makeDraggable(this.element, this.data, this.callbacks.onUpdate);
+            makeDraggable(this.element, this.data, {
+                onDragEnd: this.callbacks.onUpdate,
+                getPanState: this.callbacks.getPanState
+            });
             makeResizable(this.element, this.data, this.callbacks.onUpdate);
         }
     }
