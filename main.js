@@ -241,32 +241,67 @@ class App {
         }
     }
 
-    _getNewItemDesktopPosition() {
-        let y = 80; // Posición Y inicial, debajo de los controles superiores
-        const x = 20; // Posición X fija para apilar verticalmente
+    _getNewItemDesktopPosition(newItemIsZone = false) {
+        // --- Parámetros del layout inteligente ---
+        const layout = {
+            startX: 20,
+            startY: 80, // Debajo de los controles superiores
+            gap: 30,
+            // El ancho de la columna se basa en el ancho de una nota + el espacio.
+            columnWidth: CONSTANTS.DEFAULT_NOTE_WIDTH + 30,
+            // El número de columnas se calcula dinámicamente según el espacio disponible.
+            numColumns: Math.max(1, Math.floor((window.innerWidth - 40) / (CONSTANTS.DEFAULT_NOTE_WIDTH + 30)))
+        };
 
-        // Obtener todos los elementos para la fecha seleccionada
         const notesOnDate = this.state.getNotes().filter(note => note.date === this.state.getSelectedDate());
         const zonesOnDate = this.state.getZones().filter(zone => zone.date === this.state.getSelectedDate());
 
-        // Para el cálculo, solo nos importan las notas que no están en una zona, y las zonas.
         const topLevelItems = [
             ...notesOnDate.filter(n => !n.zoneId),
             ...zonesOnDate
         ];
 
-        if (topLevelItems.length > 0) {
-            // Encontrar el punto más bajo entre todos los elementos
-            const lowestPoint = topLevelItems.reduce((maxY, item) => {
-                // item.height debería existir, pero usamos un fallback por si acaso
-                const itemHeight = item.height || (item.title ? CONSTANTS.DEFAULT_ZONE_HEIGHT : CONSTANTS.DEFAULT_NOTE_HEIGHT);
-                const itemBottom = (item.y || 0) + itemHeight;
-                return Math.max(maxY, itemBottom);
-            }, 0);
-            y = lowestPoint + 30; // Colocar el nuevo elemento 30px debajo del más bajo
+        // Si no hay elementos, colocar en la primera posición.
+        if (topLevelItems.length === 0) {
+            return { x: layout.startX, y: layout.startY };
         }
 
-        return { x, y };
+        // Encontrar el punto más bajo de todos los elementos para saber hasta dónde buscar.
+        const layoutHeight = topLevelItems.reduce((max, item) => Math.max(max, item.y + (item.height || CONSTANTS.DEFAULT_NOTE_HEIGHT)), 0);
+
+        // Bucle para encontrar el primer hueco disponible en una cuadrícula conceptual.
+        for (let y = layout.startY; y < layoutHeight + 1000; y += layout.gap) { // Iterar por filas
+            for (let col = 0; col < layout.numColumns; col++) { // Iterar por columnas
+                const probeX = layout.startX + col * layout.columnWidth;
+                const probeY = y;
+
+                // Comprobar si este punto (probeX, probeY) está ocupado por otro elemento.
+                const isOccupied = topLevelItems.some(item => {
+                    const itemWidth = item.width || (item.title ? CONSTANTS.DEFAULT_ZONE_WIDTH : CONSTANTS.DEFAULT_NOTE_WIDTH);
+                    const itemHeight = item.height || (item.title ? CONSTANTS.DEFAULT_ZONE_HEIGHT : CONSTANTS.DEFAULT_NOTE_HEIGHT);
+                    const newItemWidth = newItemIsZone ? CONSTANTS.DEFAULT_ZONE_WIDTH : CONSTANTS.DEFAULT_NOTE_WIDTH;
+                    const newItemHeight = newItemIsZone ? CONSTANTS.DEFAULT_ZONE_HEIGHT : CONSTANTS.DEFAULT_NOTE_HEIGHT;
+
+                    // Lógica de colisión de rectángulos (AABB intersection).
+                    // Se añade un "gap" al tamaño de los rectángulos para asegurar que no se toquen.
+                    return (
+                        probeX < (item.x + itemWidth + layout.gap) &&
+                        (probeX + newItemWidth + layout.gap) > item.x &&
+                        probeY < (item.y + itemHeight + layout.gap) &&
+                        (probeY + newItemHeight + layout.gap) > item.y
+                    );
+                });
+
+                if (!isOccupied) {
+                    // Encontramos un hueco. Devolvemos estas coordenadas.
+                    return { x: probeX, y: probeY };
+                }
+            }
+        }
+
+        // Fallback por si todo lo demás falla (layout muy denso), apila al final.
+        const lowestPoint = topLevelItems.reduce((maxY, item) => Math.max(maxY, (item.y || 0) + (item.height || 240)), 0);
+        return { x: layout.startX, y: lowestPoint + layout.gap };
     }
 
     // --- Métodos de Gestión de Notas/Zonas ---
@@ -274,9 +309,32 @@ class App {
         const isMobile = window.innerWidth <= CONSTANTS.MOBILE_BREAKPOINT;
         let position = { x: 20, y: 20 }; // Posición por defecto
 
-        // Si se crea una nota independiente en móvil, calcular una posición ordenada para la vista de escritorio.
-        if (isMobile && !zoneId) {
-            position = this._getNewItemDesktopPosition();
+        if (isMobile) {
+            if (zoneId) {
+                // NOTA CREADA DENTRO DE UNA ZONA EN MÓVIL:
+                // Calcular una posición inicial ordenada DENTRO de la zona para la vista de escritorio.
+                const parentZone = this.state.getZones().find(z => z.id === zoneId);
+                if (parentZone) {
+                    const notesInZone = this.state.getNotes().filter(n => n.zoneId === zoneId);
+                    const startYInZone = 60; // Empezar a apilar debajo del título de la zona (aprox. 45px) + un margen.
+                    const gap = 15;
+
+                    // Encontrar el punto más bajo ocupado por una nota dentro de la zona.
+                    const lowestPointInZone = notesInZone.reduce((maxY, note) => {
+                        const relativeY = note.y - parentZone.y; // La 'y' de la nota es absoluta, la convertimos a relativa.
+                        const noteBottom = relativeY + (note.height || CONSTANTS.DEFAULT_NOTE_HEIGHT);
+                        return Math.max(maxY, noteBottom);
+                    }, startYInZone - gap); // Empezar desde justo encima de la primera posición posible.
+
+                    position = {
+                        x: parentZone.x + 20, // Posición X fija dentro de la zona.
+                        y: parentZone.y + lowestPointInZone + gap // Apilar debajo de la última nota.
+                    };
+                }
+            } else {
+                // NOTA INDEPENDIENTE CREADA EN MÓVIL: Usar el layout de cuadrícula inteligente.
+                position = this._getNewItemDesktopPosition(false); // false porque no es una zona
+            }
         }
 
         const newNote = {
@@ -302,7 +360,7 @@ class App {
     addZone() {
         const isMobile = window.innerWidth <= CONSTANTS.MOBILE_BREAKPOINT;
         // Si se crea en móvil, calcular una posición ordenada para la vista de escritorio.
-        const position = isMobile ? this._getNewItemDesktopPosition() : { x: 50, y: 50 };
+        const position = isMobile ? this._getNewItemDesktopPosition(true) : { x: 50, y: 50 }; // true porque es una zona
 
         const newZone = {
             id: Date.now() + Math.random(), title: 'Nueva Zona',
