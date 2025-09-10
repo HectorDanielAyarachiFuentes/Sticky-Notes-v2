@@ -715,6 +715,22 @@ body:not(.dark-mode) .note-list-item:hover {
         align-items: center;
         margin-bottom: 5px;
     }
+    /* NUEVO: Estilo para la "etiqueta de color" que controla el zoom */
+    .note-zoom-handle {
+        width: 40px; /* Ampliado para que sea más fácil hacer clic */
+        height: 8px; /* Un poco más plano para un look de "asa" */
+        background-color: var(--primary-accent);
+        opacity: 0.5;
+        border-radius: 10px; /* Más redondeado */
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin: 0 8px; /* Espacio a ambos lados para separarlo del título y el botón de borrar */
+        flex-shrink: 0;
+    }
+    .note-zoom-handle:hover {
+        opacity: 1;
+        transform: scale(1.1);
+    }
     .tab-name-display {
         margin: 0;
         font-family: 'Poppins', sans-serif;

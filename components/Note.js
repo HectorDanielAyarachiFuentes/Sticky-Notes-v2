@@ -21,6 +21,7 @@ class Note {
             <div class="note-main-content">
                 <div class="note-header">
                     <h4 class="tab-name-display" contenteditable="true"></h4>
+                    <div class="note-zoom-handle" title="Doble clic para ampliar"></div>
                     <button class="delete-btn">×</button>
                 </div>
                 <div class="note-content-panels"></div>
@@ -87,6 +88,13 @@ class Note {
         tabsContainer.addEventListener('click', (e) => {
             const clickedTab = e.target.closest('.note-tab-btn');
             if (!clickedTab) return;
+
+            // NUEVA LÓGICA: Si la nota está ampliada, cualquier clic en las pestañas
+            // no debe propagarse al 'document', para evitar que se cierre la vista de zoom.
+            if (this.element.classList.contains('note-zoomed')) {
+                e.stopPropagation();
+            }
+
             const newIndex = parseInt(clickedTab.dataset.index);
             this.data.activeTabIndex = newIndex;
             this.renderTabs(); // Re-render to update active classes and display name
@@ -139,18 +147,15 @@ class Note {
 
         // Añadir evento de doble clic para zoom en escritorio (tanto para notas sueltas como dentro de zonas)
         if (window.innerWidth > CONSTANTS.MOBILE_BREAKPOINT) {
-            this.element.addEventListener('dblclick', (e) => {
-                // Evitar que el zoom se active si se hace doble clic en un área editable o un botón
-                const target = e.target;
-                if (target.isContentEditable ||
-                    target.tagName.toLowerCase() === 'textarea' ||
-                    target.tagName.toLowerCase() === 'button' ||
-                    target.classList.contains('resize-handle')) {
-                    return;
-                }
-                this.element.classList.toggle('note-zoomed');
-                document.body.classList.toggle('note-view-active');
-            });
+            const zoomHandle = getElement('.note-zoom-handle', this.element);
+            if (zoomHandle) {
+                zoomHandle.addEventListener('click', (e) => {
+                    // Detener la propagación para evitar que otros listeners (como el de arrastre) se activen.
+                    e.stopPropagation(); 
+                    this.element.classList.toggle('note-zoomed');
+                    document.body.classList.toggle('note-view-active');
+                });
+            }
         }
     }
 
