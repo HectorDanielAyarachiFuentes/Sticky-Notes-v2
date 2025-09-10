@@ -186,10 +186,18 @@
             <!-- INICIO DE LA SECCIÓN DE CRONÓMETRO MODIFICADA -->
             <div id="timer-widget" class="dashboard-widget">
                 <h3>Cronómetro</h3>
+                <!-- INICIO: Contenedor de pantalla mejorado con anillo de progreso -->
                 <div class="timer-display-container">
-                    <span id="timer-display">25:00</span>
-                    <button id="edit-timer-btn" title="Configurar tiempo" aria-label="Configurar tiempo">✏️</button>
+                    <svg class="timer-progress-ring" width="120" height="120" viewBox="0 0 120 120">
+                        <circle class="timer-progress-ring__background" stroke-width="6" fill="transparent" r="54" cx="60" cy="60"/>
+                        <circle class="timer-progress-ring__progress" stroke-width="6" fill="transparent" r="54" cx="60" cy="60"/>
+                    </svg>
+                    <div class="timer-value-wrapper">
+                        <span id="timer-display">25:00</span>
+                        <button id="edit-timer-btn" title="Configurar tiempo" aria-label="Configurar tiempo">✏️</button>
+                    </div>
                 </div>
+                <!-- FIN: Contenedor de pantalla mejorado -->
                 <div class="timer-buttons">
                     <button id="timer-play-pause-btn" class="timer-control-btn" title="Iniciar/Pausar" aria-label="Iniciar o pausar cronómetro"></button>
                     <button id="timer-reset-btn" class="timer-control-btn" title="Reiniciar" aria-label="Reiniciar cronómetro">⟲</button>

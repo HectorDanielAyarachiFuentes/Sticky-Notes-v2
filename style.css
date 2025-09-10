@@ -512,7 +512,26 @@ body.dashboard-hidden #zoom-controls {
 #timer-widget.timer-paused #edit-timer-btn {
     color: var(--warning-color);
 }
-#timer-display-container { display: flex; align-items: center; justify-content: center; gap: 10px; }
+/* INICIO: Estilos para el anillo de progreso del cronómetro */
+.timer-display-container { position: relative; display: flex; align-items: center; justify-content: center; width: 120px; height: 120px; margin-bottom: 5px; }
+.timer-progress-ring { position: absolute; top: 0; left: 0; transform: rotate(-90deg); }
+.timer-progress-ring__background { stroke: var(--panel-border); }
+.timer-progress-ring__progress { stroke: var(--primary-accent); stroke-linecap: round; transition: stroke-dashoffset 0.3s linear, stroke 0.4s ease; }
+#timer-widget.timer-running .timer-progress-ring__progress { stroke: var(--success-color); }
+#timer-widget.timer-paused .timer-progress-ring__progress { stroke: var(--warning-color); }
+/* FIN: Estilos para el anillo de progreso del cronómetro */
+
+/* INICIO: Contenedor para el valor del cronómetro y el botón de edición */
+.timer-value-wrapper {
+    position: relative; /* Para que el contenido esté por encima del SVG */
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+/* FIN: Contenedor para el valor del cronómetro */
+
 #timer-display {
     font-size: 32px;
     font-weight: 600;
@@ -520,11 +539,12 @@ body.dashboard-hidden #zoom-controls {
     letter-spacing: 2px;
     color: var(--text-dark);
     transition: color 0.4s ease;
+    line-height: 1.1; /* Ajuste para que no esté tan pegado al botón */
 }
-#edit-timer-btn { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--text-light); padding: 5px; border-radius: 50%; transition: color 0.2s, background-color 0.2s; }
+#edit-timer-btn { background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text-light); padding: 2px; margin-top: 2px; border-radius: 50%; transition: color 0.2s, background-color 0.2s; }
 body:not(.dark-mode) #edit-timer-btn:hover { background-color: #e0e0e0; }
 body.dark-mode #edit-timer-btn:hover { background-color: #3a4a6b; }
-.timer-buttons { margin-top: 12px; display: flex; gap: 15px; }
+.timer-buttons { margin-top: 5px; display: flex; gap: 15px; }
 .timer-control-btn {
     width: 40px; height: 40px; font-size: 20px;
     display: flex; align-items: center; justify-content: center;
@@ -1158,7 +1178,8 @@ body.note-view-active .zone.parent-of-zoomed {
     .sidebar-content #stats-widget .stat-value { font-size: 24px; }
     .sidebar-content #stats-widget .stat-label { font-size: 9px; }
     .sidebar-content #stats-widget .stats-container { gap: 10px; }
-    .sidebar-content #timer-display { font-size: 28px; }
+    .sidebar-content .timer-display-container { width: 100px; height: 100px; }
+    .sidebar-content #timer-display { font-size: 26px; }
     .sidebar-content #clock-widget #current-time { font-size: 28px; }
     .sidebar-content #clock-widget #current-seconds { font-size: 16px; }
     .sidebar-content .timer-display-container { justify-content: flex-start;}

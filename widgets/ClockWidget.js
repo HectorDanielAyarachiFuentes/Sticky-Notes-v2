@@ -35,18 +35,20 @@ class ClockWidget {
         });
     }
 
-    getGreeting(hour, userName) {
-        let greeting;
-        if (hour < 12) {
-            greeting = "Buenos días";
-        } else if (hour < 20) {
-            greeting = "Buenas tardes";
+    getGreeting(hour) {
+        if (hour >= 0 && hour < 5) { // Madrugada (00:00 - 04:59)
+            return "Buenas noches 🌙";
+        } else if (hour >= 5 && hour < 7) { // Amanecer (05:00 - 06:59)
+            return "¡A empezar el día! 🌅";
+        } else if (hour >= 7 && hour < 12) { // Mañana (07:00 - 11:59)
+            return "Buenos días ☀️";
+        } else if (hour >= 12 && hour < 14) { // Mediodía (12:00 - 13:59)
+            return "¡Buen provecho! 🍽️";
+        } else if (hour >= 14 && hour < 20) { // Tarde (14:00 - 19:59)
+            return "Buenas tardes 🌤️";
         } else {
-            greeting = "Buenas noches";
+            return "Buenas noches 🌃";
         }
-        // Personalize if the user name is available
-        const namePart = userName ? `, ${userName.split(' ')[0]}` : '';
-        return `${greeting}${namePart}`;
     }
 
     updateClock() {
@@ -54,9 +56,7 @@ class ClockWidget {
         const hour = now.getHours();
 
         // 1. Update Greeting
-        const user = this.appState.getCurrentUser();
-        const userName = user ? user.displayName : null;
-        this.greetingEl.textContent = this.getGreeting(hour, userName);
+        this.greetingEl.innerHTML = this.getGreeting(hour); // Use innerHTML for emoji
 
         // 2. Update Time (HH:MM)
         this.timeEl.textContent = now.toLocaleTimeString('es-ES', {

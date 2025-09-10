@@ -30,12 +30,14 @@ class TimerWidget {
     #playPauseBtn;
     #resetBtn;
     #presetContainer;
+    #progressRing;
 
     // Estado interno del widget
     #state = 'stopped'; // 'stopped', 'running', 'paused'
     #secondsRemaining = 25 * 60;
     #initialDuration = 25 * 60;
     #animationFrameId = null;
+    #ringCircumference = 0;
     #lastTickTimestamp = 0;
 
     constructor(containerSelector, appState) { // appState se mantiene por firma, pero no se usa internamente
@@ -50,8 +52,9 @@ class TimerWidget {
         this.#playPauseBtn = getElement('#timer-play-pause-btn', this.#container);
         this.#resetBtn = getElement('#timer-reset-btn', this.#container);
         this.#presetContainer = getElement('.timer-presets', this.#container);
+        this.#progressRing = getElement('.timer-progress-ring__progress', this.#container);
         
-        if (!this.#displayEl || !this.#playPauseBtn || !this.#resetBtn) {
+        if (!this.#displayEl || !this.#playPauseBtn || !this.#resetBtn || !this.#progressRing) {
             console.error("TimerWidget: Faltan elementos DOM esenciales en el contenedor.");
             return;
         }
@@ -59,6 +62,12 @@ class TimerWidget {
         this.#timerModal = new TimerModal(
             'set-timer-modal-overlay', 'set-hours', 'set-minutes', 'set-seconds', 'save-timer-btn'
         );
+
+        // Inicializar el anillo de progreso
+        if (this.#progressRing) {
+            this.#ringCircumference = this.#progressRing.r.baseVal.value * 2 * Math.PI;
+            this.#progressRing.style.strokeDasharray = `${this.#ringCircumference} ${this.#ringCircumference}`;
+        }
 
         this.#bindEvents();
         this.#restoreState();
@@ -166,25 +175,36 @@ class TimerWidget {
     #updateDisplay() {
         const timeString = this.#formatTime(this.#secondsRemaining);
         
-        getElements('#timer-display', this.#container).forEach(el => el.textContent = timeString);
+        // MEJORA: Usar elementos cacheados en lugar de re-consultar el DOM.
+        if (this.#displayEl) this.#displayEl.textContent = timeString;
 
         document.title = (this.#state === 'running' || this.#state === 'paused') && this.#secondsRemaining > 0
             ? `${timeString} - ${this.#originalDocTitle}`
             : this.#originalDocTitle;
         
-        getElements('#timer-play-pause-btn', this.#container)
-            .forEach(btn => btn.innerHTML = this.#state === 'running' ? CONSTANTS.ICONS.PAUSE : CONSTANTS.ICONS.PLAY);
+        if (this.#playPauseBtn) {
+            this.#playPauseBtn.innerHTML = this.#state === 'running' ? CONSTANTS.ICONS.PAUSE : CONSTANTS.ICONS.PLAY;
+        }
 
         this.#container.classList.toggle('timer-running', this.#state === 'running');
         this.#container.classList.toggle('timer-paused', this.#state === 'paused');
         
         this.#updateActivePreset();
+        this.#updateProgressRing();
+    }
+
+    #updateProgressRing() {
+        if (!this.#progressRing || this.#initialDuration <= 0) return;
+        const progress = Math.max(0, this.#secondsRemaining / this.#initialDuration);
+        const offset = this.#ringCircumference * (1 - progress);
+        this.#progressRing.style.strokeDashoffset = offset;
     }
 
     #updateActivePreset() {
         if (!this.#presetContainer) return;
         const activeMinutes = Math.round(this.#initialDuration / 60);
-        getElements('.preset-btn', this.#container).forEach(btn => {
+        // MEJORA: Usar el contenedor cacheado para buscar los botones.
+        this.#presetContainer.querySelectorAll('.preset-btn').forEach(btn => {
             btn.classList.toggle('active', parseInt(btn.dataset.minutes) === activeMinutes);
         });
     }
