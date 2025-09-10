@@ -23,6 +23,7 @@ class Zone {
             <button class="add-note-in-zone-btn" title="Añadir Nota a Zona">+</button>
             <button class="view-full-zone-btn">Ver Zona</button>
             <div class="resize-handle"></div>
+            <div class="zone-notes-container-desktop"></div>
             <div class="zone-notes-container-mobile"></div>
         `;
         if (window.innerWidth > 768) {

@@ -251,6 +251,26 @@ body.dark-mode .sun-icon { display: none; }
 .delete-btn:hover { background-color: var(--danger-color); color: white; }
 
 /* ==========================================================================
+   4.1 COMPONENTES: NOTAS DENTRO DE ZONAS (NUEVO)
+   ========================================================================== */
+.zone-notes-container-desktop {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+}
+.note.is-in-zone {
+    position: relative !important; /* Anula el 'position: absolute' de .draggable */
+    left: auto !important; top: auto !important; /* Anula los estilos en línea */
+    width: 100% !important; height: 100% !important; /* Ocupa el espacio de la celda de la cuadrícula */
+    min-height: 180px; /* Un mínimo para que no se colapse */
+}
+.note.is-in-zone .resize-handle {
+    display: none; /* No se puede redimensionar individualmente dentro de una zona */
+}
+/* ==========================================================================
    5. COMPONENTES: DASHBOARD INFERIOR Y WIDGETS
    ========================================================================== */
 #bottom-dashboard { 

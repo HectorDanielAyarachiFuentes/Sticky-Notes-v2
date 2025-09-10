@@ -28,12 +28,17 @@ class Note {
             <div class="resize-handle"></div>
         `;
 
-        if (window.innerWidth > 768) {
+        // En escritorio, las notas son draggables por defecto, a menos que estén en una zona.
+        if (window.innerWidth > CONSTANTS.MOBILE_BREAKPOINT) {
             element.classList.add('draggable');
-            element.style.left = `${this.data.x || 20}px`;
-            element.style.top = `${this.data.y || 20}px`;
-            element.style.width = `${this.data.width || CONSTANTS.DEFAULT_NOTE_WIDTH}px`;
-            element.style.height = `${this.data.height || CONSTANTS.DEFAULT_NOTE_HEIGHT}px`;
+            if (this.data.zoneId) {
+                element.classList.add('is-in-zone');
+            } else {
+                element.style.left = `${this.data.x || 20}px`;
+                element.style.top = `${this.data.y || 20}px`;
+                element.style.width = `${this.data.width || CONSTANTS.DEFAULT_NOTE_WIDTH}px`;
+                element.style.height = `${this.data.height || CONSTANTS.DEFAULT_NOTE_HEIGHT}px`;
+            }
         }
         return element;
     }
@@ -106,7 +111,8 @@ class Note {
 
         deleteBtn.addEventListener('click', () => this.callbacks.onDelete(this.data.id));
 
-        if (window.innerWidth > 768) {
+        // Solo hacer que las notas sean arrastrables y redimensionables si NO están en una zona.
+        if (window.innerWidth > CONSTANTS.MOBILE_BREAKPOINT && !this.data.zoneId) {
             makeDraggable(this.element, this.data, (item) => {
                 const parentZone = this.callbacks.findParentZone(item);
                 item.zoneId = parentZone ? parentZone.id : null;

@@ -395,8 +395,17 @@ class App {
         const notes = this.state.getNotes();
         const index = notes.findIndex(n => n.id === updatedNote.id);
         if (index !== -1) {
-            notes[index] = { ...notes[index], ...updatedNote }; // Fusionar actualizaciones
+            const oldNote = notes[index];
+            const zoneChanged = oldNote.zoneId !== updatedNote.zoneId;
+
+            notes[index] = { ...oldNote, ...updatedNote }; // Fusionar actualizaciones
             this.state.setNotes([...notes]); // Asegura que se actualice la referencia si AppState lo necesita
+
+            // Si la nota se movió hacia/desde una zona, se necesita un re-renderizado completo
+            // para mover el elemento DOM al contenedor correcto (app o zona) y aplicar los estilos.
+            if (zoneChanged) {
+                this.renderWorkspace();
+            }
         }
         this.debounceSave();
     }
@@ -465,6 +474,7 @@ class App {
             zonesContainer.appendChild(zone.getDomElement());
         });
 
+        // Renderizar notas, colocándolas en el contenedor correcto (general o dentro de una zona)
         notesToShow.forEach(noteData => {
             const note = new Note(noteData, {
                 onDelete: this.deleteNote.bind(this),
@@ -472,7 +482,16 @@ class App {
                 findParentZone: this.findParentZone.bind(this)
             });
             this.noteInstances.set(noteData.id, note);
-            notesContainer.appendChild(note.getDomElement());
+
+            if (noteData.zoneId) {
+                const parentZoneInstance = this.zoneInstances.get(noteData.zoneId);
+                if (parentZoneInstance) {
+                    const zoneNotesContainer = getElement('.zone-notes-container-desktop', parentZoneInstance.getDomElement());
+                    zoneNotesContainer?.appendChild(note.getDomElement());
+                }
+            } else {
+                notesContainer.appendChild(note.getDomElement());
+            }
         });
     }
 
