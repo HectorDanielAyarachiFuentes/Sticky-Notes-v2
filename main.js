@@ -235,11 +235,47 @@ class App {
         }
     }
 
+    _getNewItemDesktopPosition() {
+        let y = 80; // Posición Y inicial, debajo de los controles superiores
+        const x = 20; // Posición X fija para apilar verticalmente
+
+        // Obtener todos los elementos para la fecha seleccionada
+        const notesOnDate = this.state.getNotes().filter(note => note.date === this.state.getSelectedDate());
+        const zonesOnDate = this.state.getZones().filter(zone => zone.date === this.state.getSelectedDate());
+
+        // Para el cálculo, solo nos importan las notas que no están en una zona, y las zonas.
+        const topLevelItems = [
+            ...notesOnDate.filter(n => !n.zoneId),
+            ...zonesOnDate
+        ];
+
+        if (topLevelItems.length > 0) {
+            // Encontrar el punto más bajo entre todos los elementos
+            const lowestPoint = topLevelItems.reduce((maxY, item) => {
+                // item.height debería existir, pero usamos un fallback por si acaso
+                const itemHeight = item.height || (item.title ? CONSTANTS.DEFAULT_ZONE_HEIGHT : CONSTANTS.DEFAULT_NOTE_HEIGHT);
+                const itemBottom = (item.y || 0) + itemHeight;
+                return Math.max(maxY, itemBottom);
+            }, 0);
+            y = lowestPoint + 30; // Colocar el nuevo elemento 30px debajo del más bajo
+        }
+
+        return { x, y };
+    }
+
     // --- Métodos de Gestión de Notas/Zonas ---
     addNote(zoneId = null) {
+        const isMobile = window.innerWidth <= CONSTANTS.MOBILE_BREAKPOINT;
+        let position = { x: 20, y: 20 }; // Posición por defecto
+
+        // Si se crea una nota independiente en móvil, calcular una posición ordenada para la vista de escritorio.
+        if (isMobile && !zoneId) {
+            position = this._getNewItemDesktopPosition();
+        }
+
         const newNote = {
             id: Date.now() + Math.random(),
-            x: 20, y: 20, width: CONSTANTS.DEFAULT_NOTE_WIDTH, height: CONSTANTS.DEFAULT_NOTE_HEIGHT,
+            x: position.x, y: position.y, width: CONSTANTS.DEFAULT_NOTE_WIDTH, height: CONSTANTS.DEFAULT_NOTE_HEIGHT,
             date: this.state.getSelectedDate(),
             zoneId: zoneId,
             activeTabIndex: 0,
@@ -258,9 +294,13 @@ class App {
     }
 
     addZone() {
+        const isMobile = window.innerWidth <= CONSTANTS.MOBILE_BREAKPOINT;
+        // Si se crea en móvil, calcular una posición ordenada para la vista de escritorio.
+        const position = isMobile ? this._getNewItemDesktopPosition() : { x: 50, y: 50 };
+
         const newZone = {
             id: Date.now() + Math.random(), title: 'Nueva Zona',
-            x: 50, y: 50, width: CONSTANTS.DEFAULT_ZONE_WIDTH, height: CONSTANTS.DEFAULT_ZONE_HEIGHT,
+            x: position.x, y: position.y, width: CONSTANTS.DEFAULT_ZONE_WIDTH, height: CONSTANTS.DEFAULT_ZONE_HEIGHT,
             date: this.state.getSelectedDate()
         };
         this.state.zones.push(newZone); // Agrega directamente al array de estado
