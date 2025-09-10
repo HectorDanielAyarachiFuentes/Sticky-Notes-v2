@@ -29,6 +29,7 @@ class App {
         this.noteInstances = new Map(); // Almacena instancias de Note
         this.zoneInstances = new Map(); // Almacena instancias de Zone
 
+        this.currentSliderZoneId = null; // NUEVO: para saber en qué zona estamos en el slider
         // NUEVO: Estado para el pan y zoom del espacio de trabajo
         this.pan = { x: 0, y: 0, scale: 1 };
         this.isPanning = false;
@@ -45,6 +46,7 @@ class App {
         if (localStorage.getItem('dashboardIsHidden') === 'true') {
             this.DOMElements.body.classList.add('dashboard-hidden');
         }
+        this.createSliderPlaceholder();
         this.bindGlobalEvents();
         this.setupWidgets();
         // NOTA: initNetworkStatusMonitor ya se llama en el DOMContentLoaded directamente,
@@ -94,6 +96,14 @@ class App {
         this.DOMElements.sliderCloseBtn = getElement('#slider-close-btn');
         this.DOMElements.sliderNotesList = getElement('#slider-notes-list');
         this.DOMElements.sliderNoteContent = getElement('#slider-note-content');
+        this.DOMElements.sliderAddNoteBtn = getElement('#slider-add-note-btn');
+    }
+
+    createSliderPlaceholder() {
+        const placeholder = document.createElement('div');
+        placeholder.className = 'slider-no-note-selected';
+        placeholder.innerHTML = '<p>Selecciona una nota de la lista para verla aquí.</p>';
+        this.DOMElements.sliderNoNoteSelected = placeholder;
     }
 
     bindGlobalEvents() {
@@ -158,6 +168,7 @@ class App {
         // NUEVO: Eventos para el slider de notas de zona
         this.DOMElements.sliderCloseBtn.addEventListener('click', () => this.closeZoneNotesViewer());
         this.DOMElements.sliderOverlay.addEventListener('click', () => this.closeZoneNotesViewer());
+        this.DOMElements.sliderAddNoteBtn.addEventListener('click', () => this.handleSliderAddNote());
 
         // Evento para seleccionar una nota de la lista en el slider
         this.DOMElements.sliderNotesList.addEventListener('click', e => {
@@ -179,6 +190,21 @@ class App {
                 if (noteToUpdate && noteToUpdate.tabs[tabIndex]) {
                     noteToUpdate.tabs[tabIndex].content = content;
                     this.debounceSave(); // Guarda el estado actualizado
+                }
+            }
+        });
+
+        // NUEVO: Evento para cambiar de pestaña DENTRO del slider
+        this.DOMElements.sliderNoteContent.addEventListener('click', e => {
+            const tabBtn = e.target.closest('.slider-note-tab');
+            if (tabBtn) {
+                const noteId = parseFloat(tabBtn.dataset.noteId);
+                const newTabIndex = parseInt(tabBtn.dataset.tabIndex);
+                const noteData = this.state.getNotes().find(n => n.id === noteId);
+                if (noteData && noteData.activeTabIndex !== newTabIndex) {
+                    noteData.activeTabIndex = newTabIndex;
+                    this.updateNote(noteData); // Guardar el cambio de pestaña activa
+                    this.renderSliderContent(noteId); // Re-renderizar para mostrar el cambio
                 }
             }
         });
@@ -469,6 +495,8 @@ class App {
         const zoneData = this.state.getZones().find(z => z.id === clickedNoteData.zoneId);
         if (!zoneData) return;
 
+        this.currentSliderZoneId = zoneData.id; // NUEVO: Guardar el ID de la zona actual
+
         const notesInZone = this.state.getNotes().filter(n => n.zoneId === zoneData.id);
 
         this.DOMElements.sliderTitle.textContent = zoneData.title;
@@ -501,21 +529,69 @@ class App {
             item.classList.toggle('active', parseFloat(item.dataset.noteId) === noteId);
         });
 
-        // Renderizar el contenido en el panel derecho
         const noteData = this.state.getNotes().find(n => n.id === noteId);
         const contentContainer = this.DOMElements.sliderNoteContent;
+        contentContainer.innerHTML = ''; // Limpiar contenido anterior
 
         if (noteData) {
-            const activeTab = noteData.tabs[noteData.activeTabIndex || 0];
-            contentContainer.innerHTML = `<textarea data-note-id="${noteData.id}" data-tab-index="${noteData.activeTabIndex || 0}" placeholder="Escribe algo...">${activeTab.content || ''}</textarea>`;
+            // Crear contenedor de pestañas y paneles
+            const tabsContainer = document.createElement('div');
+            tabsContainer.className = 'slider-note-tabs';
+
+            const panelsContainer = document.createElement('div');
+            panelsContainer.className = 'slider-note-content-panels';
+
+            noteData.tabs.forEach((tab, index) => {
+                // Crear botón de pestaña
+                const tabBtn = document.createElement('div');
+                tabBtn.className = 'slider-note-tab';
+                tabBtn.textContent = tab.name || `Pestaña ${index + 1}`;
+                tabBtn.dataset.noteId = noteData.id;
+                tabBtn.dataset.tabIndex = index;
+                if (index === noteData.activeTabIndex) {
+                    tabBtn.classList.add('active');
+                }
+                tabsContainer.appendChild(tabBtn);
+
+                // Crear panel de contenido
+                const panel = document.createElement('textarea');
+                panel.className = 'slider-note-content-panel';
+                panel.dataset.noteId = noteData.id;
+                panel.dataset.tabIndex = index;
+                panel.placeholder = "Escribe algo...";
+                panel.value = tab.content || '';
+                if (index === noteData.activeTabIndex) {
+                    panel.classList.add('active');
+                }
+                panelsContainer.appendChild(panel);
+            });
+
+            contentContainer.appendChild(tabsContainer);
+            contentContainer.appendChild(panelsContainer);
         } else {
-            contentContainer.innerHTML = ''; // Limpiar si no se encuentra la nota
+            // Si no hay nota (o se borró), mostrar el mensaje por defecto
+            contentContainer.appendChild(this.DOMElements.sliderNoNoteSelected);
         }
     }
 
     closeZoneNotesViewer() {
         this.DOMElements.body.classList.remove('slider-active');
         this.DOMElements.body.style.overflow = '';
+        this.currentSliderZoneId = null; // Limpiar el ID de la zona
+        // Resetear el contenido del slider para la próxima vez
+        this.DOMElements.sliderNoteContent.innerHTML = '';
+        this.DOMElements.sliderNoteContent.appendChild(this.DOMElements.sliderNoNoteSelected);
+    }
+
+    // NUEVO: Manejador para el botón de añadir nota en el slider
+    handleSliderAddNote() {
+        if (!this.currentSliderZoneId) return;
+        
+        const newNote = this.addNote(this.currentSliderZoneId, true); // true para indicar que es desde el slider
+        if (newNote) {
+            // Refrescar la vista del slider para mostrar la nueva nota y seleccionarla
+            this.openZoneNotesViewer(newNote.id);
+        }
     }
 
     // NUEVO: Proporciona el estado de pan/zoom a los componentes que lo necesiten
@@ -596,7 +672,7 @@ class App {
     }
 
     // --- Métodos de Gestión de Notas/Zonas ---
-    addNote(zoneId = null) {
+    addNote(zoneId = null, fromSlider = false) {
         let position;
 
         if (zoneId) {
@@ -641,11 +717,18 @@ class App {
             ]
         };
         this.state.notes.push(newNote); // Agrega directamente al array de estado
-        this.renderWorkspace();
+
+        // Si no viene del slider, renderiza todo el workspace como antes
+        if (!fromSlider) {
+            this.renderWorkspace();
+        }
+
         this.debounceSave();
         this.updateStats();
         this.widgets.calendar.render();
         if (this.mobileWidgets.calendar) this.mobileWidgets.calendar.render();
+
+        return newNote; // Devolver la nueva nota para que el slider pueda usar su ID
     }
 
     addZone() {
