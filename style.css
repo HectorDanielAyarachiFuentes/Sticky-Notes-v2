@@ -1088,9 +1088,6 @@ body.note-view-active .zone.parent-of-zoomed {
     body.sidebar-active, body.zone-view-active { overflow: hidden; }
 
 
-    /* MEJORA RESPONSIVA: Ocultamos la animación de la bandera en móviles por rendimiento y limpieza visual. */
-    #flag-wrapper { display: none; }
-
     /* NUEVO: Ocultar controles de zoom en móvil */
     #zoom-controls {
         display: none;
