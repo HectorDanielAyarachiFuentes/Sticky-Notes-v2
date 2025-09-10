@@ -181,23 +181,20 @@ class App {
 
         // Evento para guardar el contenido de la nota al escribir en el slider
         this.DOMElements.sliderNoteContent.addEventListener('input', e => {
-            if (e.target.tagName.toLowerCase() === 'textarea') {
-                const noteId = parseFloat(e.target.dataset.noteId);
-                const tabIndex = parseInt(e.target.dataset.tabIndex);
-                const content = e.target.value;
-
-                const noteToUpdate = this.state.getNotes().find(n => n.id === noteId);
-                if (noteToUpdate && noteToUpdate.tabs[tabIndex]) {
-                    noteToUpdate.tabs[tabIndex].content = content;
-                    this.debounceSave(); // Guarda el estado actualizado
-                }
+            const target = e.target;
+            if (target.tagName.toLowerCase() === 'textarea') { // Si se edita el contenido
+                this.handleSliderContentChange(target);
+            } else if (target.classList.contains('slider-note-tab')) { // Si se edita el nombre de una pestaña
+                this.handleSliderTabNameChange(target);
             }
         });
 
         // NUEVO: Evento para cambiar de pestaña DENTRO del slider
         this.DOMElements.sliderNoteContent.addEventListener('click', e => {
             const tabBtn = e.target.closest('.slider-note-tab');
-            if (tabBtn) {
+            // Si se hace clic en una pestaña y NO es la que ya está activa, cambiar de pestaña.
+            // Si es la activa, no hacer nada para permitir que el usuario la edite.
+            if (tabBtn && !tabBtn.classList.contains('active')) {
                 const noteId = parseFloat(tabBtn.dataset.noteId);
                 const newTabIndex = parseInt(tabBtn.dataset.tabIndex);
                 const noteData = this.state.getNotes().find(n => n.id === noteId);
@@ -208,6 +205,26 @@ class App {
                 }
             }
         });
+
+        // NUEVO: Eventos para mejorar la edición de los nombres de las pestañas
+        this.DOMElements.sliderNoteContent.addEventListener('keydown', e => {
+            // Prevenir saltos de línea en los títulos de las pestañas
+            if (e.target.classList.contains('slider-note-tab') && e.key === 'Enter') {
+                e.preventDefault();
+                e.target.blur(); // Quita el foco para "confirmar" el cambio
+            }
+        });
+
+        this.DOMElements.sliderNoteContent.addEventListener('blur', e => {
+            // Si una pestaña queda vacía al perder el foco, restaurar un nombre por defecto
+            const target = e.target;
+            if (target.classList.contains('slider-note-tab') && target.innerText.trim() === '') {
+                const tabIndex = parseInt(target.dataset.tabIndex);
+                target.innerText = `Pestaña ${tabIndex + 1}`;
+                // Disparar el manejador de cambio manualmente para que se guarde el cambio
+                this.handleSliderTabNameChange(target);
+            }
+        }, true); // Usar captura para asegurar que se ejecute
     }
 
     setupWidgets() {
@@ -523,6 +540,42 @@ class App {
         this.DOMElements.body.style.overflow = 'hidden';
     }
 
+    // NUEVO: Métodos para manejar cambios en el slider
+    handleSliderContentChange(target) {
+        const noteId = parseFloat(target.dataset.noteId);
+        const tabIndex = parseInt(target.dataset.tabIndex);
+        const content = target.value;
+
+        const noteToUpdate = this.state.getNotes().find(n => n.id === noteId);
+        if (noteToUpdate && noteToUpdate.tabs[tabIndex]) {
+            noteToUpdate.tabs[tabIndex].content = content;
+            this.debounceSave(); // Guarda el estado actualizado
+        }
+    }
+
+    handleSliderTabNameChange(target) {
+        const noteId = parseFloat(target.dataset.noteId);
+        const tabIndex = parseInt(target.dataset.tabIndex);
+        const newName = target.innerText;
+
+        const noteToUpdate = this.state.getNotes().find(n => n.id === noteId);
+        if (noteToUpdate && noteToUpdate.tabs[tabIndex]) {
+            noteToUpdate.tabs[tabIndex].name = newName;
+
+            // Si esta es la pestaña activa de la nota, actualiza el nombre en la lista de la izquierda
+            if (noteToUpdate.activeTabIndex === tabIndex) {
+                const noteListItem = this.DOMElements.sliderNotesList.querySelector(`.slider-note-item[data-note-id="${noteId}"]`);
+                if (noteListItem) {
+                    const displayName = newName.trim() || 'Nota sin título';
+                    noteListItem.textContent = displayName;
+                    noteListItem.title = displayName;
+                }
+            }
+
+            this.debounceSave(); // Guarda el estado actualizado
+        }
+    }
+
     renderSliderContent(noteId) {
         // Resaltar el item activo en la lista
         this.DOMElements.sliderNotesList.querySelectorAll('.slider-note-item').forEach(item => {
@@ -545,9 +598,10 @@ class App {
                 // Crear botón de pestaña
                 const tabBtn = document.createElement('div');
                 tabBtn.className = 'slider-note-tab';
-                tabBtn.textContent = tab.name || `Pestaña ${index + 1}`;
+                tabBtn.innerText = tab.name || `Pestaña ${index + 1}`;
                 tabBtn.dataset.noteId = noteData.id;
                 tabBtn.dataset.tabIndex = index;
+                tabBtn.contentEditable = true;
                 if (index === noteData.activeTabIndex) {
                     tabBtn.classList.add('active');
                 }
