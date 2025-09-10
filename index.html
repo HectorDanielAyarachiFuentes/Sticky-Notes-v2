@@ -36,6 +36,9 @@
                 </linearGradient>
                 <filter id="sky">
                     <feTurbulence baseFrequency="0.003 0.005" numOctaves="10" />
+                    <feTurbulence baseFrequency="0.003 0.005" numOctaves="10">
+                        <animate attributeName="baseFrequency" dur="120s" values="0.003 0.005;0.004 0.006;0.003 0.005" repeatCount="indefinite" />
+                    </feTurbulence>
                     <feColorMatrix type="hueRotate" values="0"></feColorMatrix>
                     <feColorMatrix values="4.2 -4.6 3.1 -1.4 4.8 -0.8 -0.8 -1.9 2.7 4.4 0.8 -3.6 4.1 1.9 4.3 -3.4 0.1 1.7 3.5 -2.1" />
                     <feComposite operator="in" in2="SourceGraphic" />
