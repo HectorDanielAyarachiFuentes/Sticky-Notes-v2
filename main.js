@@ -312,6 +312,14 @@ class App {
             this.DOMElements.body.classList.add('logged-out');
             this.DOMElements.body.classList.remove('logged-in');
             this.clearWorkspace();
+            // Adaptar UI para modo local al estar deslogueado
+            if (!USE_FIREBASE) {
+                this.DOMElements.body.classList.add('local-mode');
+                this.DOMElements.signInBtn.textContent = '🚀 Entrar como Invitado';
+            } else {
+                // Asegurarse de que el texto original esté presente si se desloguea de Firebase
+                this.DOMElements.signInBtn.textContent = '🚀 Iniciar Sesión con Google';
+            }
         }
     }
 
