@@ -312,6 +312,16 @@ class App {
             this.DOMElements.body.classList.add('logged-out');
             this.DOMElements.body.classList.remove('logged-in');
             this.clearWorkspace();
+
+            // SOLUCIÓN: Forzar el reinicio de la animación SVG de la bandera.
+            // Al volver a mostrar el SVG, el navegador no reinicia la animación SMIL.
+            // Este truco de "recargar" el HTML del elemento fuerza al navegador a re-renderizarlo y reiniciar la animación.
+            const flagWrapper = getElement('#flag-wrapper');
+            if (flagWrapper) {
+                const flagHTML = flagWrapper.innerHTML;
+                flagWrapper.innerHTML = '';
+                setTimeout(() => { flagWrapper.innerHTML = flagHTML; }, 0);
+            }
             // Adaptar UI para modo local al estar deslogueado
             if (!USE_FIREBASE) {
                 this.DOMElements.body.classList.add('local-mode');
