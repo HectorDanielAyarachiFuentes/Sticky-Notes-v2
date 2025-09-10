@@ -42,8 +42,19 @@
                     <feColorMatrix values="4.2 -4.6 3.1 -1.4 4.8 -0.8 -0.8 -1.9 2.7 4.4 0.8 -3.6 4.1 1.9 4.3 -3.4 0.1 1.7 3.5 -2.1" />
                     <feComposite operator="in" in2="SourceGraphic" />
                 </filter>
+                <!-- MEJORA: Gradiente radial para un sol más realista -->
+                <radialGradient id="sunGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                    <stop offset="0%" stop-color="#FFFFFF" stop-opacity="1" />
+                    <stop offset="40%" stop-color="#FFFACD" stop-opacity="0.9" />
+                    <stop offset="70%" stop-color="#FFD700" stop-opacity="0.6" />
+                    <stop offset="100%" stop-color="#FFD700" stop-opacity="0" />
+                </radialGradient>
             </defs>
             <rect height="100%" width="100%" fill="url(#grad)" />
+            <!-- MEJORA: Círculo único con gradiente y animación para el sol -->
+            <circle cx="80%" cy="25%" r="120" fill="url(#sunGradient)">
+                <animate attributeName="opacity" dur="8s" values="0.7;1;0.7" repeatCount="indefinite" />
+            </circle>
             <rect height="100%" width="100%" filter="url(#sky)" />
         </svg>
     
