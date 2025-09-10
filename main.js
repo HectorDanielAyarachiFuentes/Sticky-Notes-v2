@@ -1168,11 +1168,20 @@ class App {
     }
 
     updateStats() {
-        // MODIFICACIÓN: Ahora cuenta TODAS las notas, no solo las de la vista actual.
-        // La idea es que el widget de "Notas" en el dashboard muestre el total de notas que tienes.
-        // Si el usuario quiere ver las notas de un día específico, puede usar el calendario.
-        const totalNotes = this.state.getNotes().length; 
-        getElements('#note-count').forEach(el => el.textContent = totalNotes);
+        const allNotes = this.state.getNotes();
+        const totalNotes = allNotes.length;
+
+        // Obtener la fecha de hoy en formato YYYY-MM-DD
+        const today = new Date();
+        const todayDateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+        const notesForToday = allNotes.filter(note => note.date === todayDateString).length;
+        const undatedNotes = allNotes.filter(note => !note.date).length;
+
+        // Actualizar los contadores en ambos dashboards (principal y móvil)
+        getElements('#note-count-total').forEach(el => el.textContent = totalNotes);
+        getElements('#note-count-today').forEach(el => el.textContent = notesForToday);
+        getElements('#note-count-undated').forEach(el => el.textContent = undatedNotes);
     }
 
     updateTopControlsVisibility() {
@@ -1235,7 +1244,7 @@ class App {
                 // Formatear la fecha para mostrar en la lista
                 const dateDisplay = note.date 
                     ? new Date(note.date + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
-                    : 'Sin Fecha'; // Si no tiene fecha, mostrar "Sin Fecha"
+                    : 'Tablero General'; // Si no tiene fecha, es del tablero general
                 
                 // Obtener el contenido del tab activo o el primer tab, y mostrar una vista previa
                 const previewContent = note.tabs && note.tabs.length > 0 && note.tabs[note.activeTabIndex || 0] && note.tabs[note.activeTabIndex || 0].content

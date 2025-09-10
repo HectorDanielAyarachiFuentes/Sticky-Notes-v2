@@ -139,8 +139,25 @@
             <button id="dashboard-toggle" title="Ocultar/Mostrar Dashboard">
                 <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
             </button>
-            <!-- MODIFICACIÓN: Añadimos la clase 'clickable' al stats-widget -->
-            <div id="stats-widget" class="dashboard-widget clickable"><h3>Notas</h3><span id="note-count">0</span></div>
+            <!-- INICIO: Widget de notas mejorado -->
+            <div id="stats-widget" class="dashboard-widget clickable">
+                <h3>Notas</h3>
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <span id="note-count-total" class="stat-value">0</span>
+                        <span class="stat-label">Total</span>
+                    </div>
+                    <div class="stat-item">
+                        <span id="note-count-today" class="stat-value">0</span>
+                        <span class="stat-label">Hoy</span>
+                    </div>
+                    <div class="stat-item">
+                        <span id="note-count-undated" class="stat-value">0</span>
+                        <span class="stat-label">General</span>
+                    </div>
+                </div>
+            </div>
+            <!-- FIN: Widget de notas mejorado -->
             <!-- INICIO DE LA SECCIÓN DE CALENDARIO MODIFICADA -->
             <div id="calendar-widget" class="dashboard-widget">
                 <h3>Calendario</h3>
