@@ -9,6 +9,7 @@
     height: 100vh;
     z-index: 1; 
     overflow: hidden;
+    background-color: skyblue; /* Asegura un fondo claro constante para el cielo */
     pointer-events: none;
 }
 
