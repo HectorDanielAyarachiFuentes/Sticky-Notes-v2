@@ -30,6 +30,10 @@ export function makeDraggable(element, item, callbacks) {
         const initialMouseX = e.clientX;
         const initialMouseY = e.clientY;
 
+        // NUEVO: Variables para almacenar la última posición calculada.
+        let finalX = startItemX;
+        let finalY = startItemY;
+
         const onMouseMove = (moveEvent) => {
             // Calcular el delta del ratón en coordenadas de la ventana
             const dx = moveEvent.clientX - initialMouseX;
@@ -46,6 +50,10 @@ export function makeDraggable(element, item, callbacks) {
             // Opcional: Limitar a coordenadas no negativas.
             newX = Math.max(0, newX);
             newY = Math.max(0, newY);
+
+            // Guardar la posición calculada para usarla en mouseup
+            finalX = newX;
+            finalY = newY;
 
             if (onDragMove) {
                 // onDragMove ahora devuelve las coordenadas a usar, ya sean ajustadas o no.
@@ -70,9 +78,10 @@ export function makeDraggable(element, item, callbacks) {
             document.removeEventListener('mouseup', onMouseUp);
             element.classList.remove('dragging');
 
-            // La posición ya está en coordenadas del espacio de trabajo
-            item.x = parseFloat(element.style.left);
-            item.y = parseFloat(element.style.top);
+            // MEJORA: Usar la última posición calculada directamente en lugar de leer del DOM.
+            // Esto es más robusto y evita posibles discrepancias por redondeo del navegador.
+            item.x = finalX;
+            item.y = finalY;
 
             if (onDragEnd) {
                 onDragEnd(item);

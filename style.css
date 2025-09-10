@@ -89,6 +89,39 @@ body.logged-out { background-image: none !important; }
     fill: black;
  }
 
+/* NUEVO: Estilos para el overlay de carga */
+#loader-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color);
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, background-color 0.3s ease;
+    visibility: hidden;
+}
+#loader-overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
+    visibility: visible;
+}
+.loader {
+    border: 8px solid var(--panel-border);
+    border-top: 8px solid var(--primary-accent);
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1.5s linear infinite;
+}
+/* FIN NUEVO */
+
 /* ==========================================================================
    FIN DE ESTILOS PARA EL LOGIN Y ELEMENTOS FIJOS
    ========================================================================== */
@@ -116,6 +149,11 @@ body.logged-out { background-image: none !important; }
     --input-bg: white;
     --input-border: #ccc;
     --control-btn-icon-color: white;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 @keyframes pulse-green {

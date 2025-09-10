@@ -80,6 +80,7 @@ class App {
         this.DOMElements.fabToggleBtn = getElement('#fab-toggle-btn');
         this.DOMElements.fabAddNoteBtn = getElement('#fab-add-note');
         this.DOMElements.fabAddZoneBtn = getElement('#fab-add-zone');
+        this.DOMElements.loaderOverlay = getElement('#loader-overlay');
         this.DOMElements.themeToggleBtn = getElement('#theme-toggle-btn');
         // NUEVO: Controles de zoom
         this.DOMElements.zoomControls = getElement('#zoom-controls');
@@ -308,6 +309,7 @@ class App {
                 this.dataService = new LocalStorageService();
                 this.DOMElements.body.classList.add('local-mode'); // Añadir clase para modo local
             }
+            this.DOMElements.loaderOverlay.classList.add('visible'); // Mostrar loader
             this.updateUserProfile(user);
             this.DOMElements.body.classList.remove('logged-out');
             this.DOMElements.body.classList.add('logged-in');
@@ -374,6 +376,9 @@ class App {
         } catch (error) {
             console.error("Error al cargar datos:", error);
             alertModal.open('Error de Carga', 'No se pudieron cargar tus datos. Intenta de nuevo más tarde.');
+        } finally {
+            // NUEVO: Ocultar el loader cuando la carga termina (con éxito o error)
+            this.DOMElements.loaderOverlay.classList.remove('visible');
         }
     }
 
@@ -934,6 +939,15 @@ class App {
             // Nueva esquina superior izquierda para que la nota se centre en la celda
             item.x = cellCenterX - (noteWidth / 2);
             item.y = cellCenterY - (noteHeight / 2);
+
+            // MEJORA: Actualizar la posición visual del elemento DOM inmediatamente
+            // para que coincida con la posición de "snap" que se va a guardar.
+            const noteInstance = this.noteInstances.get(item.id);
+            if (noteInstance) {
+                const noteElement = noteInstance.getDomElement();
+                noteElement.style.left = `${item.x}px`;
+                noteElement.style.top = `${item.y}px`;
+            }
         }
 
         this.updateNote(item);
