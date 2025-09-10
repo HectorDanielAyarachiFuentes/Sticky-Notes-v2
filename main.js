@@ -321,7 +321,13 @@ class App {
             this.updateUserProfile(user);
             this.DOMElements.body.classList.remove('logged-out');
             this.DOMElements.body.classList.add('logged-in');
-            this.loadData();
+
+            // CORRECCIÓN DEFINITIVA:
+            // Se introduce un pequeño retardo antes de cargar los datos.
+            // Esto resuelve una "condición de carrera de renderizado" donde el navegador
+            // intenta dibujar las notas antes de haber procesado completamente el cambio de
+            // visibilidad del contenedor principal (causado por la clase 'logged-in').
+            setTimeout(() => this.loadData(), 50); // 50ms es imperceptible pero suficiente.
         } else {
             this.DOMElements.body.classList.add('logged-out');
             this.DOMElements.body.classList.remove('logged-in');
