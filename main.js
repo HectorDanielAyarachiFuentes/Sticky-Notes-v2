@@ -80,7 +80,7 @@ class App {
         this.DOMElements.addNoteBtn.addEventListener('click', () => this.addNote());
         this.DOMElements.addZoneBtn.addEventListener('click', () => this.addZone());
         this.DOMElements.showGeneralBtn.addEventListener('click', () => { this.showGeneralDashboard(); this.closeSidebar(); });
-        this.DOMElements.workspaceTitle.addEventListener('click', () => { if (window.innerWidth <= 768) { this.showGeneralDashboard(); this.closeSidebar(); } });
+        this.DOMElements.workspaceTitle.addEventListener('click', () => { if (window.innerWidth <= CONSTANTS.MOBILE_BREAKPOINT) { this.showGeneralDashboard(); this.closeSidebar(); } });
 
         const toggleSidebar = () => this.DOMElements.body.classList.toggle('sidebar-active');
         this.DOMElements.sidebarToggleBtn.addEventListener('click', toggleSidebar);
@@ -301,7 +301,7 @@ class App {
 
     // --- Métodos de Renderización del Espacio de Trabajo ---
     renderWorkspace() {
-        const isMobile = window.innerWidth <= 768;
+        const isMobile = window.innerWidth <= CONSTANTS.MOBILE_BREAKPOINT;
         this.DOMElements.appContainer.innerHTML = ''; // Limpiar contenido anterior
 
         // Limpiar instancias de componentes Note/Zone antes de re-renderizar
@@ -418,7 +418,7 @@ class App {
     }
 
     updateTopControlsVisibility() {
-        const isMobile = window.innerWidth <= 768;
+        const isMobile = window.innerWidth <= CONSTANTS.MOBILE_BREAKPOINT;
         const generalBtn = getElement('#show-general-btn');
         const userProfileMenu = getElement('#user-profile-menu'); // Asume que este elemento existe
 

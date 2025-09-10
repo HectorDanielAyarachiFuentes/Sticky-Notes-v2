@@ -100,7 +100,7 @@
 
     <div class="main-content">
         <div id="top-controls">
-            <button id="sidebar-toggle-btn" class="control-btn">☰</button>
+            <button id="sidebar-toggle-btn" class="control-btn" title="Abrir panel de control" aria-label="Abrir panel de control">☰</button>
             <h2 id="workspace-title"></h2>
             <span id="save-status"></span>
             <button id="show-general-btn" class="control-btn secondary">Ver Tablero General</button>
@@ -125,7 +125,7 @@
         
         <div id="bottom-dashboard">
             <button id="dashboard-toggle" title="Ocultar/Mostrar Dashboard">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
             </button>
             <!-- MODIFICACIÓN: Añadimos la clase 'clickable' al stats-widget -->
             <div id="stats-widget" class="dashboard-widget clickable"><h3>Notas</h3><span id="note-count">0</span></div>
@@ -133,12 +133,12 @@
             <div id="calendar-widget" class="dashboard-widget">
                 <h3>Calendario</h3>
                 <div class="calendar-header">
-                    <button id="prev-month"><</button>
+                    <button id="prev-month" aria-label="Mes anterior"><</button>
                     <div class="month-year-controls">
                         <span id="month-year"></span>
                         <button id="today-button" class="today-btn">Hoy</button>
                     </div>
-                    <button id="next-month">></button>
+                    <button id="next-month" aria-label="Mes siguiente">></button>
                 </div>
                 <div class="calendar-grid" id="calendar-days"></div>
             </div>
@@ -158,11 +158,11 @@
                 <h3>Cronómetro</h3>
                 <div class="timer-display-container">
                     <span id="timer-display">25:00</span>
-                    <button id="edit-timer-btn" title="Configurar tiempo">✏️</button>
+                    <button id="edit-timer-btn" title="Configurar tiempo" aria-label="Configurar tiempo">✏️</button>
                 </div>
                 <div class="timer-buttons">
-                    <button id="timer-play-pause-btn" class="timer-control-btn" title="Iniciar/Pausar"></button>
-                    <button id="timer-reset-btn" class="timer-control-btn" title="Reiniciar">⟲</button>
+                    <button id="timer-play-pause-btn" class="timer-control-btn" title="Iniciar/Pausar" aria-label="Iniciar o pausar cronómetro"></button>
+                    <button id="timer-reset-btn" class="timer-control-btn" title="Reiniciar" aria-label="Reiniciar cronómetro">⟲</button>
                 </div>
                 <div class="timer-presets">
                     <button class="preset-btn" data-minutes="5">5m</button>
@@ -199,7 +199,7 @@
             </div>
         </div>
 
-        <div id="mobile-sidebar-container"><div class="sidebar-overlay"></div><aside id="mobile-sidebar"><div class="sidebar-header"><h3>Panel de Control</h3><button id="close-sidebar-btn">×</button></div><div class="sidebar-content"></div></aside></div>
+        <div id="mobile-sidebar-container"><div class="sidebar-overlay"></div><aside id="mobile-sidebar"><div class="sidebar-header"><h3>Panel de Control</h3><button id="close-sidebar-btn" aria-label="Cerrar panel de control">×</button></div><div class="sidebar-content"></div></aside></div>
     
         <div id="mobile-fab-container">
             <div class="fab-actions">
