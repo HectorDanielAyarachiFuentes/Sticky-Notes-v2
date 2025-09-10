@@ -508,8 +508,10 @@ class App {
         if (generalBtn) {
             if (isMobile) {
                 generalBtn.style.display = this.state.getSelectedDate() ? 'flex' : 'none';
+                generalBtn.innerHTML = '&#128203; General'; // MEJORA: Icono de tablero + texto corto para ahorrar espacio
             } else {
                 generalBtn.style.display = 'block';
+                generalBtn.textContent = 'Ver Tablero General'; // Restaurar texto original en escritorio
             }
         }
         if (userProfileMenu) {

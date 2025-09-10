@@ -639,11 +639,8 @@ body:not(.dark-mode) .note-list-item:hover {
     body.sidebar-active, body.zone-view-active { overflow: hidden; }
 
 
-    /* CORRECCIÓN: Ajustamos la bandera para que se vea en móvil */
-    #flag-wrapper {
-        width: 150px; /* Hacemos el contenedor más angosto */
-        left: 10px;   /* Lo posicionamos a 10px del borde izquierdo */
-    }
+    /* MEJORA RESPONSIVA: Ocultamos la animación de la bandera en móviles por rendimiento y limpieza visual. */
+    #flag-wrapper { display: none; }
 
     #app {
         display: block;
@@ -705,7 +702,14 @@ body:not(.dark-mode) .note-list-item:hover {
 
     #sidebar-toggle-btn { display: block; padding: 8px 12px; font-size: 18px; line-height: 1; }
     .profile-avatar { width: 40px; height: 40px; }
-    .control-btn.secondary { padding: 6px 10px; font-size: 13px; display: flex; }
+    /* MEJORA RESPONSIVA: Ajustamos el botón "General" para que se vea bien con el icono y texto corto */
+    .control-btn.secondary { 
+        padding: 6px 12px; /* Un poco más de padding horizontal */
+        font-size: 13px; 
+        display: flex; 
+        align-items: center; /* Centrar icono y texto verticalmente */
+        gap: 6px; /* Espacio entre icono y texto */
+    }
     
     #mobile-sidebar-container { display: block; }
     .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1099; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
