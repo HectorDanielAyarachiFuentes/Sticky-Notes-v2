@@ -733,21 +733,61 @@ class App {
             // Lógica para añadir una nota DENTRO de una zona (funciona para móvil y escritorio)
             const parentZone = this.state.getZones().find(z => z.id === zoneId);
             if (parentZone) {
+                // NUEVA LÓGICA: Colocar la nota en la primera celda vacía de la cuadrícula de la zona.
                 const notesInZone = this.state.getNotes().filter(n => n.zoneId === zoneId);
-                const startYInZone = 60; // Empezar a apilar debajo del título de la zona.
-                const gap = 15;
+                
+                const numCols = 4;
+                const numRows = 2;
+                const grid = Array(numRows).fill(null).map(() => Array(numCols).fill(false));
 
-                // Encontrar el punto más bajo ocupado por una nota dentro de la zona.
-                const lowestPointInZone = notesInZone.reduce((maxY, note) => {
-                    const relativeY = note.y - parentZone.y;
-                    const noteBottom = relativeY + (note.height || CONSTANTS.DEFAULT_NOTE_HEIGHT);
-                    return Math.max(maxY, noteBottom);
-                }, startYInZone - gap);
+                // Coordenadas y dimensiones de la cuadrícula interna de la zona
+                const gridX = parentZone.x + 15;
+                const gridY = parentZone.y + 45;
+                const gridW = parentZone.width - 30;
+                const gridH = parentZone.height - 60;
+                const cellWidth = gridW / numCols;
+                const cellHeight = gridH / numRows;
 
-                position = {
-                    x: parentZone.x + 20, // Posición X fija dentro de la zona.
-                    y: parentZone.y + lowestPointInZone + gap // Apilar debajo de la última nota.
-                };
+                // Marcar las celdas que ya están ocupadas por otras notas
+                notesInZone.forEach(note => {
+                    const noteCenterX = note.x + (note.width / 2);
+                    const noteCenterY = note.y + (note.height / 2);
+                    const relativeX = noteCenterX - gridX;
+                    const relativeY = noteCenterY - gridY;
+                    const col = Math.floor(relativeX / cellWidth);
+                    const row = Math.floor(relativeY / cellHeight);
+                    if (row >= 0 && row < numRows && col >= 0 && col < numCols) {
+                        grid[row][col] = true; // Marcar celda como ocupada
+                    }
+                });
+
+                // Encontrar la primera celda vacía (de arriba a abajo, de izquierda a derecha)
+                let targetRow = -1, targetCol = -1;
+                for (let r = 0; r < numRows; r++) {
+                    for (let c = 0; c < numCols; c++) {
+                        if (!grid[r][c]) {
+                            targetRow = r;
+                            targetCol = c;
+                            break;
+                        }
+                    }
+                    if (targetRow !== -1) break;
+                }
+
+                if (targetRow !== -1 && targetCol !== -1) {
+                    // Si se encuentra una celda vacía, calcular la posición para centrar la nueva nota en ella
+                    const noteWidth = CONSTANTS.DEFAULT_NOTE_WIDTH;
+                    const noteHeight = CONSTANTS.DEFAULT_NOTE_HEIGHT;
+                    const cellCenterX = gridX + (targetCol * cellWidth) + (cellWidth / 2);
+                    const cellCenterY = gridY + (targetRow * cellHeight) + (cellHeight / 2);
+                    position = {
+                        x: cellCenterX - (noteWidth / 2),
+                        y: cellCenterY - (noteHeight / 2)
+                    };
+                } else {
+                    // Fallback: si la cuadrícula está llena, apilar la nota debajo de la zona para que sea visible
+                    position = { x: parentZone.x, y: parentZone.y + parentZone.height + 20 };
+                }
             } else {
                 // Fallback si la zona no se encuentra (no debería pasar)
                 position = this._getNewItemDesktopPosition(false);
@@ -1016,7 +1056,7 @@ class App {
             const zone = new Zone(zoneData, {
                 onDelete: this.deleteZone.bind(this),
                 onUpdate: this.updateZone.bind(this),
-                onAddNoteToZone: this.addNote.bind(this),
+                onAddNoteToZone: (zoneId) => this.addNote(zoneId),
                 // Pasar el getter del estado de pan/zoom
                 getPanState: this.getPanState.bind(this)
             });
@@ -1084,7 +1124,7 @@ class App {
                 const zone = new Zone(zoneData, {
                     onDelete: this.deleteZone.bind(this),
                     onUpdate: this.updateZone.bind(this),
-                    onAddNoteToZone: this.addNote.bind(this)
+                    onAddNoteToZone: (zoneId) => this.addNote(zoneId)
                 });
                 this.zoneInstances.set(zoneData.id, zone);
                 const zoneEl = zone.getDomElement();
