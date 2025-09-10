@@ -105,6 +105,18 @@ class App {
         if (this.DOMElements.statsWidget) {
             this.DOMElements.statsWidget.addEventListener('click', () => this.showAllNotesList());
         }
+
+        // Listener para cerrar la vista de zoom de una nota al hacer clic fuera de ella.
+        document.addEventListener('click', (e) => {
+            if (this.DOMElements.body.classList.contains('note-view-active')) {
+                const zoomedNote = getElement('.note-zoomed');
+                // Si existe una nota con zoom y el clic fue fuera de ella, se cierra la vista.
+                if (zoomedNote && !zoomedNote.contains(e.target)) {
+                    zoomedNote.classList.remove('note-zoomed');
+                    this.DOMElements.body.classList.remove('note-view-active');
+                }
+            }
+        });
     }
 
     setupWidgets() {

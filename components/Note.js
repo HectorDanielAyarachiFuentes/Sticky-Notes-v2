@@ -120,6 +120,22 @@ class Note {
             });
             makeResizable(this.element, this.data, this.callbacks.onUpdate);
         }
+
+        // Añadir evento de doble clic para zoom en escritorio (tanto para notas sueltas como dentro de zonas)
+        if (window.innerWidth > CONSTANTS.MOBILE_BREAKPOINT) {
+            this.element.addEventListener('dblclick', (e) => {
+                // Evitar que el zoom se active si se hace doble clic en un área editable o un botón
+                const target = e.target;
+                if (target.isContentEditable ||
+                    target.tagName.toLowerCase() === 'textarea' ||
+                    target.tagName.toLowerCase() === 'button' ||
+                    target.classList.contains('resize-handle')) {
+                    return;
+                }
+                this.element.classList.toggle('note-zoomed');
+                document.body.classList.toggle('note-view-active');
+            });
+        }
     }
 
     getDomElement() {
