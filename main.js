@@ -22,8 +22,12 @@ import { initSkyAnimation } from './utils/sky-animation.js';
 
 class App {
     constructor() {
+        // Promesa para asegurar que la inicialización se complete antes de manejar cambios de autenticación
+        this._initPromise = new Promise(resolve => {
+            this._resolveInit = resolve;
+        });
         this.state = AppState; // Usa la instancia singleton de AppState
-        this.authService = new AuthService(this.handleAuthStateChange.bind(this));
+        this.authService = new AuthService(this.handleAuthStateChange.bind(this)); // El callback ahora esperará la promesa
         this.dataService = null; // Servicio de datos (Firestore o LocalStorage)
 
         this.DOMElements = {}; // Cache de los elementos DOM principales
@@ -51,9 +55,7 @@ class App {
         this.createSliderPlaceholder();
         this.bindGlobalEvents();
         this.setupWidgets();
-        // NOTA: initNetworkStatusMonitor ya se llama en el DOMContentLoaded directamente,
-        // no es necesario llamarla aquí también a menos que se quiera re-inicializar
-        // en algún punto específico del ciclo de vida de la App, lo cual no es común.
+        this._resolveInit(); // Resuelve la promesa para indicar que la app está lista
     }
 
     cacheDOM() {
@@ -307,7 +309,11 @@ class App {
     }
 
     // --- Métodos de Autenticación y Carga de Datos ---
-    handleAuthStateChange(user) {
+    async handleAuthStateChange(user) {
+        // Espera a que la inicialización de la app (DOM cacheado, widgets, etc.) esté completa
+        // antes de manipular el DOM o el estado que depende de ello.
+        await this._initPromise;
+
         const wasLoggedIn = !!this.state.getCurrentUser(); // Captura el estado de sesión anterior
         this.state.setCurrentUser(user);
 
