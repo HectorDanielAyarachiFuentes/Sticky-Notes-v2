@@ -296,7 +296,9 @@ class App {
 
     // --- Métodos de Autenticación y Carga de Datos ---
     handleAuthStateChange(user) {
+        const wasLoggedIn = !!this.state.getCurrentUser(); // Captura el estado de sesión anterior
         this.state.setCurrentUser(user);
+
         if (user) {
             if (USE_FIREBASE) {
                 this.dataService = new FirestoreService(this.authService.getFirebaseApp());
@@ -313,14 +315,16 @@ class App {
             this.DOMElements.body.classList.remove('logged-in');
             this.clearWorkspace();
 
-            // SOLUCIÓN: Forzar el reinicio de la animación SVG de la bandera.
-            // Al volver a mostrar el SVG, el navegador no reinicia la animación SMIL.
-            // Este truco de "recargar" el HTML del elemento fuerza al navegador a re-renderizarlo y reiniciar la animación.
-            const flagWrapper = getElement('#flag-wrapper');
-            if (flagWrapper) {
-                const flagHTML = flagWrapper.innerHTML;
-                flagWrapper.innerHTML = '';
-                setTimeout(() => { flagWrapper.innerHTML = flagHTML; }, 0);
+            // CORRECCIÓN: Forzar el reinicio de la animación de la bandera SÓLO al cerrar sesión,
+            // no en la carga inicial de la página. Si 'wasLoggedIn' es true, significa que
+            // estamos pasando de un estado logueado a uno deslogueado.
+            if (wasLoggedIn) {
+                const flagWrapper = getElement('#flag-wrapper');
+                if (flagWrapper) {
+                    const flagHTML = flagWrapper.innerHTML;
+                    flagWrapper.innerHTML = '';
+                    setTimeout(() => { flagWrapper.innerHTML = flagHTML; }, 0);
+                }
             }
             // Adaptar UI para modo local al estar deslogueado
             if (!USE_FIREBASE) {
