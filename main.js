@@ -77,6 +77,11 @@ class App {
         this.DOMElements.fabAddNoteBtn = getElement('#fab-add-note');
         this.DOMElements.fabAddZoneBtn = getElement('#fab-add-zone');
         this.DOMElements.themeToggleBtn = getElement('#theme-toggle-btn');
+        // NUEVO: Controles de zoom
+        this.DOMElements.zoomControls = getElement('#zoom-controls');
+        this.DOMElements.zoomInBtn = getElement('#zoom-in-btn');
+        this.DOMElements.zoomOutBtn = getElement('#zoom-out-btn');
+        this.DOMElements.zoomResetBtn = getElement('#zoom-reset-btn');
         // NUEVO: Elementos para la funcionalidad de la lista de notas
         this.DOMElements.statsWidget = getElement('#stats-widget');
         this.DOMElements.noteListModalOverlay = getElement('#note-list-modal-overlay');
@@ -121,6 +126,13 @@ class App {
         // El clonado en móvil tendrá su propio listener en setupWidgets()
         if (this.DOMElements.statsWidget) {
             this.DOMElements.statsWidget.addEventListener('click', () => this.showAllNotesList());
+        }
+
+        // NUEVO: Eventos para los botones de zoom
+        if (this.DOMElements.zoomInBtn) {
+            this.DOMElements.zoomInBtn.addEventListener('click', () => this.zoomIn());
+            this.DOMElements.zoomOutBtn.addEventListener('click', () => this.zoomOut());
+            this.DOMElements.zoomResetBtn.addEventListener('click', () => this.resetZoom());
         }
 
         // Listener para cerrar la vista de zoom de una nota al hacer clic fuera de ella.
@@ -348,6 +360,43 @@ class App {
 
         this.applyWorkspaceTransform();
         this.debounceSave(); // Guarda el nuevo estado de zoom y pan
+    }
+
+    // NUEVO: Métodos para los botones de control de zoom
+    zoom(direction) {
+        const zoomSpeed = 0.2; // Un poco más rápido para los clics de botón
+        const minZoom = 0.2;
+        const maxZoom = 2.5;
+
+        const oldScale = this.pan.scale;
+        // direction es 1 para acercar, -1 para alejar
+        const newScale = Math.max(minZoom, Math.min(maxZoom, oldScale + direction * zoomSpeed * oldScale));
+
+        if (newScale === oldScale) return;
+
+        // Zoom hacia el centro de la ventana
+        const rect = this.DOMElements.appContainer.getBoundingClientRect();
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+
+        this.pan.x = centerX - (centerX - this.pan.x) * (newScale / oldScale);
+        this.pan.y = centerY - (centerY - this.pan.y) * (newScale / oldScale);
+        this.pan.scale = newScale;
+
+        this.applyWorkspaceTransform();
+        this.debounceSave();
+    }
+
+    zoomIn() { this.zoom(1); }
+
+    zoomOut() { this.zoom(-1); }
+
+    resetZoom() {
+        this.pan.x = 0;
+        this.pan.y = 0;
+        this.pan.scale = 1;
+        this.applyWorkspaceTransform();
+        this.debounceSave();
     }
 
     _getNewItemDesktopPosition(newItemIsZone = false) {

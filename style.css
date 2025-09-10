@@ -423,6 +423,54 @@ body.dark-mode .day:hover { background-color: #3a4a6b; }
 .day.selected-day { box-shadow: 0 0 0 2px var(--primary-accent); }
 .day.has-notes::after { content: ''; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background-color: var(--primary-accent); border-radius: 50%; }
 
+/* ==========================================================================
+   5.1 COMPONENTES: CONTROLES DE ZOOM (NUEVO)
+   ========================================================================== */
+#zoom-controls {
+    position: fixed;
+    bottom: 250px; /* Sobre el dashboard (230px) + 20px de margen */
+    right: 20px;
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: bottom 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body.dashboard-hidden #zoom-controls {
+    bottom: 50px; /* Sobre el dashboard colapsado (30px) + 20px de margen */
+}
+
+#zoom-controls button {
+    width: 44px;
+    height: 44px;
+    background-color: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    color: var(--text-dark);
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+}
+
+#zoom-controls button:hover {
+    background-color: var(--primary-accent);
+    color: white;
+    border-color: var(--primary-accent);
+    transform: scale(1.05);
+}
+
+#zoom-reset-btn {
+    font-size: 20px;
+}
+
 /* INICIO ESTILOS WIDGET CRONÓMETRO */
 #timer-widget.timer-running {
     animation: pulse-green 2s infinite ease-out;
@@ -758,6 +806,11 @@ body.note-view-active .zone {
 
     /* MEJORA RESPONSIVA: Ocultamos la animación de la bandera en móviles por rendimiento y limpieza visual. */
     #flag-wrapper { display: none; }
+
+    /* NUEVO: Ocultar controles de zoom en móvil */
+    #zoom-controls {
+        display: none;
+    }
 
     #app {
         display: block;
