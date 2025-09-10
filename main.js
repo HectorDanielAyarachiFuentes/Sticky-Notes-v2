@@ -29,6 +29,12 @@ class App {
         this.noteInstances = new Map(); // Almacena instancias de Note
         this.zoneInstances = new Map(); // Almacena instancias de Zone
 
+        // NUEVO: Estado para el pan y zoom del espacio de trabajo
+        this.pan = { x: 0, y: 0, scale: 1 };
+        this.isPanning = false;
+        this.lastMousePos = { x: 0, y: 0 };
+
+
         // Debounce para guardar datos en Firestore
         this.debounceSave = debounce(this._saveData.bind(this), 1500);
     }
@@ -49,6 +55,7 @@ class App {
     cacheDOM() {
         this.DOMElements.body = document.body;
         this.DOMElements.appContainer = getElement('#app');
+        this.DOMElements.workspace = getElement('#workspace');
         this.DOMElements.signInBtn = getElement('#google-signin-btn');
         this.DOMElements.workspaceTitle = getElement('#workspace-title');
         this.DOMElements.addNoteBtn = getElement('#addNoteBtn');
@@ -99,6 +106,16 @@ class App {
         this.DOMElements.fabToggleBtn.addEventListener('click', () => this.DOMElements.fabContainer.classList.toggle('fab-active'));
         this.DOMElements.fabAddNoteBtn.addEventListener('click', () => { this.addNote(); this.DOMElements.fabContainer.classList.remove('fab-active'); });
         this.DOMElements.fabAddZoneBtn.addEventListener('click', () => { this.addZone(); this.DOMElements.fabContainer.classList.remove('fab-active'); });
+
+        // NUEVO: Eventos de Pan y Zoom para el escritorio
+        if (window.innerWidth > CONSTANTS.MOBILE_BREAKPOINT) {
+            this.DOMElements.appContainer.addEventListener('mousedown', this.handlePanStart.bind(this));
+            this.DOMElements.appContainer.addEventListener('wheel', this.handleZoom.bind(this), { passive: false });
+            // Los listeners de movimiento y soltar se añaden al documento para capturar el movimiento fuera de la ventana
+            document.addEventListener('mousemove', this.handlePanMove.bind(this));
+            document.addEventListener('mouseup', this.handlePanEnd.bind(this));
+            document.addEventListener('mouseleave', this.handlePanEnd.bind(this)); // Termina el paneo si el ratón sale de la ventana
+        }
 
         // Evento para el widget de notas (APLICADO AL ORIGINAL EN DESKTOP)
         // El clonado en móvil tendrá su propio listener en setupWidgets()
@@ -222,6 +239,11 @@ class App {
             this.state.setNotes(data.notes);
             this.state.setZones(data.zones);
             this.state.setYoutubeUrl(data.youtubeUrl);
+            // NUEVO: Cargar estado de pan y zoom
+            this.pan.x = data.panX || 0;
+            this.pan.y = data.panY || 0;
+            this.pan.scale = data.zoom || 1;
+
             this.state.setIsDataLoaded(true);
 
             this.renderWorkspace();
@@ -242,7 +264,10 @@ class App {
             const dataToSave = {
                 notes: this.state.getNotes(),
                 zones: this.state.getZones(),
-                youtubeUrl: this.state.getYoutubeUrl()
+                youtubeUrl: this.state.getYoutubeUrl(),
+                panX: this.pan.x,
+                panY: this.pan.y,
+                zoom: this.pan.scale
             };
             this.dataService.saveUserData(this.state.getCurrentUser().uid, dataToSave)
                 .then(() => {
@@ -257,6 +282,72 @@ class App {
             console.error("Error al preparar datos para guardar:", error);
             this.DOMElements.saveStatus.textContent = 'Error al guardar';
         }
+    }
+
+    // --- NUEVO: Métodos para Pan y Zoom ---
+
+    applyWorkspaceTransform() {
+        if (this.DOMElements.workspace) {
+            this.DOMElements.workspace.style.transform = `translate(${this.pan.x}px, ${this.pan.y}px) scale(${this.pan.scale})`;
+        }
+    }
+
+    handlePanStart(e) {
+        // Solo inicia el paneo si se hace clic en el fondo, no en una nota o zona.
+        if (e.target !== this.DOMElements.appContainer && e.target !== this.DOMElements.workspace) {
+            return;
+        }
+        e.preventDefault();
+        this.isPanning = true;
+        this.lastMousePos = { x: e.clientX, y: e.clientY };
+        this.DOMElements.appContainer.classList.add('panning');
+    }
+
+    handlePanMove(e) {
+        if (!this.isPanning) return;
+        e.preventDefault();
+        const dx = e.clientX - this.lastMousePos.x;
+        const dy = e.clientY - this.lastMousePos.y;
+        this.pan.x += dx;
+        this.pan.y += dy;
+        this.lastMousePos = { x: e.clientX, y: e.clientY };
+        this.applyWorkspaceTransform();
+    }
+
+    handlePanEnd(e) {
+        if (!this.isPanning) return;
+        this.isPanning = false;
+        this.DOMElements.appContainer.classList.remove('panning');
+        this.debounceSave(); // Guarda la nueva posición
+    }
+
+    handleZoom(e) {
+        // Solo permite zoom si el cursor está sobre el fondo
+        if (e.target !== this.DOMElements.appContainer && e.target !== this.DOMElements.workspace) {
+            return;
+        }
+        e.preventDefault();
+
+        const zoomSpeed = 0.1;
+        const minZoom = 0.2;
+        const maxZoom = 2.5;
+
+        const oldScale = this.pan.scale;
+        const delta = e.deltaY > 0 ? -1 : 1; // Hacia abajo aleja, hacia arriba acerca
+        const newScale = Math.max(minZoom, Math.min(maxZoom, oldScale + delta * zoomSpeed * oldScale));
+
+        if (newScale === oldScale) return;
+
+        const rect = this.DOMElements.appContainer.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        this.pan.x = mouseX - (mouseX - this.pan.x) * (newScale / oldScale);
+        this.pan.y = mouseY - (mouseY - this.pan.y) * (newScale / oldScale);
+        this.pan.scale = newScale;
+
+        this.applyWorkspaceTransform();
+        this.debounceSave(); // Guarda el nuevo estado de zoom y pan
     }
 
     _getNewItemDesktopPosition(newItemIsZone = false) {
@@ -543,7 +634,18 @@ class App {
     // --- Métodos de Renderización del Espacio de Trabajo ---
     renderWorkspace() {
         const isMobile = window.innerWidth <= CONSTANTS.MOBILE_BREAKPOINT;
-        this.DOMElements.appContainer.innerHTML = ''; // Limpiar contenido anterior
+        this.DOMElements.workspace.innerHTML = ''; // Limpiar contenido del lienzo, no todo el #app
+
+        // Desactivar pan/zoom en móvil y activarlo en escritorio
+        if (isMobile) {
+            this.DOMElements.workspace.style.transform = ''; // Resetea la transformación en móvil
+            this.DOMElements.appContainer.style.cursor = 'default';
+            this.DOMElements.body.classList.remove('panning');
+        } else {
+            this.applyWorkspaceTransform(); // Aplica la transformación guardada en escritorio
+            this.DOMElements.appContainer.style.cursor = 'grab';
+        }
+
 
         // Limpiar instancias de componentes Note/Zone antes de re-renderizar
         this.noteInstances.clear();
@@ -568,8 +670,8 @@ class App {
         notesContainer.id = 'notesContainer';
         const zonesContainer = document.createElement('div');
         zonesContainer.id = 'zonesContainer';
-        this.DOMElements.appContainer.appendChild(zonesContainer);
-        this.DOMElements.appContainer.appendChild(notesContainer);
+        this.DOMElements.workspace.appendChild(zonesContainer);
+        this.DOMElements.workspace.appendChild(notesContainer);
 
         zonesToShow.forEach(zoneData => {
             const zone = new Zone(zoneData, {
@@ -622,7 +724,7 @@ class App {
                 this.noteInstances.set(noteData.id, note);
                 notesContainer.appendChild(note.getDomElement());
             });
-            this.DOMElements.appContainer.appendChild(standaloneSection);
+            this.DOMElements.workspace.appendChild(standaloneSection);
         }
 
         // 2. Render Zones Section
@@ -656,7 +758,7 @@ class App {
                     mobileNotesContainer.appendChild(note.getDomElement());
                 });
             });
-            this.DOMElements.appContainer.appendChild(zonesSection);
+            this.DOMElements.workspace.appendChild(zonesSection);
         }
     }
 

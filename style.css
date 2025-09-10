@@ -161,6 +161,20 @@ body.dark-mode {
     box-sizing: border-box; 
     transition: height 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     padding: 70px 20px 20px 20px; 
+    cursor: grab; /* Cursor para indicar que se puede mover el fondo */
+}
+
+/* NUEVO: Cursor cuando se está moviendo el fondo */
+#app.panning {
+    cursor: grabbing;
+}
+
+/* NUEVO: Contenedor para todo el contenido que se puede mover y ampliar */
+#workspace {
+    position: relative; /* Para ser el contexto de posicionamiento de notas y zonas */
+    width: 100%;
+    height: 100%;
+    transform-origin: 0 0; /* El zoom se origina en la esquina superior izquierda */
 }
 
 .draggable { position: absolute; z-index: 10; cursor: move; }

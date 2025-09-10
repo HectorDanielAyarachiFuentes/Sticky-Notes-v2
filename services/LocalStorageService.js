@@ -14,7 +14,7 @@ class LocalStorageService {
     async loadUserData(uid) { // El uid se ignora en modo local
         const dataJSON = localStorage.getItem(this.storageKey);
         if (!dataJSON) {
-            return { notes: [], zones: [], youtubeUrl: '' };
+            return { notes: [], zones: [], youtubeUrl: '', panX: 0, panY: 0, zoom: 1 };
         }
 
         const data = JSON.parse(dataJSON);
@@ -29,7 +29,14 @@ class LocalStorageService {
             if (note.width === undefined) { note.width = CONSTANTS.DEFAULT_NOTE_WIDTH; }
             if (note.height === undefined) { note.height = CONSTANTS.DEFAULT_NOTE_HEIGHT; }
         });
-        return { notes: loadedNotes, zones: data.zones || [], youtubeUrl: data.youtubeUrl || '' };
+        return { 
+            notes: loadedNotes, 
+            zones: data.zones || [], 
+            youtubeUrl: data.youtubeUrl || '',
+            panX: data.panX || 0,
+            panY: data.panY || 0,
+            zoom: data.zoom || 1
+        };
     }
 
     async saveUserData(uid, data) { // El uid se ignora en modo local
