@@ -319,11 +319,13 @@ class App {
             // no en la carga inicial de la página. Si 'wasLoggedIn' es true, significa que
             // estamos pasando de un estado logueado a uno deslogueado.
             if (wasLoggedIn) {
-                const flagWrapper = getElement('#flag-wrapper');
-                if (flagWrapper) {
-                    const flagHTML = flagWrapper.innerHTML;
-                    flagWrapper.innerHTML = '';
-                    setTimeout(() => { flagWrapper.innerHTML = flagHTML; }, 0);
+                // Al cerrar sesión, reiniciamos las animaciones del fondo (nubes y bandera)
+                // forzando al navegador a re-renderizar el contenido.
+                const loginBackground = getElement('#login-background');
+                if (loginBackground) {
+                    const backgroundHTML = loginBackground.innerHTML;
+                    loginBackground.innerHTML = '';
+                    setTimeout(() => { loginBackground.innerHTML = backgroundHTML; }, 0);
                 }
             }
             // Adaptar UI para modo local al estar deslogueado
