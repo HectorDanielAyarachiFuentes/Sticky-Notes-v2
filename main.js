@@ -306,6 +306,7 @@ class App {
 
     // --- Métodos de Autenticación y Carga de Datos ---
     async handleAuthStateChange(user) {
+        // INICIO DE LA MODIFICACIÓN
         const wasLoggedIn = !!this.state.getCurrentUser(); // Captura el estado de sesión anterior
         this.state.setCurrentUser(user);
 
@@ -318,10 +319,11 @@ class App {
 
             // CORRECCIÓN DEFINITIVA:
             // Se introduce un pequeño retardo antes de cargar los datos.
-            // Esto resuelve una "condición de carrera de renderizado" donde el navegador
+            // Esto resuelve la "condición de carrera de renderizado" donde el navegador
             // intenta dibujar las notas antes de haber procesado completamente el cambio de
             // visibilidad del contenedor principal (causado por la clase 'logged-in').
             setTimeout(() => this.loadData(), 50); // 50ms es imperceptible pero suficiente.
+        
         } else {
             this.DOMElements.body.classList.add('logged-out');
             this.DOMElements.body.classList.remove('logged-in');
@@ -336,7 +338,8 @@ class App {
                 const loginBackground = getElement('#login-background');
                 if (loginBackground) {
                     const backgroundHTML = loginBackground.innerHTML;
-                    loginBackground.innerHTML = '';
+                    loginBackground.innerHTML = ''; // Vaciarlo
+                    // En el siguiente "tick" del navegador, lo volvemos a llenar.
                     setTimeout(() => { 
                         loginBackground.innerHTML = backgroundHTML; 
                         // Re-inicializar la animación del cielo después de reconstruir el DOM
@@ -347,6 +350,7 @@ class App {
             // Asegurarse de que el texto original esté presente si se desloguea de Firebase
             this.DOMElements.signInBtn.textContent = '🚀 Iniciar Sesión con Google';
         }
+        // FIN DE LA MODIFICACIÓN
     }
 
     applyData(data) {
@@ -1283,7 +1287,7 @@ class App {
     }
 
     clearWorkspace() {
-        this.DOMElements.appContainer.innerHTML = '';
+        this.DOMElements.workspace.innerHTML = '';
         this.DOMElements.workspaceTitle.textContent = '';
         this.state.setIsDataLoaded(false);
         this.state.setNotes([]);
