@@ -1,15 +1,15 @@
 // services/AuthService.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
-import { firebaseConfig, USE_FIREBASE } from "../config.js";
+import { firebaseConfig } from "../config.js";
 
 class AuthService {
     constructor(onAuthChangeCallback) {
-        this.onAuthChangeCallback = onAuthChangeCallback;
-
         this.app = initializeApp(firebaseConfig);
         this.auth = getAuth(this.app);
         this.provider = new GoogleAuthProvider();
+        this.onAuthChangeCallback = onAuthChangeCallback;
+
         onAuthStateChanged(this.auth, (user) => {
             this.onAuthChangeCallback(user);
         });

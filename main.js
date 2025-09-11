@@ -410,7 +410,18 @@ class App {
         } catch (error) {
             console.error("Error al sincronizar con Firestore:", error);
             if (!isCacheApplied) {
-                alertModal.open('Error de Red', 'No se pudieron cargar los datos de la nube. Se muestra la última versión guardada localmente, si existe.');
+                // MEJORA: Mensaje de error más específico para problemas de permisos.
+                if (error.code === 'permission-denied') {
+                     alertModal.open(
+                        'Error de Permisos', 
+                        'La aplicación no tiene permisos para leer tus datos. Es muy probable que las reglas de seguridad de Firestore no estén configuradas. Por favor, revisa la configuración de tu proyecto en Firebase.'
+                    );
+                } else {
+                    alertModal.open(
+                        'Error de Red', 
+                        'No se pudieron cargar los datos de la nube. Se muestra la última versión guardada localmente, si existe.'
+                    );
+                }
             }
         } finally {
             this.DOMElements.loaderOverlay.classList.remove('visible');
