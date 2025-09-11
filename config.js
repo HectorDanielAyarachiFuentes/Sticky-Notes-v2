@@ -9,12 +9,9 @@ export const firebaseConfig = {
   measurementId: "G-331DWMF8ZR"
 };
 
-// Detecta si estamos en un entorno local (localhost, 127.0.0.1, o abriendo el archivo directamente)
-const isLocalEnvironment = ['localhost', '127.0.0.1', ''].includes(window.location.hostname);
-
 // INTERRUPTOR DE MODO:
-// Se conecta a Firebase a menos que estés en un entorno local.
-export const USE_FIREBASE = !isLocalEnvironment;
+// Se fuerza el uso de Firebase por defecto, eliminando la lógica de detección de entorno local.
+export const USE_FIREBASE = true;
 
 export const CONSTANTS = {
     TIMER_LS_KEY: 'timerData',

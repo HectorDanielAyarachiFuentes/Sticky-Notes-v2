@@ -1,7 +1,6 @@
 // main.js
 import AuthService from "./services/AuthService.js";
 import FirestoreService from "./services/FirestoreService.js";
-import LocalStorageService from "./services/LocalStorageService.js";
 import AppState from "./state/AppState.js"; // Importa la instancia singleton
 import { debounce } from "./utils/helpers.js";
 import { getElement, getElements } from "./utils/dom.js";
@@ -311,12 +310,7 @@ class App {
         this.state.setCurrentUser(user);
 
         if (user) {
-            if (USE_FIREBASE) {
-                this.dataService = new FirestoreService(this.authService.getFirebaseApp());
-            } else {
-                this.dataService = new LocalStorageService();
-                this.DOMElements.body.classList.add('local-mode'); // Añadir clase para modo local
-            }
+            this.dataService = new FirestoreService(this.authService.getFirebaseApp());
             this.DOMElements.loaderOverlay.classList.add('visible'); // Mostrar loader
             this.updateUserProfile(user);
             this.DOMElements.body.classList.remove('logged-out');
@@ -350,14 +344,8 @@ class App {
                     }, 0);
                 }
             }
-            // Adaptar UI para modo local al estar deslogueado
-            if (!USE_FIREBASE) {
-                this.DOMElements.body.classList.add('local-mode');
-                this.DOMElements.signInBtn.textContent = '🚀 Entrar como Invitado';
-            } else {
-                // Asegurarse de que el texto original esté presente si se desloguea de Firebase
-                this.DOMElements.signInBtn.textContent = '🚀 Iniciar Sesión con Google';
-            }
+            // Asegurarse de que el texto original esté presente si se desloguea de Firebase
+            this.DOMElements.signInBtn.textContent = '🚀 Iniciar Sesión con Google';
         }
     }
 
@@ -390,21 +378,6 @@ class App {
     async loadData() {
         if (!this.state.getCurrentUser()) return;
         const uid = this.state.getCurrentUser().uid;
-
-        // Si no usamos Firebase, la lógica es simple: cargar de localStorage y ya.
-        if (!USE_FIREBASE) {
-            this.DOMElements.loaderOverlay.classList.add('visible');
-            try {
-                const data = await this.dataService.loadUserData(uid);
-                this.applyData(data);
-            } catch (error) {
-                console.error("Error al cargar datos locales:", error);
-                alertModal.open('Error de Carga', 'No se pudieron cargar tus datos locales.');
-            } finally {
-                this.DOMElements.loaderOverlay.classList.remove('visible');
-            }
-            return;
-        }
 
         // Lógica de "Cache-First" para cuando se usa Firebase
         const localCacheKey = `userDataCache_${uid}`;
@@ -469,9 +442,7 @@ class App {
 
         // En modo local, this.dataService es LocalStorageService, así que esto funciona para ambos casos.
         // El debounce es útil en ambos para evitar escrituras excesivas.
-        if (USE_FIREBASE) {
-            this.DOMElements.saveStatus.textContent = 'Guardando...';
-        }
+        this.DOMElements.saveStatus.textContent = 'Guardando...';
 
         try {
             const dataToSave = {
@@ -485,24 +456,22 @@ class App {
             };
             this.dataService.saveUserData(this.state.getCurrentUser().uid, dataToSave)
                 .then(() => {
-                    if (USE_FIREBASE) {
-                        this.DOMElements.saveStatus.textContent = 'Guardado ✓';
-                        setTimeout(() => this.DOMElements.saveStatus.textContent = '', 2000);
-                    }
+                    this.DOMElements.saveStatus.textContent = 'Guardado ✓';
+                    setTimeout(() => this.DOMElements.saveStatus.textContent = '', 2000);
                 })
                 .catch(error => {
                     console.error("Error al guardar datos:", error);
-                    if (USE_FIREBASE) this.DOMElements.saveStatus.textContent = 'Error al guardar';
+                    this.DOMElements.saveStatus.textContent = 'Error al guardar';
                 });
         } catch (error) {
             console.error("Error al preparar datos para guardar:", error);
-            if (USE_FIREBASE) this.DOMElements.saveStatus.textContent = 'Error al guardar';
+            this.DOMElements.saveStatus.textContent = 'Error al guardar';
         }
     }
 
     _triggerSave() {
-        if (USE_FIREBASE) this._saveDataToLocal(); // Guarda en caché local al instante.
-        this.debounceRemoteSave(); // Programa el guardado en la nube (o en el localStorage principal en modo local).
+        this._saveDataToLocal(); // Guarda en caché local al instante.
+        this.debounceRemoteSave(); // Programa el guardado en la nube.
     }
 
     // --- NUEVO: Métodos para Pan y Zoom ---
