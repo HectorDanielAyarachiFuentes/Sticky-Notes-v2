@@ -39,7 +39,7 @@ class App {
 
 
         // Debounce para guardar datos en Firestore
-        this.debounceSave = debounce(this._saveData.bind(this), 1500);
+        this.debounceRemoteSave = debounce(this._saveDataToRemote.bind(this), 1500);
     }
 
     init() {
@@ -109,10 +109,10 @@ class App {
     }
 
     bindGlobalEvents() {
-        this.DOMElements.signInBtn.addEventListener('click', () => this.authService.signIn());
-        this.DOMElements.signOutBtn.addEventListener('click', () => this.authService.signOut());
-        this.DOMElements.addNoteBtn.addEventListener('click', () => this.addNote());
-        this.DOMElements.addZoneBtn.addEventListener('click', () => this.addZone());
+        this.DOMElements.signInBtn.addEventListener('click', () => this.authService.signIn()); // OK
+        this.DOMElements.signOutBtn.addEventListener('click', () => this.authService.signOut()); // OK
+        this.DOMElements.addNoteBtn.addEventListener('click', () => this.addNote()); // Calls _triggerSave
+        this.DOMElements.addZoneBtn.addEventListener('click', () => this.addZone()); // Calls _triggerSave
         this.DOMElements.showGeneralBtn.addEventListener('click', () => { this.showGeneralDashboard(); this.closeSidebar(); });
         this.DOMElements.workspaceTitle.addEventListener('click', () => { if (window.innerWidth <= CONSTANTS.MOBILE_BREAKPOINT) { this.showGeneralDashboard(); this.closeSidebar(); } });
         this.DOMElements.themeToggleBtn.addEventListener('click', () => this.toggleTheme());
@@ -188,10 +188,10 @@ class App {
 
         // Evento para guardar el contenido de la nota al escribir en el slider
         this.DOMElements.sliderNoteContent.addEventListener('input', e => {
-            const target = e.target;
-            if (target.tagName.toLowerCase() === 'textarea') { // Si se edita el contenido
-                this.handleSliderContentChange(target);
-            } else if (target.classList.contains('slider-note-tab')) { // Si se edita el nombre de una pestaña
+            const target = e.target; // Si se edita el contenido
+            if (target.tagName.toLowerCase() === 'textarea') {
+                this.handleSliderContentChange(target); // Si se edita el nombre de una pestaña
+            } else if (target.classList.contains('slider-note-tab')) {
                 this.handleSliderTabNameChange(target);
             }
         });
@@ -361,6 +361,25 @@ class App {
         }
     }
 
+    applyData(data) {
+        this.state.setNotes(data.notes || []);
+        this.state.setZones(data.zones || []);
+        this.state.setYoutubeUrl(data.youtubeUrl || '');
+        this.state.youtubeUrlHistory = data.youtubeUrlHistory || [];
+        // NUEVO: Cargar estado de pan y zoom
+        this.pan.x = data.panX || 0;
+        this.pan.y = data.panY || 0;
+        this.pan.scale = data.zoom || 1;
+
+        this.state.setIsDataLoaded(true);
+
+        this.renderWorkspace();
+        this.widgets.calendar.render();
+        if (this.mobileWidgets.calendar) this.mobileWidgets.calendar.render(); // Actualizar calendario móvil
+        this.widgets.youtube.initializePlayer();
+        if (this.mobileWidgets.youtube) this.mobileWidgets.youtube.initializePlayer(); // Inicializar reproductor móvil
+    }
+
     updateUserProfile(user) {
         if (user) {
             this.DOMElements.userName.textContent = user.displayName;
@@ -370,37 +389,66 @@ class App {
 
     async loadData() {
         if (!this.state.getCurrentUser()) return;
+        const uid = this.state.getCurrentUser().uid;
+
+        // Si no usamos Firebase, la lógica es simple: cargar de localStorage y ya.
+        if (!USE_FIREBASE) {
+            this.DOMElements.loaderOverlay.classList.add('visible');
+            try {
+                const data = await this.dataService.loadUserData(uid);
+                this.applyData(data);
+            } catch (error) {
+                console.error("Error al cargar datos locales:", error);
+                alertModal.open('Error de Carga', 'No se pudieron cargar tus datos locales.');
+            } finally {
+                this.DOMElements.loaderOverlay.classList.remove('visible');
+            }
+            return;
+        }
+
+        // Lógica de "Cache-First" para cuando se usa Firebase
+        const localCacheKey = `userDataCache_${uid}`;
+        let isCacheApplied = false;
+
+        // 1. Carga Rápida desde LocalStorage (Cache)
         try {
-            const data = await this.dataService.loadUserData(this.state.getCurrentUser().uid);
-            this.state.setNotes(data.notes);
-            this.state.setZones(data.zones);
-            this.state.setYoutubeUrl(data.youtubeUrl);
-            this.state.youtubeUrlHistory = data.youtubeUrlHistory || []; // Cargar historial
-            // NUEVO: Cargar estado de pan y zoom
-            this.pan.x = data.panX || 0;
-            this.pan.y = data.panY || 0;
-            this.pan.scale = data.zoom || 1;
-
-            this.state.setIsDataLoaded(true);
-
-            this.renderWorkspace();
-            this.widgets.calendar.render();
-            if (this.mobileWidgets.calendar) this.mobileWidgets.calendar.render(); // Actualizar calendario móvil
-            this.widgets.youtube.initializePlayer();
-            if (this.mobileWidgets.youtube) this.mobileWidgets.youtube.initializePlayer(); // Inicializar reproductor móvil
+            const cachedDataJSON = localStorage.getItem(localCacheKey);
+            if (cachedDataJSON) {
+                console.log("Cargando datos desde el caché local...");
+                const data = JSON.parse(cachedDataJSON);
+                this.applyData(data); // Renderiza la UI inmediatamente con datos cacheados
+                isCacheApplied = true;
+            }
         } catch (error) {
-            console.error("Error al cargar datos:", error);
-            alertModal.open('Error de Carga', 'No se pudieron cargar tus datos. Intenta de nuevo más tarde.');
+            console.error("Error al cargar datos del caché:", error);
+        }
+
+        if (!isCacheApplied) {
+            this.DOMElements.loaderOverlay.classList.add('visible');
+        }
+
+        // 2. Carga y Sincronización desde Firestore en segundo plano
+        try {
+            console.log("Sincronizando con la nube...");
+            const firestoreData = await this.dataService.loadUserData(uid);
+            localStorage.setItem(localCacheKey, JSON.stringify(firestoreData)); // Actualiza el caché
+            this.applyData(firestoreData); // Re-renderiza con datos frescos
+            console.log("Sincronización completada.");
+        } catch (error) {
+            console.error("Error al sincronizar con Firestore:", error);
+            if (!isCacheApplied) {
+                alertModal.open('Error de Red', 'No se pudieron cargar los datos de la nube. Se muestra la última versión guardada localmente, si existe.');
+            }
         } finally {
-            // NUEVO: Ocultar el loader cuando la carga termina (con éxito o error)
             this.DOMElements.loaderOverlay.classList.remove('visible');
         }
     }
 
-    _saveData() { // Función real de guardado (se llama a través de debounceSave)
+    _saveDataToLocal() {
         if (!this.state.getCurrentUser() || !this.state.isDataLoaded) return;
-        this.DOMElements.saveStatus.textContent = 'Guardando...';
         try {
+            const uid = this.state.getCurrentUser().uid;
+            const localCacheKey = `userDataCache_${uid}`;
             const dataToSave = {
                 notes: this.state.getNotes(),
                 zones: this.state.getZones(),
@@ -410,19 +458,51 @@ class App {
                 panY: this.pan.y,
                 zoom: this.pan.scale
             };
+            localStorage.setItem(localCacheKey, JSON.stringify(dataToSave));
+        } catch (error) {
+            console.error("Error al guardar datos en el caché local:", error);
+        }
+    }
+
+    _saveDataToRemote() {
+        if (!this.state.getCurrentUser() || !this.state.isDataLoaded) return;
+
+        // En modo local, this.dataService es LocalStorageService, así que esto funciona para ambos casos.
+        // El debounce es útil en ambos para evitar escrituras excesivas.
+        if (USE_FIREBASE) {
+            this.DOMElements.saveStatus.textContent = 'Guardando...';
+        }
+
+        try {
+            const dataToSave = {
+                notes: this.state.getNotes(),
+                zones: this.state.getZones(),
+                youtubeUrl: this.state.getYoutubeUrl(),
+                youtubeUrlHistory: this.state.youtubeUrlHistory || [],
+                panX: this.pan.x,
+                panY: this.pan.y,
+                zoom: this.pan.scale
+            };
             this.dataService.saveUserData(this.state.getCurrentUser().uid, dataToSave)
                 .then(() => {
-                    this.DOMElements.saveStatus.textContent = 'Guardado ✓';
-                    setTimeout(() => this.DOMElements.saveStatus.textContent = '', 2000);
+                    if (USE_FIREBASE) {
+                        this.DOMElements.saveStatus.textContent = 'Guardado ✓';
+                        setTimeout(() => this.DOMElements.saveStatus.textContent = '', 2000);
+                    }
                 })
                 .catch(error => {
                     console.error("Error al guardar datos:", error);
-                    this.DOMElements.saveStatus.textContent = 'Error al guardar';
+                    if (USE_FIREBASE) this.DOMElements.saveStatus.textContent = 'Error al guardar';
                 });
         } catch (error) {
             console.error("Error al preparar datos para guardar:", error);
-            this.DOMElements.saveStatus.textContent = 'Error al guardar';
+            if (USE_FIREBASE) this.DOMElements.saveStatus.textContent = 'Error al guardar';
         }
+    }
+
+    _triggerSave() {
+        if (USE_FIREBASE) this._saveDataToLocal(); // Guarda en caché local al instante.
+        this.debounceRemoteSave(); // Programa el guardado en la nube (o en el localStorage principal en modo local).
     }
 
     // --- NUEVO: Métodos para Pan y Zoom ---
@@ -459,7 +539,7 @@ class App {
         if (!this.isPanning) return;
         this.isPanning = false;
         this.DOMElements.appContainer.classList.remove('panning');
-        this.debounceSave(); // Guarda la nueva posición
+        this._triggerSave(); // Guarda la nueva posición
     }
 
     handleZoom(e) {
@@ -488,7 +568,7 @@ class App {
         this.pan.scale = newScale;
 
         this.applyWorkspaceTransform();
-        this.debounceSave(); // Guarda el nuevo estado de zoom y pan
+        this._triggerSave(); // Guarda el nuevo estado de zoom y pan
     }
 
     // NUEVO: Métodos para los botones de control de zoom
@@ -513,7 +593,7 @@ class App {
         this.pan.scale = newScale;
 
         this.applyWorkspaceTransform();
-        this.debounceSave();
+        this._triggerSave();
     }
 
     zoomIn() { this.zoom(1); }
@@ -525,7 +605,7 @@ class App {
         this.pan.y = 0;
         this.pan.scale = 1;
         this.applyWorkspaceTransform();
-        this.debounceSave();
+        this._triggerSave();
     }
 
     // --- Métodos de gestión de la vista de Zoom ---
@@ -605,7 +685,7 @@ class App {
         const noteToUpdate = this.state.getNotes().find(n => n.id === noteId);
         if (noteToUpdate && noteToUpdate.tabs[tabIndex]) {
             noteToUpdate.tabs[tabIndex].content = content;
-            this.debounceSave(); // Guarda el estado actualizado
+            this._triggerSave(); // Guarda el estado actualizado
         }
     }
 
@@ -628,7 +708,7 @@ class App {
                 }
             }
 
-            this.debounceSave(); // Guarda el estado actualizado
+            this._triggerSave(); // Guarda el estado actualizado
         }
     }
 
@@ -873,7 +953,7 @@ class App {
             this.renderWorkspace();
         }
 
-        this.debounceSave();
+        this._triggerSave();
         this.updateStats();
         this.widgets.calendar.render();
         if (this.mobileWidgets.calendar) this.mobileWidgets.calendar.render();
@@ -892,13 +972,13 @@ class App {
         };
         this.state.zones.push(newZone); // Agrega directamente al array de estado
         this.renderWorkspace();
-        this.debounceSave();
+        this._triggerSave();
     }
 
     deleteNote(noteId) {
         this.state.setNotes(this.state.getNotes().filter(n => n.id !== noteId));
         this.renderWorkspace();
-        this.debounceSave();
+        this._triggerSave();
         this.updateStats();
         this.widgets.calendar.render();
         if (this.mobileWidgets.calendar) this.mobileWidgets.calendar.render();
@@ -911,7 +991,7 @@ class App {
             if (n.zoneId === zoneId) n.zoneId = null;
         });
         this.renderWorkspace();
-        this.debounceSave();
+        this._triggerSave();
     }
 
     handleNoteDrop(item) {
@@ -985,7 +1065,7 @@ class App {
                 this.renderWorkspace();
             }
         }
-        this.debounceSave();
+        this._triggerSave();
     }
 
     updateZone(updatedZone) {
@@ -995,7 +1075,7 @@ class App {
             zones[index] = { ...zones[index], ...updatedZone };
             this.state.setZones([...zones]);
         }
-        this.debounceSave();
+        this._triggerSave();
     }
 
     findParentZone(note) {
@@ -1270,7 +1350,7 @@ class App {
 
     showGeneralDashboard() {
         this.state.setSelectedDate(null);
-        this.debounceSave(); // No se guarda la fecha seleccionada en DB, pero se fuerza un guardado general
+        this._triggerSave(); // No se guarda la fecha seleccionada en DB, pero se fuerza un guardado general
         this.renderWorkspace();
         this.widgets.calendar.render(); // Re-renderizar calendario para desmarcar el día
         if (this.mobileWidgets.calendar) this.mobileWidgets.calendar.render();
@@ -1386,7 +1466,7 @@ class App {
         if (this.mobileWidgets.youtube) this.mobileWidgets.youtube.renderHistory();
 
         // 3. Guardar los datos
-        this.debounceSave();
+        this._triggerSave();
     }
 }
 
