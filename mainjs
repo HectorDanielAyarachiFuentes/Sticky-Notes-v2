@@ -317,35 +317,21 @@ class App {
             this.DOMElements.body.classList.remove('logged-out');
             this.DOMElements.body.classList.add('logged-in');
 
-            // CORRECCIÓN DEFINITIVA:
-            // Se introduce un pequeño retardo antes de cargar los datos.
-            // Esto resuelve la "condición de carrera de renderizado" donde el navegador
-            // intenta dibujar las notas antes de haber procesado completamente el cambio de
-            // visibilidad del contenedor principal (causado por la clase 'logged-in').
-            setTimeout(() => this.loadData(), 50); // 50ms es imperceptible pero suficiente.
+            // MEJORA: Usar requestAnimationFrame para asegurar que el DOM se haya actualizado
+            // con la clase 'logged-in' antes de intentar cargar y renderizar los datos.
+            // Esto es más robusto que un setTimeout.
+            requestAnimationFrame(() => this.loadData());
         
         } else {
             this.DOMElements.body.classList.add('logged-out');
             this.DOMElements.body.classList.remove('logged-in');
             this.clearWorkspace();
 
-            // CORRECCIÓN: Forzar el reinicio de la animación de la bandera SÓLO al cerrar sesión,
-            // no en la carga inicial de la página. Si 'wasLoggedIn' es true, significa que
-            // estamos pasando de un estado logueado a uno deslogueado.
+            // MEJORA: Reiniciar la animación del cielo de una forma más limpia al cerrar sesión.
             if (wasLoggedIn) {
-                // Al cerrar sesión, reiniciamos las animaciones del fondo (nubes y bandera)
-                // forzando al navegador a re-renderizar el contenido.
-                const loginBackground = getElement('#login-background');
-                if (loginBackground) {
-                    const backgroundHTML = loginBackground.innerHTML;
-                    loginBackground.innerHTML = ''; // Vaciarlo
-                    // En el siguiente "tick" del navegador, lo volvemos a llenar.
-                    setTimeout(() => { 
-                        loginBackground.innerHTML = backgroundHTML; 
-                        // Re-inicializar la animación del cielo después de reconstruir el DOM
-                        initSkyAnimation();
-                    }, 0);
-                }
+                // Re-inicializa la animación del cielo para que comience de nuevo.
+                // La función initSkyAnimation ya se encarga de detener animaciones anteriores.
+                initSkyAnimation();
             }
             // Asegurarse de que el texto original esté presente si se desloguea de Firebase
             this.DOMElements.signInBtn.textContent = '🚀 Iniciar Sesión con Google';
@@ -943,58 +929,6 @@ class App {
         if (this.mobileWidgets.calendar) this.mobileWidgets.calendar.render();
 
         return newNote; // Devolver la nueva nota para que el slider pueda usar su ID
-    }
-
-    _findPositionForNewNoteInZone(zoneId) {
-        const parentZone = this.state.getZones().find(z => z.id === zoneId);
-        if (!parentZone) return this._getNewItemDesktopPosition(false); // Fallback si la zona no existe
-
-        const notesInZone = this.state.getNotes().filter(n => n.zoneId === zoneId);
-        const numCols = 4, numRows = 2;
-        const grid = Array(numRows).fill(null).map(() => Array(numCols).fill(false));
-
-        const gridX = parentZone.x + 15, gridY = parentZone.y + 45;
-        const gridW = parentZone.width - 30, gridH = parentZone.height - 60;
-        const cellWidth = gridW / numCols, cellHeight = gridH / numRows;
-
-        // Marcar celdas ocupadas
-        notesInZone.forEach(note => {
-            const noteCenterX = note.x + (note.width / 2);
-            const noteCenterY = note.y + (note.height / 2);
-            const col = Math.floor((noteCenterX - gridX) / cellWidth);
-            const row = Math.floor((noteCenterY - gridY) / cellHeight);
-            if (row >= 0 && row < numRows && col >= 0 && col < numCols) {
-                grid[row][col] = true;
-            }
-        });
-
-        // Encontrar primera celda vacía
-        let targetRow = -1, targetCol = -1;
-        for (let r = 0; r < numRows; r++) {
-            for (let c = 0; c < numCols; c++) {
-                if (!grid[r][c]) {
-                    targetRow = r;
-                    targetCol = c;
-                    break;
-                }
-            }
-            if (targetRow !== -1) break;
-        }
-
-        if (targetRow !== -1) {
-            // Centrar la nota en la celda vacía encontrada
-            const noteWidth = CONSTANTS.DEFAULT_NOTE_WIDTH;
-            const noteHeight = CONSTANTS.DEFAULT_NOTE_HEIGHT;
-            const cellCenterX = gridX + (targetCol * cellWidth) + (cellWidth / 2);
-            const cellCenterY = gridY + (targetRow * cellHeight) + (cellHeight / 2);
-            return {
-                x: cellCenterX - (noteWidth / 2),
-                y: cellCenterY - (noteHeight / 2)
-            };
-        } else {
-            // Fallback: si la cuadrícula está llena, apilar debajo de la zona
-            return { x: parentZone.x, y: parentZone.y + parentZone.height + 20 };
-        }
     }
 
     addZone() {

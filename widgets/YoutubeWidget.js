@@ -10,11 +10,11 @@ class YoutubeWidget {
         this.appState = appState;
         this.onUrlChangeCallback = onUrlChangeCallback;
 
-        this.input = getElement('#youtube-url-input, #youtube-url-input-mobile', this.container);
+        this.input = getElement('input[type="text"]', this.container);
         this.playerContainer = getElement('#youtube-player-container', this.container);
         this.loader = getElement('.yt-loader', this.container);
         this.playPauseBtns = getElements('.yt-control-btn', this.container);
-        this.historyDataList = getElement('#youtube-history-list, #youtube-history-list-mobile', this.container);
+        this.historyDataList = getElement('datalist', this.container);
         
         // Encuentra el div del reproductor, que ahora puede tener uno de dos IDs.
         this.playerDiv = getElement('#youtube-player, #youtube-player-mobile', this.container);
