@@ -57,7 +57,10 @@ class AuthService {
     async signOut() {
         if (!USE_FIREBASE) {
             console.log("Cerrando sesión local.");
-            localStorage.removeItem('localUserData');
+            // NO debemos borrar los datos del usuario al cerrar sesión.
+            // Solo borramos la clave de sesión para que la próxima vez
+            // que cargue la página, no inicie sesión automáticamente.
+            // localStorage.removeItem('localUserData'); // <-- ESTA LÍNEA ES EL ERROR
             localStorage.removeItem(this.localSessionKey);
             this.onAuthChangeCallback(null);
             return; // Salir para no ejecutar el código de Firebase

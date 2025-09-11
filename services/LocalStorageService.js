@@ -14,7 +14,7 @@ class LocalStorageService {
     async loadUserData(uid) { // El uid se ignora en modo local
         const dataJSON = localStorage.getItem(this.storageKey);
         if (!dataJSON) {
-            return { notes: [], zones: [], youtubeUrl: '', panX: 0, panY: 0, zoom: 1 };
+            return { notes: [], zones: [], youtubeUrl: '', youtubeUrlHistory: [], panX: 0, panY: 0, zoom: 1 };
         }
 
         const data = JSON.parse(dataJSON);
@@ -33,6 +33,7 @@ class LocalStorageService {
             notes: loadedNotes, 
             zones: data.zones || [], 
             youtubeUrl: data.youtubeUrl || '',
+            youtubeUrlHistory: data.youtubeUrlHistory || [],
             panX: data.panX || 0,
             panY: data.panY || 0,
             zoom: data.zoom || 1
