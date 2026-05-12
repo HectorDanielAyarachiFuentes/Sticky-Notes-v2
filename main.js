@@ -13,6 +13,7 @@ import TimerWidget from "./widgets/TimerWidget.js";
 import YoutubeWidget from "./widgets/YoutubeWidget.js";
 import QuoteWidget from "./widgets/QuoteWidget.js";
 import TasksWidget from "./widgets/TasksWidget.js";
+import WeatherWidget from "./widgets/WeatherWidget.js";
 import Note from "./components/Note.js";
 import Zone from "./components/Zone.js";
 import { CONSTANTS, USE_FIREBASE } from "./config.js"; // Para usar constantes compartidas
@@ -266,6 +267,7 @@ class App {
         this.widgets.youtube = new YoutubeWidget('#youtube-widget', this.state, this.handleYoutubeUrlChange.bind(this));
         this.widgets.quote = new QuoteWidget('#quote-widget', this.state);
         this.widgets.tasks = new TasksWidget('#tasks-widget', this.state, this._triggerSave.bind(this));
+        this.widgets.weather = new WeatherWidget('#weather-widget', this.state);
 
         // Clonar widgets para la barra lateral móvil y re-instanciar su lógica
         const mainWidgets = this.DOMElements.bottomDashboard.querySelectorAll('.dashboard-widget');
@@ -313,6 +315,9 @@ class App {
                     break;
                 case 'tasks-widget':
                     this.mobileWidgets.tasks = new TasksWidget(clone, this.state, this._triggerSave.bind(this));
+                    break;
+                case 'weather-widget':
+                    this.mobileWidgets.weather = new WeatherWidget(clone, this.state);
                     break;
             }
             this.DOMElements.sidebarContent.appendChild(clone);
