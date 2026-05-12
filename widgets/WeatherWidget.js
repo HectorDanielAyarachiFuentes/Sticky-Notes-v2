@@ -43,7 +43,8 @@ export default class WeatherWidget {
             const weatherData = await this.#fetchWeatherData(location.lat, location.lon);
             
             // 3. Update DOM
-            this.#renderWeather(weatherData, location.city + ', ' + location.country);
+            const locationDisplay = location.city + (location.province ? ', ' + location.province : '') + ', ' + location.country;
+            this.#renderWeather(weatherData, locationDisplay);
         } catch (error) {
             console.error('Error updating weather:', error);
             if (this.#descElement) {
@@ -58,21 +59,37 @@ export default class WeatherWidget {
             if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(
                     async (position) => {
-                        // Success! Now get city name via reverse geocoding (optional, or just use coordinates)
-                        // For simplicity and to avoid more API keys, we can use a free reverse geocoding or just show "Mi Ubicación"
-                        // But let's try an IP API first as a fallback/primary for better "out of the box" experience
-                        const ipLocation = await this.#getLocationByIP();
-                        resolve({
-                            lat: position.coords.latitude,
-                            lon: position.coords.longitude,
-                            city: ipLocation.city || 'Mi Ubicación',
-                            country: ipLocation.country || ''
-                        });
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        
+                        try {
+                            // Use BigDataCloud for accurate reverse geocoding from coordinates
+                            const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=es`);
+                            const data = await response.json();
+                            
+                            resolve({
+                                lat: lat,
+                                lon: lon,
+                                city: data.city || data.locality || 'Mi Ubicación',
+                                province: data.principalSubdivision || '',
+                                country: data.countryCode || ''
+                            });
+                        } catch (error) {
+                            console.warn("Reverse geocoding failed, using coordinates only:", error);
+                            resolve({
+                                lat: lat,
+                                lon: lon,
+                                city: 'Mi Ubicación',
+                                province: '',
+                                country: ''
+                            });
+                        }
                     },
                     async (error) => {
                         console.warn("Geolocation denied or failed, falling back to IP:", error);
                         resolve(await this.#getLocationByIP());
-                    }
+                    },
+                    { timeout: 10000, enableHighAccuracy: true }
                 );
             } else {
                 this.#getLocationByIP().then(resolve);
@@ -82,17 +99,38 @@ export default class WeatherWidget {
 
     async #getLocationByIP() {
         try {
-            const response = await fetch('https://ipapi.co/json/');
+            // Try BigDataCloud first as it's often more accurate for Argentine IPs than ipapi.co
+            const response = await fetch('https://api.bigdatacloud.net/data/reverse-geocode-client?localityLanguage=es');
             const data = await response.json();
-            return {
-                lat: data.latitude,
-                lon: data.longitude,
-                city: data.city,
-                country: data.country_code
-            };
+            
+            if (data.latitude && data.longitude) {
+                return {
+                    lat: data.latitude,
+                    lon: data.longitude,
+                    city: data.city || data.locality || 'Ciudad desconocida',
+                    province: data.principalSubdivision || '',
+                    country: data.countryCode || ''
+                };
+            }
+            throw new Error("Invalid data from BigDataCloud");
         } catch (error) {
-            console.error("IP Geolocation failed:", error);
-            return { lat: -31.4135, lon: -64.1811, city: 'Córdoba', country: 'AR' }; // Default to Córdoba as seen in screenshot
+            console.error("IP Geolocation primary failed, trying secondary:", error);
+            try {
+                const response = await fetch('https://ipapi.co/json/');
+                const data = await response.json();
+                return {
+                    lat: data.latitude,
+                    lon: data.longitude,
+                    city: data.city,
+                    province: data.region || '',
+                    country: data.country_code
+                };
+            } catch (err) {
+                console.error("IP Geolocation secondary failed:", err);
+                // Last resort: Default to Buenos Aires or similar if everything fails, 
+                // but keep it subtle so the user knows it's a fallback
+                return { lat: -34.6037, lon: -58.3816, city: 'Buenos Aires', province: 'CABA', country: 'AR' };
+            }
         }
     }
 
