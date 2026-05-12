@@ -3,7 +3,7 @@
 import { getElement } from './dom.js';
 
 // --- Elementos cacheados ---
-let sun, moon, starsContainer, skyBG, skyGradientStop1, skyGradientStop2, skyGradientStop3;
+let sun, moon, starsContainer, skyBG, clouds, skyGradientStop1, skyGradientStop2, skyGradientStop3;
 let animationFrameId = null;
 
 // --- Configuración ---
@@ -13,7 +13,7 @@ const STAR_COUNT = 150;
 const skyColors = {
     night: ['#020617', '#0f172a', '#1e293b'],
     dawn: ['#1e293b', '#3730a3', '#fbbf24'],
-    day: ['#f1f5f9', '#e2e8f0', '#cbd5e1'],
+    day: ['#bae6fd', '#7dd3fc', '#38bdf8'], // Tonos más vivos (Sky 200, 300, 400)
     dusk: ['#1e293b', '#3730a3', '#fbbf24'] 
 };
 
@@ -93,7 +93,7 @@ function updateSky() {
         sun.setAttribute('opacity', factor);
         moon.setAttribute('opacity', 1 - factor);
         starsContainer.style.opacity = 1 - factor;
-        skyBG.style.opacity = 0.5 + 0.5 * factor; // Nubes aparecen
+        clouds.style.opacity = 0.4 + 0.3 * factor; // Nubes aparecen suavemente
     } else if (hour >= 7 && hour < 18) { // Día (7:00 - 17:59)
         c1 = skyColors.day[0];
         c2 = skyColors.day[1];
@@ -101,7 +101,7 @@ function updateSky() {
         sun.setAttribute('opacity', 1);
         moon.setAttribute('opacity', 0);
         starsContainer.style.opacity = 0;
-        skyBG.style.opacity = 1;
+        clouds.style.opacity = 0.7; // Nubes presentes pero no tapan todo
     } else if (hour >= 18 && hour < 20) { // Atardecer (18:00 - 19:59)
         factor = (hour - 18) / 2; // 0 a 1 durante 2 horas
         c1 = lerpColor(skyColors.dusk[0], skyColors.night[0], factor);
@@ -110,7 +110,7 @@ function updateSky() {
         sun.setAttribute('opacity', 1 - factor);
         moon.setAttribute('opacity', factor);
         starsContainer.style.opacity = factor;
-        skyBG.style.opacity = 1 - 0.5 * factor; // Nubes se desvanecen
+        clouds.style.opacity = 0.7 - 0.3 * factor; // Nubes se desvanecen
     } else { // Noche
         c1 = skyColors.night[0];
         c2 = skyColors.night[1];
@@ -118,7 +118,7 @@ function updateSky() {
         sun.setAttribute('opacity', 0);
         moon.setAttribute('opacity', 1);
         starsContainer.style.opacity = 1;
-        skyBG.style.opacity = 0.5; // Nubes tenues
+        clouds.style.opacity = 0.4; // Nubes tenues nocturnas
     }
 
     // Aplicar colores al gradiente
@@ -150,11 +150,12 @@ export function initSkyAnimation() {
     moon = getElement('#moon');
     starsContainer = getElement('#stars');
     skyBG = getElement('#skyBG');
+    clouds = getElement('#clouds');
     skyGradientStop1 = getElement('#skyGradient-stop1');
     skyGradientStop2 = getElement('#skyGradient-stop2');
     skyGradientStop3 = getElement('#skyGradient-stop3');
 
-    if (!sun || !moon || !starsContainer || !skyBG || !skyGradientStop1) {
+    if (!sun || !moon || !starsContainer || !skyBG || !clouds || !skyGradientStop1) {
         console.error("Sky Animation: Faltan elementos SVG esenciales.");
         return;
     }
