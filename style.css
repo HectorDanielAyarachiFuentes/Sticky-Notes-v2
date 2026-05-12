@@ -257,8 +257,8 @@ body.dark-mode {
     text-transform: uppercase; letter-spacing: 0.5px;
 }
 .control-btn:hover { background-color: var(--primary-accent-dark); transform: translateY(-3px); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3); }
-.control-btn.secondary { background-color: var(--text-light); opacity: 0.8; }
-.control-btn.secondary:hover { background-color: var(--text-dark); opacity: 1; }
+.control-btn.secondary { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); }
+.control-btn.secondary:hover { background-color: rgba(255, 255, 255, 0.2); border-color: rgba(255, 255, 255, 0.4); opacity: 1; }
 #sidebar-toggle-btn { display: none; }
 
 .profile-menu-container { position: relative; }
@@ -1649,6 +1649,12 @@ body.note-view-active .zone.parent-of-zoomed {
         background: rgba(255, 255, 255, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.1);
         color: white;
+        transition: all 0.3s ease;
+    }
+
+    .control-btn.secondary:hover, .control-btn.secondary:active {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.3);
     }
     
     #mobile-sidebar-container { display: block; }
