@@ -11,10 +11,10 @@ const STAR_COUNT = 150;
 
 // --- Paletas de colores para el gradiente del cielo ---
 const skyColors = {
-    night: ['#000033', '#000022', '#000011'],
-    dawn: ['#243B55', '#F17B5D', '#FBD37D'],
-    day: ['#87CEEB', '#87CEEB', '#ADD8E6'],
-    dusk: ['#243B55', '#F17B5D', '#FBD37D'] // Reutilizamos el de dawn para el atardecer
+    night: ['#020617', '#0f172a', '#1e293b'],
+    dawn: ['#1e293b', '#3730a3', '#fbbf24'],
+    day: ['#f1f5f9', '#e2e8f0', '#cbd5e1'],
+    dusk: ['#1e293b', '#3730a3', '#fbbf24'] 
 };
 
 /**

@@ -167,7 +167,7 @@
             </button>
             <!-- INICIO: Widget de notas mejorado -->
             <div id="stats-widget" class="dashboard-widget clickable">
-                <h3>Notas</h3>
+                <h3>Resumen de Notas</h3>
                 <div class="stats-container">
                     <div class="stat-item">
                         <span id="note-count-total" class="stat-value">0</span>
@@ -181,6 +181,34 @@
                         <span id="note-count-undated" class="stat-value">0</span>
                         <span class="stat-label">General</span>
                     </div>
+                </div>
+                <div class="notes-extra-info">
+                    <div class="progress-container">
+                        <span class="progress-label">Uso de Almacenamiento</span>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 12%;"></div></div>
+                    </div>
+                    <button class="quick-add-note-btn">+ Nueva Nota Rápida</button>
+                </div>
+            </div>
+            <!-- Widget de Clima (MEJORADO) -->
+            <div id="weather-widget" class="dashboard-widget">
+                <h3>Clima y Entorno</h3>
+                <div class="weather-content">
+                    <div class="weather-main">
+                        <span class="weather-temp">24°</span>
+                        <span class="weather-icon">☀️</span>
+                    </div>
+                    <span class="weather-desc">Cielo Despejado</span>
+                    <div class="weather-details">
+                        <div class="w-detail"><span>💧</span> 45% Hum.</div>
+                        <div class="w-detail"><span>💨</span> 12 km/h</div>
+                    </div>
+                    <div class="weather-forecast">
+                        <div class="f-day"><span>Lun</span><span>☀️</span><span>24°</span></div>
+                        <div class="f-day"><span>Mar</span><span>⛅</span><span>22°</span></div>
+                        <div class="f-day"><span>Mie</span><span>🌧️</span><span>19°</span></div>
+                    </div>
+                    <span class="weather-location">Córdoba, AR</span>
                 </div>
             </div>
             <!-- FIN: Widget de notas mejorado -->
@@ -200,51 +228,109 @@
             <!-- FIN DE LA SECCIÓN DE CALENDARIO MODIFICADA -->
             <div id="youtube-widget" class="dashboard-widget">
                 <h3>Música de Fondo</h3>
-                <input type="text" id="youtube-url-input" placeholder="Pega link de YouTube" list="youtube-history-list">
-                <datalist id="youtube-history-list"></datalist>
-                <div id="youtube-player-container">
-                    <div class="yt-loader"></div>
-                    <div id="youtube-player"></div>
-                    <div id="youtube-controls">
-                        <button class="yt-control-btn" title="Reproducir/Pausar"></button>
+                <div class="music-controls-wrapper">
+                    <div class="music-presets">
+                        <button class="preset-btn" data-url="https://www.youtube.com/watch?v=jfKfPfyJRdk">☕ Lo-Fi</button>
+                        <button class="preset-btn" data-url="https://www.youtube.com/watch?v=5qap5aO4i9A">🌿 Relax</button>
+                        <button class="preset-btn" data-url="https://www.youtube.com/watch?v=DWcJFNfaw9c">🧘 Focus</button>
+                    </div>
+                    <div class="yt-input-group">
+                        <span class="yt-icon">📺</span>
+                        <input type="text" id="youtube-url-input" placeholder="Pega link de YouTube...">
+                    </div>
+                    <div id="youtube-player-container">
+                        <div id="youtube-player"></div>
+                        <div class="yt-placeholder">
+                            <span class="pulse-icon">🎵</span>
+                            <span class="yt-status">Listo para reproducir</span>
+                        </div>
+                    </div>
+                    <div class="music-now-playing hidden">
+                        <span class="playing-label">Reproduciendo:</span>
+                        <span id="current-song-title" class="song-title">Cargando...</span>
+                    </div>
+                    <div class="music-history">
+                        <span class="history-label">Recientes:</span>
+                        <div id="youtube-history-list" class="history-tags">
+                            <!-- Historial se carga por JS -->
+                        </div>
                     </div>
                 </div>
             </div>
             <!-- INICIO DE LA SECCIÓN DE CRONÓMETRO MODIFICADA -->
             <div id="timer-widget" class="dashboard-widget">
-                <h3>Cronómetro</h3>
-                <!-- INICIO: Contenedor de pantalla mejorado con anillo de progreso -->
-                <div class="timer-display-container">
-                    <svg class="timer-progress-ring" width="120" height="120" viewBox="0 0 120 120">
-                        <circle class="timer-progress-ring__background" stroke-width="6" fill="transparent" r="54" cx="60" cy="60"/>
-                        <circle class="timer-progress-ring__progress" stroke-width="6" fill="transparent" r="54" cx="60" cy="60"/>
-                    </svg>
-                    <div class="timer-value-wrapper">
-                        <span id="timer-display">25:00</span>
-                        <button id="edit-timer-btn" title="Configurar tiempo" aria-label="Configurar tiempo">✏️</button>
+                <h3>Cronómetro Focus</h3>
+                <div class="timer-main-content">
+                    <div class="timer-container">
+                        <svg class="timer-progress-ring" width="140" height="140" viewBox="0 0 140 140">
+                            <circle class="timer-progress-ring__circle" stroke-width="8" fill="transparent" r="60" cx="70" cy="70"/>
+                            <circle class="timer-progress-ring__progress" stroke-width="8" fill="transparent" r="60" cx="70" cy="70"/>
+                        </svg>
+                        <div class="timer-value-wrapper">
+                            <span id="timer-display">25:00</span>
+                            <button id="edit-timer-btn" title="Configurar tiempo">✏️</button>
+                        </div>
+                        <div class="timer-status">Sesión de Enfoque</div>
+                    </div>
+                    <div class="timer-controls">
+                        <button id="timer-play-pause-btn" class="timer-control-btn" title="Iniciar/Pausar"></button>
+                        <button id="timer-reset-btn" class="timer-control-btn" title="Reiniciar">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                        </button>
+                    </div>
+                    <div class="timer-presets">
+                        <button class="preset-btn" data-minutes="5">5m</button>
+                        <button class="preset-btn" data-minutes="15">15m</button>
+                        <button class="preset-btn" data-minutes="25">25m</button>
+                        <button class="preset-btn" data-minutes="45">45m</button>
                     </div>
                 </div>
-                <!-- FIN: Contenedor de pantalla mejorado -->
-                <div class="timer-buttons">
-                    <button id="timer-play-pause-btn" class="timer-control-btn" title="Iniciar/Pausar" aria-label="Iniciar o pausar cronómetro"></button>
-                    <button id="timer-reset-btn" class="timer-control-btn" title="Reiniciar" aria-label="Reiniciar cronómetro">⟲</button>
-                </div>
-                <div class="timer-presets">
-                    <button class="preset-btn" data-minutes="5">5m</button>
-                    <button class="preset-btn" data-minutes="15">15m</button>
-                    <button class="preset-btn" data-minutes="25">25m</button>
-                    <button class="preset-btn" data-minutes="45">45m</button>
+                <div class="timer-footer-stats">
+                    <div class="t-stat"><span>⏱️</span> <span>Total: 0h</span></div>
+                    <div class="t-stat"><span>🔥</span> <span>Racha: 2</span></div>
                 </div>
             </div>
             <!-- FIN DE LA SECCIÓN DE CRONÓMETRO MODIFICADA -->
             <!-- INICIO DE LA SECCIÓN DE RELOJ MODIFICADA -->
             <div id="clock-widget" class="dashboard-widget">
                 <h3 id="clock-greeting"></h3>
-                <div class="time-display-wrapper">
-                    <span id="current-time"></span>
-                    <span id="current-seconds" class="hidden"></span>
+                <div class="main-clock-wrapper">
+                    <div class="time-display-wrapper">
+                        <span id="current-time"></span>
+                        <span id="current-seconds" class="hidden"></span>
+                    </div>
+                    <span id="current-date"></span>
                 </div>
-                <span id="current-date"></span>
+                <div class="world-clocks">
+                    <div class="w-clock"><span>NYC</span> <span>09:25</span></div>
+                    <div class="w-clock"><span>LDN</span> <span>14:25</span></div>
+                    <div class="w-clock"><span>TKY</span> <span>22:25</span></div>
+                </div>
+                <div class="clock-footer">
+                    <div class="c-footer-item"><span>🌅</span> Salida: 06:42</div>
+                    <div class="c-footer-item"><span>🌇</span> Puesta: 19:15</div>
+                </div>
+            </div>
+            <!-- Widget de Tareas (NUEVO) -->
+            <div id="tasks-widget" class="dashboard-widget">
+                <h3>Tareas de Hoy</h3>
+                <div class="tasks-mini-list">
+                    <div class="task-mini-item"><span>○</span> Diseñar UI</div>
+                    <div class="task-mini-item"><span>○</span> Revisar notas</div>
+                    <div class="task-mini-item"><span>○</span> Pausa activa</div>
+                </div>
+                <div class="task-input-wrapper">
+                    <input type="text" placeholder="Añadir tarea..." id="quick-task-input">
+                </div>
+            </div>
+            <!-- Widget de Frase (NUEVO) -->
+            <div id="quote-widget" class="dashboard-widget">
+                <h3>Inspiración</h3>
+                <div class="quote-content">
+                    <p class="quote-text">"El enfoque es el puente entre tus metas y tus logros."</p>
+                    <span class="quote-author">— Jim Rohn</span>
+                </div>
+                <button class="refresh-quote-btn">✨ Nueva frase</button>
             </div>
             <!-- FIN DE LA SECCIÓN DE RELOJ MODIFICADA -->
         </div>

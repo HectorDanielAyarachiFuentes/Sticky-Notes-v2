@@ -1,6 +1,7 @@
 // main.js
 import AuthService from "./services/AuthService.js";
 import FirestoreService from "./services/FirestoreService.js";
+import LocalStorageService from "./services/LocalStorageService.js";
 import AppState from "./state/AppState.js"; // Importa la instancia singleton
 import { debounce } from "./utils/helpers.js";
 import { getElement, getElements } from "./utils/dom.js";
@@ -50,8 +51,13 @@ class App {
         this.createSliderPlaceholder();
         this.bindGlobalEvents();
         this.setupWidgets();
-        // Ahora que la app está 100% lista, inicializamos el servicio de autenticación.
-        this.authService = new AuthService(this.handleAuthStateChange.bind(this));
+        
+        if (USE_FIREBASE) {
+            this.authService = new AuthService(this.handleAuthStateChange.bind(this));
+        } else {
+            // En modo local, disparamos el cambio de estado manualmente
+            this.handleAuthStateChange(null);
+        }
     }
 
     cacheDOM() {
@@ -108,8 +114,8 @@ class App {
     }
 
     bindGlobalEvents() {
-        this.DOMElements.signInBtn.addEventListener('click', () => this.authService.signIn()); // OK
-        this.DOMElements.signOutBtn.addEventListener('click', () => this.authService.signOut()); // OK
+        this.DOMElements.signInBtn.addEventListener('click', () => { if (this.authService) this.authService.signIn(); });
+        this.DOMElements.signOutBtn.addEventListener('click', () => { if (this.authService) this.authService.signOut(); });
         this.DOMElements.addNoteBtn.addEventListener('click', () => this.addNote()); // Calls _triggerSave
         this.DOMElements.addZoneBtn.addEventListener('click', () => this.addZone()); // Calls _triggerSave
         this.DOMElements.showGeneralBtn.addEventListener('click', () => { this.showGeneralDashboard(); this.closeSidebar(); });
@@ -231,6 +237,16 @@ class App {
                 this.handleSliderTabNameChange(target);
             }
         }, true); // Usar captura para asegurar que se ejecute
+
+        // NUEVO: Scroll horizontal con la rueda del ratón en el dashboard
+        if (this.DOMElements.bottomDashboard) {
+            this.DOMElements.bottomDashboard.addEventListener('wheel', (e) => {
+                if (e.deltaY !== 0) {
+                    e.preventDefault();
+                    this.DOMElements.bottomDashboard.scrollLeft += e.deltaY;
+                }
+            }, { passive: false });
+        }
     }
 
     setupWidgets() {
@@ -306,24 +322,40 @@ class App {
 
     // --- Métodos de Autenticación y Carga de Datos ---
     async handleAuthStateChange(user) {
-        // INICIO DE LA MODIFICACIÓN
-        const wasLoggedIn = !!this.state.getCurrentUser(); // Captura el estado de sesión anterior
+        const wasLoggedIn = !!this.state.getCurrentUser(); 
+        
+        // --- LÓGICA DE MODO LOCAL ---
+        if (!USE_FIREBASE) {
+            user = { 
+                uid: 'local_user_default', 
+                displayName: 'Usuario Local',
+                photoURL: null 
+            };
+        }
+        // ---------------------------
+
         this.state.setCurrentUser(user);
 
         if (user) {
-            this.dataService = new FirestoreService(this.authService.getFirebaseApp());
-            this.DOMElements.loaderOverlay.classList.add('visible'); // Mostrar loader
+            // Elegir el servicio de datos según la configuración
+            if (USE_FIREBASE) {
+                this.dataService = new FirestoreService(this.authService.getFirebaseApp());
+            } else {
+                this.dataService = new LocalStorageService();
+            }
+
+            this.DOMElements.loaderOverlay.classList.add('visible'); 
             this.updateUserProfile(user);
             this.DOMElements.body.classList.remove('logged-out');
             this.DOMElements.body.classList.add('logged-in');
+            
+            // Si estamos en modo local, ocultar botones de login/perfil innecesarios
+            if (!USE_FIREBASE) {
+                this.DOMElements.signInBtn.style.display = 'none';
+                if (this.DOMElements.signOutBtn) this.DOMElements.signOutBtn.style.display = 'none';
+            }
 
-            // CORRECCIÓN DEFINITIVA:
-            // Se introduce un pequeño retardo antes de cargar los datos.
-            // Esto resuelve la "condición de carrera de renderizado" donde el navegador
-            // intenta dibujar las notas antes de haber procesado completamente el cambio de
-            // visibilidad del contenedor principal (causado por la clase 'logged-in').
-            setTimeout(() => this.loadData(), 50); // 50ms es imperceptible pero suficiente.
-        
+            setTimeout(() => this.loadData(), 50); 
         } else {
             this.DOMElements.body.classList.add('logged-out');
             this.DOMElements.body.classList.remove('logged-in');
@@ -374,8 +406,8 @@ class App {
 
     updateUserProfile(user) {
         if (user) {
-            this.DOMElements.userName.textContent = user.displayName;
-            this.DOMElements.profileAvatar.src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName)}&background=random&color=fff`;
+            this.DOMElements.userName.textContent = user.displayName || 'Usuario';
+            this.DOMElements.profileAvatar.src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'U')}&background=6366f1&color=fff`;
         }
     }
 

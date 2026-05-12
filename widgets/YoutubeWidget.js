@@ -14,17 +14,29 @@ class YoutubeWidget {
         this.playerContainer = getElement('#youtube-player-container', this.container);
         this.loader = getElement('.yt-loader', this.container);
         this.playPauseBtns = getElements('.yt-control-btn', this.container);
-        this.historyDataList = getElement('datalist', this.container);
+        this.historyList = getElement('#youtube-history-list', this.container);
+        this.presets = getElements('.preset-btn', this.container);
+        this.nowPlaying = getElement('.music-now-playing', this.container);
+        this.songTitle = getElement('#current-song-title', this.container);
+        this.placeholder = getElement('.yt-placeholder', this.container);
         
-        // Encuentra el div del reproductor, que ahora puede tener uno de dos IDs.
         this.playerDiv = getElement('#youtube-player, #youtube-player-mobile', this.container);
-        this.player = null; // YT.Player instance
+        this.player = null; 
 
         this.bindEvents();
     }
 
     bindEvents() {
         if (this.input) this.input.addEventListener('change', e => this.loadVideo(e.target.value));
+        
+        // --- NUEVO: Eventos para Presets ---
+        this.presets.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const url = btn.getAttribute('data-url');
+                if (this.input) this.input.value = url;
+                this.loadVideo(url);
+            });
+        });
     }
 
     getVideoId(url) {
@@ -63,8 +75,11 @@ class YoutubeWidget {
             }
             if (this.appState.getYoutubeUrl() !== url) {
                 this.appState.setYoutubeUrl(url);
-                this.onUrlChangeCallback(url); // Notifica a App.js para guardar datos
+                this.onUrlChangeCallback(url); 
             }
+
+            // Mostrar el contenedor del reproductor y ocultar placeholder
+            if (this.placeholder) this.placeholder.classList.add('hidden');
         }
     }
 
@@ -129,21 +144,40 @@ class YoutubeWidget {
             btn.innerHTML = icon;
         });
         this.playerContainer.classList.toggle('paused', !isPlaying);
+
+        // --- NUEVO: Actualizar información de "Ahora sonando" ---
+        if (isPlaying && this.player && typeof this.player.getVideoData === 'function') {
+            const data = this.player.getVideoData();
+            if (this.songTitle) this.songTitle.textContent = data.title || 'Música de fondo';
+            if (this.nowPlaying) this.nowPlaying.classList.remove('hidden');
+        }
     }
 
     renderHistory() {
-        if (!this.historyDataList) return;
+        if (!this.historyList) return;
 
-        this.historyDataList.innerHTML = '';
-        const history = this.appState.youtubeUrlHistory;
+        this.historyList.innerHTML = '';
+        const history = this.appState.youtubeUrlHistory || [];
 
-        if (history && history.length > 0) {
-            history.forEach(url => {
-                const option = document.createElement('option');
-                option.value = url;
-                this.historyDataList.appendChild(option);
-            });
+        if (history.length === 0) {
+            this.historyList.innerHTML = '<span class="no-history">Sin búsquedas recientes</span>';
+            return;
         }
+
+        history.forEach(url => {
+            const tag = document.createElement('span');
+            tag.className = 'history-tag';
+            // Mostrar solo el ID o una parte del URL para que sea corto
+            const videoId = this.getVideoId(url);
+            tag.textContent = videoId ? `ID: ${videoId}` : 'Link';
+            tag.title = url;
+            
+            tag.addEventListener('click', () => {
+                if (this.input) this.input.value = url;
+                this.loadVideo(url);
+            });
+            this.historyList.appendChild(tag);
+        });
     }
 }
 

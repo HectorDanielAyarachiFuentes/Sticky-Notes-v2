@@ -130,25 +130,26 @@ body.logged-out { background-image: none !important; }
    1. VARIABLES GLOBALES Y KEYFRAMES
    ========================================================================== */
 :root {
-    --bg-color: #f4f7f9;
-    --note-color: #fffde7;
-    --note-shadow: rgba(0, 0, 0, 0.1);
-    --primary-accent: #5a7dcb;
-    --primary-accent-dark: #405b9b;
-    --panel-bg: rgba(255, 255, 255, 0.6);
-    --panel-border: rgba(255, 255, 255, 0.8);
-    --text-dark: #2c3e50;
-    --text-light: #7f8c8d;
-    --zone-bg: rgba(90, 125, 203, 0.1);
-    --zone-border: rgba(90, 125, 203, 0.4);
-    --highlight-color: #ffc107;
-    --danger-color: #e74c3c;
-    --success-color: #27ae60;
-    --warning-color: #f39c12;
-    --modal-bg: white;
-    --input-bg: white;
-    --input-border: #ccc;
-    --control-btn-icon-color: white;
+    --bg-color: #f8fafc;
+    --note-color: #ffffff;
+    --note-shadow: rgba(0, 0, 0, 0.05);
+    --primary-accent: #6366f1;
+    --primary-accent-dark: #4f46e5;
+    --panel-bg: rgba(255, 255, 255, 0.7);
+    --panel-border: rgba(255, 255, 255, 0.5);
+    --text-dark: #1e293b;
+    --text-light: #64748b;
+    --zone-bg: rgba(99, 102, 241, 0.05);
+    --zone-border: rgba(99, 102, 241, 0.2);
+    --highlight-color: #f59e0b;
+    --danger-color: #ef4444;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --modal-bg: #ffffff;
+    --input-bg: #ffffff;
+    --input-border: #e2e8f0;
+    --control-btn-icon-color: #ffffff;
+    --dashboard-bg: rgba(248, 250, 252, 0.8);
 }
 
 @keyframes spin {
@@ -163,21 +164,22 @@ body.logged-out { background-image: none !important; }
 }
 
 body.dark-mode {
-    --bg-color: #1a1a2e;
-    --note-color: #2c3e50;
-    --note-shadow: rgba(0, 0, 0, 0.3);
-    --primary-accent: #7a9dff;
-    --primary-accent-dark: #5a7dcb;
-    --panel-bg: rgba(44, 62, 80, 0.7);
-    --panel-border: rgba(74, 98, 128, 0.8);
-    --text-dark: #e0e0e0;
-    --text-light: #9a9a9a;
-    --zone-bg: rgba(122, 157, 255, 0.1);
-    --zone-border: rgba(122, 157, 255, 0.3);
-    --modal-bg: #2c3e50;
-    --input-bg: #1a1a2e;
-    --input-border: #4a4a6a;
-    --control-btn-icon-color: #e0e0e0;
+    --bg-color: #0f172a;
+    --note-color: #1e293b;
+    --note-shadow: rgba(0, 0, 0, 0.4);
+    --primary-accent: #818cf8;
+    --primary-accent-dark: #6366f1;
+    --panel-bg: rgba(30, 41, 59, 0.7);
+    --panel-border: rgba(255, 255, 255, 0.1);
+    --text-dark: #f1f5f9;
+    --text-light: #94a3b8;
+    --zone-bg: rgba(129, 140, 248, 0.05);
+    --zone-border: rgba(129, 140, 248, 0.2);
+    --modal-bg: #1e293b;
+    --input-bg: #0f172a;
+    --input-border: #334155;
+    --control-btn-icon-color: #f1f5f9;
+    --dashboard-bg: rgba(15, 23, 42, 0.8);
 }
 
 body.dark-mode .github-link { background-color: rgba(10, 10, 20, 0.4); border-color: rgba(40, 40, 60, 0.6); color: #e0e0e0; }
@@ -238,10 +240,16 @@ body.dark-mode {
 #workspace-title { font-size: 24px; font-weight: 600; color: var(--text-dark); flex-grow: 1; }
 #save-status { font-size: 14px; color: var(--text-light); transition: opacity 0.3s ease; margin-right: 10px; }
 
-.control-btn { padding: 10px 22px; font-size: 14px; font-weight: 600; color: white; background-color: var(--primary-accent); border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 15px rgba(90, 125, 203, 0.3); transition: all 0.3s ease; }
-.control-btn:hover { background-color: var(--primary-accent-dark); transform: translateY(-2px); }
-.control-btn.secondary { background-color: #95a5a6; }
-.control-btn.secondary:hover { background-color: #7f8c8d; }
+.control-btn { 
+    padding: 10px 24px; font-size: 13px; font-weight: 700; color: white; 
+    background-color: var(--primary-accent); border: none; border-radius: 12px; 
+    cursor: pointer; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2); 
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.1); 
+    text-transform: uppercase; letter-spacing: 0.5px;
+}
+.control-btn:hover { background-color: var(--primary-accent-dark); transform: translateY(-3px); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3); }
+.control-btn.secondary { background-color: var(--text-light); opacity: 0.8; }
+.control-btn.secondary:hover { background-color: var(--text-dark); opacity: 1; }
 #sidebar-toggle-btn { display: none; }
 
 .profile-menu-container { position: relative; }
@@ -274,12 +282,18 @@ body.dark-mode .sun-icon { display: none; }
    4. COMPONENTES: NOTAS Y ZONAS
    ========================================================================== */
 .note {
-    box-shadow: 0 8px 25px var(--note-shadow);
-    border-radius: 8px;
+    box-shadow: 0 10px 30px var(--note-shadow);
+    border-radius: 12px;
     background-color: var(--note-color);
     overflow: hidden;
-    padding: 0;
+    padding: 12px;
     display: flex;
+    border: 1px solid var(--panel-border);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+.note:hover {
+    box-shadow: 0 15px 45px var(--note-shadow);
+    transform: translateY(-2px);
 }
 .note textarea {
     font-family: 'Caveat', cursive;
@@ -296,15 +310,19 @@ body.dark-mode .sun-icon { display: none; }
 }
 .zone { 
     background-color: var(--zone-bg); 
-    backdrop-filter: blur(5px); 
-    border: 1px solid var(--zone-border); 
-    border-radius: 12px; 
+    backdrop-filter: blur(8px); 
+    border: 2px dashed var(--zone-border); 
+    border-radius: 20px; 
     box-sizing: border-box; 
-    overflow: hidden; /* Oculta cualquier desbordamiento de las líneas de la cuadrícula */
-    transition: box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out;
-    padding: 45px 15px 15px 15px; 
+    overflow: hidden; 
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    padding: 50px 20px 20px 20px; 
     min-width: 250px; 
     min-height: 200px;
+}
+.zone:hover {
+    border-color: var(--primary-accent);
+    background-color: rgba(99, 102, 241, 0.08);
 }
 .zone-title { position: absolute; top: 12px; left: 15px; font-weight: 600; font-size: 16px; color: var(--primary-accent-dark); border: none; background: transparent; width: calc(100% - 60px); outline: none; margin: 0; padding: 0; }
 /* NUEVO: Estilo para simular placeholder en elementos contenteditable */
@@ -378,16 +396,35 @@ body.dark-mode .sun-icon { display: none; }
    ========================================================================== */
 #bottom-dashboard { 
     position: fixed; bottom: 0; left: 0; width: 100%;
-    background: var(--dashboard-bg, rgba(239, 243, 245, 0.7)); backdrop-filter: blur(10px);
-    border-top: 1px solid rgba(255, 255, 255, 0.8); box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.05); 
-    display: flex; align-items: flex-start; justify-content: center; 
-    padding: 30px 20px; box-sizing: border-box; 
+    background: var(--dashboard-bg); backdrop-filter: blur(16px);
+    border-top: 1px solid var(--panel-border); box-shadow: 0 -10px 50px rgba(0, 0, 0, 0.15); 
+    display: flex; align-items: stretch; justify-content: flex-start; 
+    padding: 30px 40px; box-sizing: border-box; 
     z-index: 1002; gap: 25px; 
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth; 
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
     transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); 
 }
-.dashboard-widget { height: auto; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; color: var(--text-dark); text-align: center; background-color: var(--panel-bg); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.07); padding: 15px; border: 1px solid var(--panel-border); transition: all 0.3s ease; transform: translateY(0); }
-.dashboard-widget:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
-.dashboard-widget h3 { margin: 0 0 12px 0; padding-bottom: 8px; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-light); letter-spacing: 0.8px; width: 100%; border-bottom: 1px solid rgba(0,0,0,0.08); }
+#bottom-dashboard::-webkit-scrollbar { display: none; } /* Chrome/Safari/Opera */
+.dashboard-widget { 
+    min-width: 250px;
+    min-height: 280px;
+    flex-shrink: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: space-between; 
+    color: var(--text-dark); text-align: center; background-color: var(--panel-bg); 
+    border-radius: 28px; box-shadow: 0 4px 30px rgba(0,0,0,0.08); padding: 25px; 
+    border: 1px solid var(--panel-border); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+    transform: translateY(0); box-sizing: border-box;
+}
+.dashboard-widget:hover { transform: translateY(-10px); box-shadow: 0 15px 35px rgba(0,0,0,0.1); border-color: var(--primary-accent); }
+.dashboard-widget h3 { 
+    margin: 0 0 18px 0; padding-bottom: 12px; font-size: 10px; font-weight: 800; 
+    text-transform: uppercase; color: var(--text-light); letter-spacing: 2px; 
+    width: 100%; border-bottom: 1px solid var(--panel-border); 
+}
 /* NUEVO: Estilos para el widget de notas clickeable */
 .dashboard-widget.clickable {
     cursor: pointer;
@@ -422,20 +459,22 @@ body:not(.dashboard-hidden) #dashboard-toggle svg { transform: rotate(180deg); }
     display: flex;
     flex-direction: column;
     align-items: center;
-    line-height: 1.2;
+    line-height: 1.1;
 }
 
 #stats-widget .stat-value {
-    font-size: 28px;
-    font-weight: 600;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--primary-accent);
 }
 
 #stats-widget .stat-label {
-    font-size: 10px;
-    font-weight: 500;
+    font-size: 9px;
+    font-weight: 700;
     text-transform: uppercase;
     color: var(--text-light);
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
+    margin-top: 4px;
 }
 /* FIN: Estilos mejorados para el widget de notas */
 
@@ -443,65 +482,66 @@ body:not(.dashboard-hidden) #dashboard-toggle svg { transform: rotate(180deg); }
 #clock-widget {
     cursor: pointer;
     user-select: none;
+    min-width: 250px;
 }
-#clock-greeting {
-    margin: 0 0 12px 0;
-    padding-bottom: 8px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: var(--text-light);
-    letter-spacing: 0.8px;
-    width: 100%;
-    border-bottom: 1px solid rgba(0,0,0,0.08);
-}
+.main-clock-wrapper { margin-bottom: 15px; }
 .time-display-wrapper {
     display: flex;
     align-items: baseline;
-    gap: 4px;
-    font-family: 'Poppins', monospace;
+    justify-content: center;
+    gap: 6px;
+    font-family: 'Poppins', sans-serif;
+    margin-bottom: 8px;
 }
 #clock-widget #current-time {
-    font-size: 36px;
-    font-weight: 600;
+    font-size: 48px;
+    font-weight: 800;
     line-height: 1;
+    color: var(--text-dark);
+    letter-spacing: -2px;
 }
 #clock-widget #current-seconds {
-    font-size: 20px;
-    font-weight: 600;
-    color: var(--text-light);
-    transition: opacity 0.3s ease;
-    opacity: 1;
-}
-#clock-widget #current-seconds.hidden {
-    opacity: 0;
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--primary-accent);
+    opacity: 0.8;
 }
 #clock-widget #current-date {
-    font-size: 14px;
+    font-size: 13px;
+    font-weight: 700;
     color: var(--text-light);
-    margin-top: 4px;
-    cursor: pointer;
-    transition: color 0.2s ease;
+    text-transform: capitalize;
 }
-#clock-widget #current-date:hover {
-    color: var(--primary-accent);
-}
+
+/* WORLD CLOCKS */
+.world-clocks { width: 100%; display: flex; justify-content: space-around; background: var(--zone-bg); padding: 12px; border-radius: 18px; margin: 10px 0; }
+.w-clock { display: flex; flex-direction: column; gap: 2px; font-size: 10px; font-weight: 800; }
+.w-clock span:first-child { color: var(--text-light); font-size: 9px; }
+.w-clock span:last-child { color: var(--text-dark); }
+
+/* CLOCK FOOTER */
+.clock-footer { width: 100%; display: flex; justify-content: space-between; border-top: 1px solid var(--panel-border); padding-top: 15px; }
+.c-footer-item { font-size: 10px; font-weight: 700; color: var(--text-light); display: flex; align-items: center; gap: 5px; }
+/* FIN ESTILOS WIDGET RELOJ */
 /* FIN ESTILOS WIDGET RELOJ */
 
-#calendar-widget { min-width: 270px; }
-.calendar-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 8px; }
-.calendar-header h3 { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
-.calendar-header button { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--primary-accent); }
-#month-year { font-size: 14px; font-weight: 600; }
-.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; width: 100%; }
-.calendar-grid span { text-align: center; padding: 2px; font-size: 12px; position: relative; }
-.day-name { font-weight: 600; color: var(--text-light); }
-.day { cursor: pointer; border-radius: 50%; transition: background-color 0.2s; }
-body:not(.dark-mode) .day:hover { background-color: #e0e0e0; }
-body.dark-mode .day:hover { background-color: #3a4a6b; }
-.day.current-day { background-color: var(--highlight-color); color: white; font-weight: 600; }
-.day.selected-day { box-shadow: 0 0 0 2px var(--primary-accent); }
-.day.has-notes::after { content: ''; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background-color: var(--primary-accent); border-radius: 50%; }
+#calendar-widget { min-width: 280px; }
+.calendar-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px; }
+.calendar-header button { 
+    background: var(--zone-bg); border: none; cursor: pointer; font-size: 16px; 
+    color: var(--primary-accent); width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+}
+.calendar-header button:hover { background: var(--primary-accent); color: white; }
+#month-year { font-size: 14px; font-weight: 700; color: var(--text-dark); }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; width: 100%; }
+.calendar-grid span { text-align: center; padding: 6px 0; font-size: 11px; font-weight: 500; position: relative; }
+.day-name { font-weight: 700; color: var(--text-light); text-transform: uppercase; font-size: 9px !important; letter-spacing: 0.5px; }
+.day { cursor: pointer; border-radius: 8px; transition: all 0.2s; color: var(--text-dark); }
+.day:hover { background-color: var(--zone-bg); color: var(--primary-accent); }
+.day.current-day { background-color: var(--primary-accent); color: white; font-weight: 700; box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3); }
+.day.selected-day { outline: 2px solid var(--primary-accent); outline-offset: -2px; }
+.day.has-notes::after { content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background-color: var(--primary-accent); border-radius: 50%; }
 
 /* ==========================================================================
    5.1 COMPONENTES: CONTROLES DE ZOOM (NUEVO)
@@ -552,63 +592,46 @@ body.dashboard-hidden #zoom-controls {
 }
 
 /* INICIO ESTILOS WIDGET CRONÓMETRO */
-#timer-widget.timer-running {
-    animation: pulse-green 2s infinite ease-out;
-}
-#timer-widget.timer-running #timer-display,
-#timer-widget.timer-running #edit-timer-btn {
-    color: var(--success-color);
-}
-#timer-widget.timer-paused #timer-display,
-#timer-widget.timer-paused #edit-timer-btn {
-    color: var(--warning-color);
-}
-/* INICIO: Estilos para el anillo de progreso del cronómetro */
-.timer-display-container { position: relative; display: flex; align-items: center; justify-content: center; width: 120px; height: 120px; margin-bottom: 5px; }
+.timer-display-container { position: relative; display: flex; align-items: center; justify-content: center; width: 130px; height: 130px; margin-bottom: 10px; }
 .timer-progress-ring { position: absolute; top: 0; left: 0; transform: rotate(-90deg); }
 .timer-progress-ring__background { stroke: var(--panel-border); }
-.timer-progress-ring__progress { stroke: var(--primary-accent); stroke-linecap: round; transition: stroke-dashoffset 0.3s linear, stroke 0.4s ease; }
-#timer-widget.timer-running .timer-progress-ring__progress { stroke: var(--success-color); }
-#timer-widget.timer-paused .timer-progress-ring__progress { stroke: var(--warning-color); }
-/* FIN: Estilos para el anillo de progreso del cronómetro */
+.timer-progress-ring__progress { stroke: var(--primary-accent); stroke-linecap: round; transition: stroke-dashoffset 0.3s linear, stroke 0.4s ease; filter: drop-shadow(0 0 4px rgba(99, 102, 241, 0.4)); }
+#timer-widget.timer-running .timer-progress-ring__progress { stroke: var(--success-color); filter: drop-shadow(0 0 4px rgba(16, 185, 129, 0.4)); }
+#timer-widget.timer-paused .timer-progress-ring__progress { stroke: var(--warning-color); filter: drop-shadow(0 0 4px rgba(245, 158, 11, 0.4)); }
 
-/* INICIO: Contenedor para el valor del cronómetro y el botón de edición */
 .timer-value-wrapper {
-    position: relative; /* Para que el contenido esté por encima del SVG */
+    position: relative;
     z-index: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
 }
-/* FIN: Contenedor para el valor del cronómetro */
 
 #timer-display {
-    font-size: 32px;
-    font-weight: 600;
-    font-family: 'Poppins', monospace;
-    letter-spacing: 2px;
+    font-size: 34px;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    letter-spacing: -1px;
     color: var(--text-dark);
     transition: color 0.4s ease;
-    line-height: 1.1; /* Ajuste para que no esté tan pegado al botón */
+    line-height: 1;
 }
-#edit-timer-btn { background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text-light); padding: 2px; margin-top: 2px; border-radius: 50%; transition: color 0.2s, background-color 0.2s; }
-body:not(.dark-mode) #edit-timer-btn:hover { background-color: #e0e0e0; }
-body.dark-mode #edit-timer-btn:hover { background-color: #3a4a6b; }
-.timer-buttons { margin-top: 5px; display: flex; gap: 15px; }
+#edit-timer-btn { background: none; border: none; cursor: pointer; font-size: 14px; opacity: 0.6; transition: all 0.2s; margin-top: 5px; }
+#edit-timer-btn:hover { opacity: 1; transform: scale(1.2); }
+.timer-buttons { display: flex; gap: 12px; margin-bottom: 15px; }
 .timer-control-btn {
-    width: 40px; height: 40px; font-size: 20px;
+    width: 44px; height: 44px; font-size: 18px;
     display: flex; align-items: center; justify-content: center;
-    cursor: pointer; border: 1px solid var(--input-border); border-radius: 50%; background: var(--input-bg);
+    cursor: pointer; border: 1px solid var(--panel-border); border-radius: 50%; background: var(--panel-bg);
     color: var(--text-dark);
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-.timer-control-btn:hover { border-color: var(--primary-accent); color: var(--primary-accent); }
-.timer-control-btn svg { width: 18px; height: 18px; fill: currentColor; }
-.timer-presets { display: flex; gap: 8px; margin-top: 12px; }
+.timer-control-btn:hover { background: var(--primary-accent); color: white; border-color: var(--primary-accent); transform: scale(1.1); }
+.timer-presets { display: flex; gap: 6px; }
 .preset-btn {
-    font-size: 12px; font-weight: 600; color: var(--text-light);
-    padding: 4px 10px; border-radius: 20px; border: 1px solid var(--input-border); background: transparent;
+    font-size: 10px; font-weight: 700; color: var(--text-light);
+    padding: 5px 12px; border-radius: 50px; border: 1px solid var(--panel-border); background: var(--panel-bg);
     cursor: pointer; transition: all 0.2s ease;
 }
 .preset-btn:hover, .preset-btn.active {
@@ -616,14 +639,72 @@ body.dark-mode #edit-timer-btn:hover { background-color: #3a4a6b; }
 }
 /* FIN ESTILOS WIDGET CRONÓMETRO */
 
-#youtube-widget input { border: 1px solid var(--input-border); border-radius: 4px; padding: 6px 8px; width: 180px; font-size: 12px; margin-bottom: 0; background-color: var(--input-bg); color: var(--text-dark); }
-#youtube-player-container { position: relative; width: 200px; height: 112px; background: #000; border-radius: 8px; overflow: hidden; margin-top: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+#youtube-widget { min-width: 280px; }
+.music-controls-wrapper { display: flex; flex-direction: column; gap: 15px; width: 100%; height: 100%; justify-content: space-between; }
+
+/* PRESETS */
+.music-presets { display: flex; gap: 8px; justify-content: center; }
+.preset-btn { 
+    background: var(--zone-bg); border: 1px solid var(--panel-border); border-radius: 10px; 
+    padding: 8px 12px; font-size: 11px; font-weight: 700; color: var(--text-dark); 
+    cursor: pointer; transition: all 0.2s;
+}
+.preset-btn:hover { background: var(--primary-accent); color: white; border-color: var(--primary-accent); transform: translateY(-2px); }
+
+/* INPUT GROUP */
+.yt-input-group { position: relative; display: flex; align-items: center; }
+.yt-icon { position: absolute; left: 12px; font-size: 14px; z-index: 1; }
+#youtube-url-input { 
+    width: 100%; padding: 12px 15px 12px 35px; border-radius: 14px; 
+    border: 1px solid var(--panel-border); background: var(--input-bg); 
+    font-size: 11px; font-weight: 600; color: var(--text-dark); transition: all 0.2s;
+}
+#youtube-url-input:focus { border-color: var(--primary-accent); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); outline: none; }
+
+/* PLAYER AREA */
+#youtube-player-container { 
+    width: 100%; height: 120px; border-radius: 16px; background: #000; overflow: hidden; 
+    position: relative; border: 1px solid var(--panel-border);
+}
+.yt-placeholder { 
+    position: absolute; inset: 0; display: flex; flex-direction: column; 
+    align-items: center; justify-content: center; gap: 10px; background: #0f172a; 
+}
+.pulse-icon { font-size: 30px; animation: pulseMusic 2s infinite; }
+@keyframes pulseMusic { 0% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 0.5; } }
+.yt-status { font-size: 10px; font-weight: 700; color: var(--text-light); text-transform: uppercase; }
+
+/* NOW PLAYING & HISTORY */
+.music-now-playing { text-align: left; background: var(--zone-bg); padding: 10px 15px; border-radius: 12px; border-left: 3px solid var(--primary-accent); }
+.playing-label { font-size: 9px; font-weight: 800; color: var(--primary-accent); text-transform: uppercase; display: block; margin-bottom: 2px; }
+.song-title { font-size: 11px; font-weight: 700; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+
+.music-history { text-align: left; }
+.history-label { font-size: 9px; font-weight: 800; color: var(--text-light); text-transform: uppercase; margin-bottom: 8px; display: block; }
+.history-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.history-tag { 
+    font-size: 9px; font-weight: 700; padding: 4px 8px; background: var(--zone-bg); 
+    border-radius: 6px; color: var(--text-light); cursor: pointer; border: 1px solid var(--panel-border);
+}
+.history-tag:hover { color: var(--primary-accent); border-color: var(--primary-accent); }
+
 #youtube-player-container iframe { width: 100%; height: 100%; border: none; }
-#youtube-controls { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background-color: rgba(0, 0, 0, 0.3); opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
+#youtube-controls { 
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+    display: flex; align-items: center; justify-content: center; 
+    background-color: rgba(15, 23, 42, 0.4); backdrop-filter: blur(2px);
+    opacity: 0; transition: opacity 0.3s ease; pointer-events: none; 
+}
 #youtube-player-container:hover #youtube-controls, #youtube-player-container.paused #youtube-controls { opacity: 1; pointer-events: all; }
-.yt-control-btn { background-color: rgba(255, 255, 255, 0.9); border: none; border-radius: 50%; width: 50px; height: 50px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.3); transition: transform 0.2s ease, background-color 0.2s ease; }
-.yt-control-btn:hover { transform: scale(1.1); background-color: #fff; }
-.yt-control-btn svg { width: 24px; height: 24px; fill: var(--text-dark); }
+.yt-control-btn { 
+    background-color: white; border: none; border-radius: 50%; 
+    width: 48px; height: 48px; cursor: pointer; display: flex; 
+    align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+}
+.yt-control-btn:hover { transform: scale(1.1); background-color: var(--primary-accent); }
+.yt-control-btn:hover svg { fill: white; }
+.yt-control-btn svg { width: 22px; height: 22px; fill: #0f172a; transition: fill 0.2s; }
 
 /* NUEVO: Estilos para el indicador de carga de YouTube */
 .yt-loader {
@@ -644,6 +725,143 @@ body.dark-mode #edit-timer-btn:hover { background-color: #3a4a6b; }
     display: block;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ESTILOS WIDGET CLIMA (MEJORADO) */
+#weather-widget .weather-content { display: flex; flex-direction: column; gap: 12px; width: 100%; height: 100%; justify-content: space-between; }
+.weather-main { display: flex; align-items: center; justify-content: center; gap: 15px; margin-top: 5px; }
+.weather-temp { font-size: 44px; font-weight: 800; color: var(--text-dark); letter-spacing: -1px; }
+.weather-icon { font-size: 44px; filter: drop-shadow(0 4px 10px rgba(251, 191, 36, 0.3)); }
+.weather-desc { font-size: 14px; font-weight: 700; color: var(--primary-accent); }
+.weather-details { display: flex; justify-content: space-around; background: var(--zone-bg); padding: 10px; border-radius: 15px; }
+.w-detail { font-size: 11px; font-weight: 700; color: var(--text-dark); display: flex; align-items: center; gap: 5px; }
+.weather-forecast { display: flex; justify-content: space-between; border-top: 1px solid var(--panel-border); padding-top: 12px; }
+.f-day { display: flex; flex-direction: column; gap: 4px; font-size: 10px; font-weight: 700; color: var(--text-light); }
+.f-day span:nth-child(2) { font-size: 16px; }
+.f-day span:nth-child(3) { color: var(--text-dark); }
+.weather-location { font-size: 11px; color: var(--text-light); font-weight: 600; opacity: 0.8; }
+
+/* ESTILOS WIDGET TAREAS (MEJORADO) */
+#tasks-widget .tasks-mini-list { display: flex; flex-direction: column; gap: 10px; width: 100%; text-align: left; }
+.task-mini-item { font-size: 12px; font-weight: 600; color: var(--text-dark); display: flex; gap: 10px; align-items: center; padding: 10px 14px; background: var(--zone-bg); border-radius: 14px; border: 1px solid var(--panel-border); transition: all 0.2s; cursor: pointer; }
+.task-mini-item:hover { transform: translateX(5px); border-color: var(--primary-accent); background: white; }
+.task-mini-item span { color: var(--primary-accent); font-weight: 800; font-size: 18px; line-height: 1; }
+.task-input-wrapper { width: 100%; margin-top: 10px; }
+#quick-task-input { 
+    width: 100%; padding: 12px 15px; border-radius: 14px; border: 1px solid var(--panel-border); 
+    background: var(--input-bg); font-size: 11px; font-weight: 600; color: var(--text-dark);
+}
+
+/* ESTILOS WIDGET FRASE (MEJORADO) */
+#quote-widget .quote-content { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; position: relative; }
+.quote-text { font-family: 'Caveat', cursive; font-size: 26px; color: var(--text-dark); line-height: 1.2; font-weight: 600; font-style: italic; margin-bottom: 10px; }
+#stats-widget .stat-label { font-size: 10px; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; }
+
+/* EXTRA INFO NOTAS */
+.notes-extra-info { width: 100%; margin-top: 15px; display: flex; flex-direction: column; gap: 15px; }
+.progress-container { text-align: left; }
+.progress-label { font-size: 9px; font-weight: 800; color: var(--text-light); text-transform: uppercase; margin-bottom: 5px; display: block; }
+.progress-bar { width: 100%; height: 6px; background: var(--zone-bg); border-radius: 10px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary-accent), #818cf8); border-radius: 10px; box-shadow: 0 0 10px rgba(99, 102, 241, 0.3); }
+.quick-add-note-btn { 
+    background: var(--primary-accent); color: white; border: none; border-radius: 12px; 
+    padding: 10px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+}
+.quick-add-note-btn:hover { background: #4f46e5; transform: scale(1.02); }
+.refresh-quote-btn { 
+    background: transparent; border: 1px solid var(--panel-border); color: var(--text-light); 
+    border-radius: 10px; padding: 6px 12px; font-size: 10px; font-weight: 700; cursor: pointer; 
+    transition: all 0.2s; margin-top: 15px;
+}
+.refresh-quote-btn:hover { border-color: var(--primary-accent); color: var(--primary-accent); background: var(--zone-bg); }
+
+/* ESTILOS WIDGET CRONÓMETRO (MEJORADO) */
+.timer-main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: 15px;
+}
+#timer-widget .timer-container { 
+    position: relative; 
+    width: 150px; 
+    height: 150px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+}
+.timer-progress-ring { 
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    transform: rotate(-90deg); 
+    filter: drop-shadow(0 0 15px rgba(99, 102, 241, 0.3)); 
+}
+.timer-progress-ring__circle { stroke: var(--zone-bg); stroke-width: 8; }
+.timer-progress-ring__progress { stroke: var(--primary-accent); stroke-width: 8; transition: stroke-dashoffset 0.3s linear; stroke-linecap: round; }
+
+.timer-value-wrapper { 
+    display: flex; 
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center;
+    gap: 0;
+    z-index: 2;
+}
+#timer-display { font-size: 38px; font-weight: 800; color: var(--text-dark); letter-spacing: -1.5px; line-height: 1; }
+#edit-timer-btn { background: transparent; border: none; font-size: 14px; cursor: pointer; opacity: 0.5; transition: opacity 0.2s; margin-top: 2px; }
+#edit-timer-btn:hover { opacity: 1; }
+.timer-status { 
+    position: absolute;
+    bottom: -10px;
+    font-size: 9px; font-weight: 800; color: var(--primary-accent); 
+    text-transform: uppercase; letter-spacing: 2px; width: 100%; text-align: center;
+}
+
+.timer-controls { display: flex; gap: 20px; align-items: center; }
+.timer-control-btn { 
+    width: 48px; height: 48px; border-radius: 50%; border: 1.5px solid var(--panel-border); 
+    background: var(--note-color); color: var(--text-dark); font-size: 20px; cursor: pointer; 
+    display: flex; align-items: center; justify-content: center; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    padding: 0;
+}
+.timer-control-btn:hover { 
+    border-color: var(--primary-accent); 
+    color: var(--primary-accent); 
+    transform: scale(1.1) translateY(-2px); 
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    background: var(--panel-bg); 
+}
+.timer-control-btn#timer-play-pause-btn { 
+    background: var(--primary-accent); 
+    color: white; 
+    border: none; 
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4); 
+}
+.timer-control-btn#timer-play-pause-btn:hover {
+    background: #4f46e5;
+    color: white;
+    transform: scale(1.1) translateY(-2px);
+}
+.timer-control-btn svg {
+    display: block;
+    width: 22px;
+    height: 22px;
+}
+
+.timer-presets { display: flex; gap: 8px; justify-content: center; margin-top: 5px; }
+.timer-presets .preset-btn { min-width: 50px; padding: 6px 10px; font-size: 10px; }
+
+.timer-footer-stats { width: 100%; display: flex; justify-content: space-between; border-top: 1px solid var(--panel-border); padding-top: 15px; margin-top: 10px; }
+.t-stat { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: var(--text-light); }
+.t-stat span:last-child { color: var(--text-dark); }
+/* FIN ESTILOS WIDGET CRONÓMETRO */
+
+/* FIN NUEVOS WIDGETS */
 /* FIN NUEVO */
 
 /* ==========================================================================
