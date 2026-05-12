@@ -58,7 +58,7 @@ class App {
             this.authService = new AuthService(this.handleAuthStateChange.bind(this));
         } else {
             // En modo local, disparamos el cambio de estado manualmente
-            this.handleAuthStateChange(null);
+            this.enterLocalMode();
         }
     }
 
@@ -67,6 +67,7 @@ class App {
         this.DOMElements.appContainer = getElement('#app');
         this.DOMElements.workspace = getElement('#workspace');
         this.DOMElements.signInBtn = getElement('#google-signin-btn');
+        this.DOMElements.localSignInBtn = getElement('#local-signin-btn');
         this.DOMElements.workspaceTitle = getElement('#workspace-title');
         this.DOMElements.addNoteBtn = getElement('#addNoteBtn');
         this.DOMElements.addZoneBtn = getElement('#addZoneBtn');
@@ -116,7 +117,12 @@ class App {
     }
 
     bindGlobalEvents() {
-        this.DOMElements.signInBtn.addEventListener('click', () => { if (this.authService) this.authService.signIn(); });
+        if (this.DOMElements.signInBtn) {
+            this.DOMElements.signInBtn.addEventListener('click', () => { if (this.authService) this.authService.signIn(); });
+        }
+        if (this.DOMElements.localSignInBtn) {
+            this.DOMElements.localSignInBtn.addEventListener('click', () => this.enterLocalMode());
+        }
         this.DOMElements.signOutBtn.addEventListener('click', () => { if (this.authService) this.authService.signOut(); });
         this.DOMElements.addNoteBtn.addEventListener('click', () => this.addNote()); // Calls _triggerSave
         this.DOMElements.addZoneBtn.addEventListener('click', () => this.addZone()); // Calls _triggerSave
@@ -343,13 +349,16 @@ class App {
                 photoURL: null 
             };
         }
-        // ---------------------------
-
+        
         this.state.setCurrentUser(user);
+        this.currentUID = user ? user.uid : null;
+
+        // Si es un usuario local o estamos en modo local forzado
+        const isActuallyLocal = !user || user.uid === 'local-user' || !USE_FIREBASE;
 
         if (user) {
-            // Elegir el servicio de datos según la configuración
-            if (USE_FIREBASE) {
+            // Elegir el servicio de datos según la configuración o el tipo de usuario
+            if (USE_FIREBASE && user.uid !== 'local-user') {
                 this.dataService = new FirestoreService(this.authService.getFirebaseApp());
             } else {
                 this.dataService = new LocalStorageService();
@@ -361,9 +370,15 @@ class App {
             this.DOMElements.body.classList.add('logged-in');
             
             // Si estamos en modo local, ocultar botones de login/perfil innecesarios
-            if (!USE_FIREBASE) {
-                this.DOMElements.signInBtn.style.display = 'none';
-                if (this.DOMElements.signOutBtn) this.DOMElements.signOutBtn.style.display = 'none';
+            if (isActuallyLocal) {
+                if (this.DOMElements.signInBtn) this.DOMElements.signInBtn.style.display = 'none';
+                if (this.DOMElements.localSignInBtn) this.DOMElements.localSignInBtn.style.display = 'none';
+                if (this.DOMElements.signOutBtn) {
+                    // Cambiamos el texto de cerrar sesión para modo local
+                    this.DOMElements.signOutBtn.querySelector('span').textContent = '🏠';
+                    this.DOMElements.signOutBtn.innerHTML = '<span>🏠</span> Salir al Menú';
+                    this.DOMElements.signOutBtn.addEventListener('click', () => location.reload());
+                }
             }
 
             setTimeout(() => this.loadData(), 50); 
@@ -425,6 +440,16 @@ class App {
             this.DOMElements.userName.textContent = user.displayName || 'Usuario';
             this.DOMElements.profileAvatar.src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'U')}&background=6366f1&color=fff`;
         }
+    }
+
+    enterLocalMode() {
+        // Simulamos un usuario local para la persistencia
+        const localUser = {
+            uid: 'local-user',
+            displayName: 'Espacio Local',
+            photoURL: 'https://ui-avatars.com/api/?name=L&background=10b981&color=fff'
+        };
+        this.handleAuthStateChange(localUser);
     }
 
     async loadData() {
