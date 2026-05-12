@@ -150,6 +150,7 @@ class YoutubeWidget {
             const data = this.player.getVideoData();
             if (this.songTitle) this.songTitle.textContent = data.title || 'Música de fondo';
             if (this.nowPlaying) this.nowPlaying.classList.remove('hidden');
+            if (this.placeholder) this.placeholder.classList.add('hidden');
         }
     }
 

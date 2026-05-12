@@ -203,6 +203,10 @@ body {
     height: 100vh;
     color: var(--text-dark);
 }
+
+.hidden {
+    display: none !important;
+}
 body.dark-mode {
     background-image: url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%233a4a6b" fill-opacity="0.4"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');
 }
@@ -709,16 +713,33 @@ body.dashboard-hidden #zoom-controls {
 
 /* PLAYER AREA */
 #youtube-player-container { 
-    width: 100%; height: 120px; border-radius: 16px; background: #000; overflow: hidden; 
+    width: 100%; height: 180px; border-radius: 16px; background: #000; overflow: hidden; 
     position: relative; border: 1px solid var(--panel-border);
+    transition: all 0.3s ease;
 }
 .yt-placeholder { 
     position: absolute; inset: 0; display: flex; flex-direction: column; 
     align-items: center; justify-content: center; gap: 10px; background: #0f172a; 
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+    z-index: 2;
+}
+.yt-placeholder.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
 }
 .pulse-icon { font-size: 30px; animation: pulseMusic 2s infinite; }
 @keyframes pulseMusic { 0% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 0.5; } }
 .yt-status { font-size: 10px; font-weight: 700; color: var(--text-light); text-transform: uppercase; }
+
+#youtube-player-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
 
 /* NOW PLAYING & HISTORY */
 .music-now-playing { text-align: left; background: var(--zone-bg); padding: 10px 15px; border-radius: 12px; border-left: 3px solid var(--primary-accent); }
