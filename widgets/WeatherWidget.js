@@ -135,7 +135,7 @@ export default class WeatherWidget {
     }
 
     async #fetchWeatherData(lat, lon) {
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`;
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=auto`;
         const response = await fetch(url);
         return await response.json();
     }
@@ -175,6 +175,19 @@ export default class WeatherWidget {
                 `;
                 this.#forecastContainer.appendChild(forecastDay);
             }
+        }
+
+        // Update Sunrise and Sunset in the Clock Widget Footer (if they exist)
+        const sunriseEl = document.getElementById('sunrise-time');
+        const sunsetEl = document.getElementById('sunset-time');
+
+        if (sunriseEl && daily && daily.sunrise) {
+            const sunriseDate = new Date(daily.sunrise[0]);
+            sunriseEl.textContent = sunriseDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+        }
+        if (sunsetEl && daily && daily.sunset) {
+            const sunsetDate = new Date(daily.sunset[0]);
+            sunsetEl.textContent = sunsetDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
         }
     }
 
