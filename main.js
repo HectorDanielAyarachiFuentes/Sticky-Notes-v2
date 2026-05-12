@@ -1404,9 +1404,9 @@ class App {
                     onDelete: this.deleteNote.bind(this),
                     onUpdate: this.updateNote.bind(this),
                 findParentZone: this.findParentZone.bind(this),
-                // onNoteDragMove ahora espera un retorno de coordenadas
                 onNoteDragMove: this.handleNoteDragMove.bind(this),
-                onNoteDragStop: this.handleNoteDragStop.bind(this)
+                onNoteDragStop: this.handleNoteDragStop.bind(this),
+                onZoomToggle: this.handleNoteZoomToggle.bind(this)
                 });
                 this.noteInstances.set(noteData.id, note);
                 notesContainer.appendChild(note.getDomElement());
@@ -1439,7 +1439,8 @@ class App {
                     const note = new Note(noteData, {
                         onDelete: this.deleteNote.bind(this),
                         onUpdate: this.updateNote.bind(this),
-                        findParentZone: this.findParentZone.bind(this)
+                        findParentZone: this.findParentZone.bind(this),
+                        onZoomToggle: this.handleNoteZoomToggle.bind(this)
                     });
                     this.noteInstances.set(noteData.id, note);
                     mobileNotesContainer.appendChild(note.getDomElement());

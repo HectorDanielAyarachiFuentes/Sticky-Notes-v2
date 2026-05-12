@@ -1374,70 +1374,85 @@ body.slider-active .slider-panel {
     }
     .note-tabs {
         flex-shrink: 0;
-        width: 30px;
-        background-color: rgba(0, 0, 0, 0.03);
+        width: 36px;
+        background-color: rgba(255, 255, 255, 0.03);
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
+        padding: 15px 0;
         gap: 12px;
-        border-right: 1px solid rgba(0, 0, 0, 0.06);
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
     }
     .note-tab-btn {
-        width: 14px;
-        height: 14px;
-        background-color: transparent;
-        border: 2px solid var(--text-light);
-        opacity: 0.5;
-        border-radius: 50%;
+        width: 6px;
+        height: 20px;
+        background-color: rgba(255, 255, 255, 0.2);
+        border: none;
+        border-radius: 10px;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         padding: 0;
     }
     .note-tab-btn:hover {
-        opacity: 1;
-        transform: scale(1.1);
+        background-color: rgba(255, 255, 255, 0.4);
+        height: 24px;
     }
     .note-tab-btn.active {
-        background-color: var(--primary-accent);
-        border-color: var(--primary-accent);
-        opacity: 1;
+        background: linear-gradient(to bottom, var(--primary-accent), var(--primary-accent-dark));
+        height: 30px;
+        box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
     }
     .note-main-content {
         flex-grow: 1;
         display: flex;
         flex-direction: column;
-        padding: 10px 15px 15px 15px;
+        padding: 12px 18px 18px 18px;
         position: relative;
     }
     .note-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 5px;
+        margin-bottom: 8px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
-    /* NUEVO: Estilo para la "etiqueta de color" que controla el zoom */
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
     .note-zoom-handle {
-        width: 40px; /* Ampliado para que sea más fácil hacer clic */
-        height: 8px; /* Un poco más plano para un look de "asa" */
-        background-color: var(--primary-accent);
-        opacity: 0.5;
-        border-radius: 10px; /* Más redondeado */
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         cursor: pointer;
-        transition: all 0.2s ease;
-        margin: 0 8px; /* Espacio a ambos lados para separarlo del título y el botón de borrar */
-        flex-shrink: 0;
+        color: var(--text-light);
+        transition: all 0.3s ease;
     }
     .note-zoom-handle:hover {
-        opacity: 1;
+        background: rgba(255, 255, 255, 0.15);
+        color: white;
         transform: scale(1.1);
+    }
+    .note-zoom-handle svg {
+        width: 14px;
+        height: 14px;
     }
     .tab-name-display {
         margin: 0;
         font-family: 'Poppins', sans-serif;
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--text-dark);
+        font-size: 13px;
+        font-weight: 700;
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        opacity: 0.9;
         flex-grow: 1;
         padding: 5px;
         border-radius: 4px;
@@ -1693,15 +1708,105 @@ body.note-view-active .zone.parent-of-zoomed {
         z-index: 5;
     }
     
-    .note { flex-direction: column-reverse; min-height: 180px; }
-    .note .delete-btn { position: absolute; top: 8px; right: 8px; z-index: 5; }
-    .note-main-content, .note-header { display: contents; }
-    .note-tabs { display: flex; flex-direction: row; width: 100%; border-top: 1px solid rgba(0, 0, 0, 0.08); }
-    .note-tab-btn { background-color: transparent; border: none; border-right: 1px solid rgba(0, 0, 0, 0.08); flex-grow: 1; padding: 10px 5px; cursor: pointer; text-align: center; font-family: 'Poppins', sans-serif; font-size: 12px; color: var(--text-light); transition: all 0.2s ease; position: relative; }
-    .note-tab-btn::after { content: attr(title); }
-    .note-tab-btn:last-child { border-right: none; }
-    .note-tab-btn.active { background-color: var(--note-color); color: var(--primary-accent); font-weight: 600; }
-    .note-tab-btn.active::before { content: ''; position: absolute; width: 100%; height: 3px; background-color: var(--primary-accent); bottom: 0; left: 0; }
+    .note { 
+        flex-direction: column; 
+        min-height: 200px; 
+        padding: 0 !important;
+        overflow: hidden;
+    }
+    
+    .note-main-content {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .note-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 15px;
+        background: rgba(255, 255, 255, 0.03);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .header-actions {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+    }
+
+    .note .delete-btn, .note .note-zoom-handle { 
+        position: static; 
+        width: 36px;
+        height: 36px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        padding: 0;
+        transition: all 0.2s ease;
+    }
+
+    .note .delete-btn svg, .note .note-zoom-handle svg {
+        width: 16px;
+        height: 16px;
+        opacity: 0.8;
+    }
+
+    .note .delete-btn:active, .note .note-zoom-handle:active {
+        background: rgba(255, 255, 255, 0.2);
+        transform: scale(0.9);
+    }
+
+    .note-tabs { 
+        display: flex; 
+        flex-direction: row; 
+        width: 100%; 
+        background: rgba(0, 0, 0, 0.2);
+        padding: 6px;
+        gap: 6px;
+        box-sizing: border-box;
+    }
+
+    .note-tab-btn { 
+        background: transparent; 
+        border: none; 
+        flex-grow: 1; 
+        padding: 8px 4px; 
+        cursor: pointer; 
+        text-align: center; 
+        font-family: 'Poppins', sans-serif; 
+        font-size: 11px; 
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.5); 
+        transition: all 0.3s ease; 
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .note-tab-btn::after { 
+        content: attr(title); 
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .note-tab-btn.active { 
+        background: rgba(255, 255, 255, 0.1); 
+        color: white; 
+        font-weight: 700; 
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    
+    .note-tab-btn.active::before { display: none; }
     .note-content-panels { padding: 35px 15px 15px 15px; flex-grow: 1; }
     .note-content-panel { position: static; display: none; height: 100%; }
     .note-content-panel.active { display: block; }

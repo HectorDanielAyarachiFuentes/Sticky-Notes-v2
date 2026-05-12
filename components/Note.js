@@ -20,11 +20,15 @@ class Note {
             <div class="note-tabs"></div>
             <div class="note-main-content">
                 <div class="note-header">
-                    <h4 class="tab-name-display" contenteditable="true"></h4>
-                    <div class="note-zoom-handle" title="Doble clic para ampliar"></div>
-                    <button class="delete-btn" title="Eliminar nota">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                    </button>
+                    <h4 class="tab-name-display" contenteditable="true" title="Haz clic para editar el nombre de la pestaña"></h4>
+                    <div class="header-actions">
+                        <button class="note-zoom-handle" title="Ampliar nota">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+                        </button>
+                        <button class="delete-btn" title="Eliminar nota">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                    </div>
                 </div>
                 <div class="note-content-panels"></div>
             </div>
@@ -147,17 +151,15 @@ class Note {
             makeResizable(this.element, this.data, this.callbacks.onUpdate);
         }
 
-        // Añadir evento de doble clic para zoom en escritorio (tanto para notas sueltas como dentro de zonas)
-        if (window.innerWidth > CONSTANTS.MOBILE_BREAKPOINT) {
-            const zoomHandle = getElement('.note-zoom-handle', this.element);
-            if (zoomHandle) {
-                zoomHandle.addEventListener('click', (e) => {
-                    // Detener la propagación para evitar que otros listeners (como el de arrastre) se activen.
-                    e.stopPropagation();
-                    // Notificar a la app principal para que gestione el estado del zoom de forma centralizada
-                    if (this.callbacks.onZoomToggle) this.callbacks.onZoomToggle(this.data.id);
-                });
-            }
+        // Añadir evento de clic para zoom/expandir (funciona en móvil y escritorio)
+        const zoomHandle = getElement('.note-zoom-handle', this.element);
+        if (zoomHandle) {
+            zoomHandle.addEventListener('click', (e) => {
+                // Detener la propagación para evitar que otros listeners (como el de arrastre) se activen.
+                e.stopPropagation();
+                // Notificar a la app principal para que gestione el estado del zoom de forma centralizada
+                if (this.callbacks.onZoomToggle) this.callbacks.onZoomToggle(this.data.id);
+            });
         }
     }
 
