@@ -11,6 +11,8 @@ import ClockWidget from "./widgets/ClockWidget.js";
 import CalendarWidget from "./widgets/CalendarWidget.js";
 import TimerWidget from "./widgets/TimerWidget.js";
 import YoutubeWidget from "./widgets/YoutubeWidget.js";
+import QuoteWidget from "./widgets/QuoteWidget.js";
+import TasksWidget from "./widgets/TasksWidget.js";
 import Note from "./components/Note.js";
 import Zone from "./components/Zone.js";
 import { CONSTANTS, USE_FIREBASE } from "./config.js"; // Para usar constantes compartidas
@@ -239,11 +241,12 @@ class App {
         }, true); // Usar captura para asegurar que se ejecute
 
         // NUEVO: Scroll horizontal con la rueda del ratón en el dashboard
-        if (this.DOMElements.bottomDashboard) {
-            this.DOMElements.bottomDashboard.addEventListener('wheel', (e) => {
+        const widgetsContainer = getElement('#dashboard-widgets-container');
+        if (widgetsContainer) {
+            widgetsContainer.addEventListener('wheel', (e) => {
                 if (e.deltaY !== 0) {
                     e.preventDefault();
-                    this.DOMElements.bottomDashboard.scrollLeft += e.deltaY;
+                    widgetsContainer.scrollLeft += e.deltaY;
                 }
             }, { passive: false });
         }
@@ -255,6 +258,8 @@ class App {
         this.widgets.calendar = new CalendarWidget('#calendar-widget', this.state, this.handleCalendarDateSelect.bind(this));
         this.widgets.timer = new TimerWidget('#timer-widget', this.state);
         this.widgets.youtube = new YoutubeWidget('#youtube-widget', this.state, this.handleYoutubeUrlChange.bind(this));
+        this.widgets.quote = new QuoteWidget('#quote-widget', this.state);
+        this.widgets.tasks = new TasksWidget('#tasks-widget', this.state, this._triggerSave.bind(this));
 
         // Clonar widgets para la barra lateral móvil y re-instanciar su lógica
         const mainWidgets = this.DOMElements.bottomDashboard.querySelectorAll('.dashboard-widget');
@@ -296,6 +301,12 @@ class App {
                 case 'stats-widget': // NUEVO: Manejo específico para el stats-widget clonado
                     // Asegurarse de que el widget clonado sea clickeable para abrir la lista de notas
                     clone.addEventListener('click', () => this.showAllNotesList());
+                    break;
+                case 'quote-widget':
+                    this.mobileWidgets.quote = new QuoteWidget(clone, this.state);
+                    break;
+                case 'tasks-widget':
+                    this.mobileWidgets.tasks = new TasksWidget(clone, this.state, this._triggerSave.bind(this));
                     break;
             }
             this.DOMElements.sidebarContent.appendChild(clone);
@@ -388,6 +399,7 @@ class App {
     applyData(data) {
         this.state.setNotes(data.notes || []);
         this.state.setZones(data.zones || []);
+        this.state.setTasks(data.tasks || []);
         this.state.setYoutubeUrl(data.youtubeUrl || '');
         this.state.youtubeUrlHistory = data.youtubeUrlHistory || [];
         // NUEVO: Cargar estado de pan y zoom
@@ -402,6 +414,10 @@ class App {
         if (this.mobileWidgets.calendar) this.mobileWidgets.calendar.render(); // Actualizar calendario móvil
         this.widgets.youtube.initializePlayer();
         if (this.mobileWidgets.youtube) this.mobileWidgets.youtube.initializePlayer(); // Inicializar reproductor móvil
+        
+        // Re-renderizar tareas si existen
+        if (this.widgets.tasks) this.widgets.tasks.render();
+        if (this.mobileWidgets.tasks) this.mobileWidgets.tasks.render();
     }
 
     updateUserProfile(user) {

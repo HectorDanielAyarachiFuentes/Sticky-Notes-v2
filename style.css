@@ -398,16 +398,25 @@ body.dark-mode .sun-icon { display: none; }
     position: fixed; bottom: 0; left: 0; width: 100%;
     background: var(--dashboard-bg); backdrop-filter: blur(16px);
     border-top: 1px solid var(--panel-border); box-shadow: 0 -10px 50px rgba(0, 0, 0, 0.15); 
-    display: flex; align-items: stretch; justify-content: flex-start; 
-    padding: 30px 40px; box-sizing: border-box; 
-    z-index: 1002; gap: 25px; 
+    z-index: 1002; 
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); 
+    overflow: visible; /* Permitir que el tirador se vea fuera */
+}
+#dashboard-widgets-container {
+    display: flex; 
+    align-items: stretch; 
+    justify-content: flex-start; 
+    gap: 20px; 
+    padding: 30px 40px; 
+    width: 100%; 
+    box-sizing: border-box; 
     overflow-x: auto;
     overflow-y: hidden;
     scroll-behavior: smooth; 
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE/Edge */
-    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); 
 }
+#dashboard-widgets-container::-webkit-scrollbar { display: none; }
 #bottom-dashboard::-webkit-scrollbar { display: none; } /* Chrome/Safari/Opera */
 .dashboard-widget { 
     min-width: 250px;
@@ -436,13 +445,45 @@ body.dark-mode .sun-icon { display: none; }
     box-shadow: 0 10px 30px rgba(0,0,0,0.15);
 }
 /* FIN NUEVO */
-#dashboard-toggle { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 30px; background-color: var(--primary-accent); border: none; border-radius: 15px 15px 0 0; box-shadow: 0 -4px 12px rgba(0,0,0,0.1); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background-color 0.3s ease; z-index: 1003; }
-#dashboard-toggle:hover { background-color: var(--primary-accent-dark); }
-#dashboard-toggle svg { width: 20px; height: 20px; stroke: white; transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+#dashboard-toggle { 
+    position: absolute; 
+    top: -4px; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    width: 56px; 
+    height: 28px; 
+    background: var(--panel-bg); 
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--panel-border); 
+    border-radius: 20px; 
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12); 
+    cursor: pointer; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
+    z-index: 1003; 
+}
+#dashboard-toggle:hover { 
+    background: var(--note-color);
+    transform: translate(-50%, -65%) scale(1.1);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.18);
+    border-color: var(--primary-accent);
+}
+#dashboard-toggle svg { 
+    width: 18px; 
+    height: 18px; 
+    stroke: var(--primary-accent); 
+    stroke-width: 3;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); 
+}
+body.dark-mode #dashboard-toggle svg { stroke: var(--text-dark); }
 
 body.dashboard-hidden #bottom-dashboard { transform: translateY(calc(100% - 30px)); }
 body:not(.dashboard-hidden) #app { height: calc(100vh - 230px); }
 body.dashboard-hidden #app { height: calc(100vh - 30px); }
+body.dashboard-hidden #dashboard-toggle svg { transform: rotate(0deg); }
 body:not(.dashboard-hidden) #dashboard-toggle svg { transform: rotate(180deg); }
 
 /* INICIO: Estilos mejorados para el widget de notas */
@@ -1533,4 +1574,168 @@ body.note-view-active .zone.parent-of-zoomed {
     .modal-content h2 { font-size: 22px; }
     .modal-content p { font-size: 14px; }
     .set-timer-inputs input { width: 50px; padding: 8px; font-size: 20px; }
+}
+
+/* ==========================================================================
+   ESTILOS PARA WIDGETS DE TAREAS E INSPIRACIÓN
+   ========================================================================== */
+.tasks-mini-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+    max-height: 180px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.tasks-mini-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.tasks-mini-list::-webkit-scrollbar-thumb {
+    background: var(--panel-border);
+    border-radius: 4px;
+}
+
+.task-mini-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.task-mini-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--panel-border);
+    transform: translateX(4px);
+}
+
+.task-mini-item.completed {
+    opacity: 0.6;
+}
+
+.task-mini-item.completed .task-text {
+    text-decoration: line-through;
+}
+
+.task-mini-item span:first-child {
+    font-size: 18px;
+    color: var(--primary-accent);
+}
+
+.task-text {
+    flex-grow: 1;
+    font-size: 14px;
+    color: var(--text-dark);
+}
+
+body:not(.dark-mode) .task-text {
+    color: var(--text-light);
+}
+
+.delete-task-btn {
+    opacity: 0;
+    background: none;
+    border: none;
+    color: var(--danger-color);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 5px;
+    transition: opacity 0.2s;
+}
+
+.task-mini-item:hover .delete-task-btn {
+    opacity: 1;
+}
+
+.task-input-wrapper {
+    margin-top: auto; /* Empuja el input al fondo si hay poco contenido */
+    padding-top: 15px;
+}
+
+#quick-task-input {
+    width: 100%;
+    box-sizing: border-box; /* Asegura que el padding no aumente el ancho */
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--panel-border);
+    border-radius: 16px;
+    padding: 12px 16px;
+    color: var(--text-dark);
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body:not(.dark-mode) #quick-task-input {
+    background: rgba(0, 0, 0, 0.02);
+    color: var(--text-light);
+}
+
+#quick-task-input:focus {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--primary-accent);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+}
+
+.no-tasks {
+    text-align: center;
+    padding: 20px;
+    font-size: 13px;
+    color: var(--text-muted);
+    opacity: 0.7;
+    font-style: italic;
+}
+
+/* Quote Widget Styles */
+.quote-text {
+    font-size: 16px;
+    line-height: 1.5;
+    margin-bottom: 10px;
+    font-style: italic;
+    color: var(--text-dark);
+    transition: opacity 0.3s ease;
+}
+
+body:not(.dark-mode) .quote-text {
+    color: var(--text-light);
+}
+
+.quote-author {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary-accent);
+    text-align: right;
+    transition: opacity 0.3s ease;
+}
+
+.refresh-quote-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 10px;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    color: var(--text-dark);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+body:not(.dark-mode) .refresh-quote-btn {
+    color: var(--text-light);
+}
+
+.refresh-quote-btn:hover {
+    background: var(--primary-accent);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
 }

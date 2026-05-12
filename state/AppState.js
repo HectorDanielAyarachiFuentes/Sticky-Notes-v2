@@ -20,6 +20,7 @@ class AppState {
                 preAlertShown: false,
                 pendingAction: null,
             };
+            this.tasks = [];
             AppState.instance = this;
         }
         return AppState.instance;
@@ -29,6 +30,7 @@ class AppState {
     setCurrentUser(user) { this.currentUser = user; }
     setNotes(notes) { this.notes = notes; }
     setZones(zones) { this.zones = zones; }
+    setTasks(tasks) { this.tasks = tasks; }
     setYoutubeUrl(url) { this.youtubeUrl = url; }
     setSelectedDate(date) { this.selectedDate = date; }
     setIsDataLoaded(loaded) { this.isDataLoaded = loaded; }
@@ -39,6 +41,7 @@ class AppState {
     // Métodos para obtener datos del estado
     getNotes() { return this.notes; }
     getZones() { return this.zones; }
+    getTasks() { return this.tasks; }
     getYoutubeUrl() { return this.youtubeUrl; }
     getSelectedDate() { return this.selectedDate; }
     getCalendarDate() { return this.calendarDate; }
