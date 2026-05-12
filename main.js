@@ -1108,6 +1108,50 @@ class App {
         this._triggerSave();
     }
 
+    organizeZoneNotes(zoneId) {
+        const zone = this.state.getZones().find(z => z.id === zoneId);
+        if (!zone) return;
+
+        const notesInZone = this.state.getNotes().filter(n => n.zoneId === zoneId);
+        if (notesInZone.length === 0) return;
+
+        // Configuración del grid para organizar
+        const padding = 20;
+        const gridX = zone.x + 15;
+        const gridY = zone.y + 45;
+        const gridW = zone.width - 30;
+        const colWidth = 330; // Aproximadamente el ancho de una nota + gap
+        const rowHeight = 250; // Aproximadamente el alto de una nota + gap
+        const numCols = Math.max(1, Math.floor(gridW / colWidth));
+
+        notesInZone.forEach((note, index) => {
+            const col = index % numCols;
+            const row = Math.floor(index / numCols);
+
+            note.x = gridX + col * colWidth + 10;
+            note.y = gridY + row * rowHeight + 10;
+
+            // Si la nota se sale de la zona por abajo, podríamos expandir la zona
+            // o simplemente dejar que se salga (el usuario puede redimensionar después)
+            
+            // Actualizar visualmente con animación
+            const noteInstance = this.noteInstances.get(note.id);
+            if (noteInstance) {
+                const el = noteInstance.getDomElement();
+                el.style.transition = 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
+                el.style.left = `${note.x}px`;
+                el.style.top = `${note.y}px`;
+                
+                // Limpiar la transición después de que termine para no interferir con el drag
+                setTimeout(() => {
+                    if (el) el.style.transition = '';
+                }, 500);
+            }
+        });
+
+        this._triggerSave();
+    }
+
     handleNoteDrop(item) {
         const parentZoneData = this.findParentZone(item);
         item.zoneId = parentZoneData ? parentZoneData.id : null;
@@ -1316,15 +1360,14 @@ class App {
                 onDelete: this.deleteZone.bind(this),
                 onUpdate: this.updateZone.bind(this),
                 onAddNoteToZone: (zoneId) => this.addNote(zoneId),
-                // Pasar el getter del estado de pan/zoom
+                onOrganizeNotes: (zoneId) => this.organizeZoneNotes(zoneId),
                 getPanState: this.getPanState.bind(this)
             });
             this.zoneInstances.set(zoneData.id, zone);
             zonesContainer.appendChild(zone.getDomElement());
         });
 
-        // Renderizar notas. TODAS las notas se renderizan en el contenedor principal en escritorio.
-        // Su pertenencia a una zona es visual (clase 'is-in-zone') y lógica, no estructural en el DOM.
+        // Renderizar notas. Todas se añaden al contenedor principal para libertad absoluta.
         notesToShow.forEach(noteData => {
             const note = new Note(noteData, {
                 onDelete: this.deleteNote.bind(this),
@@ -1338,7 +1381,8 @@ class App {
             });
             this.noteInstances.set(noteData.id, note);
 
-            // Siempre se añade al contenedor principal de notas, que permite el posicionamiento absoluto.
+            // Se añade al contenedor principal de notas. 
+            // La pertenencia a una zona es lógica (zoneId) y visual (clase is-in-zone).
             notesContainer.appendChild(note.getDomElement());
         });
     }

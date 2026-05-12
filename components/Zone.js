@@ -19,9 +19,12 @@ class Zone {
         // Se usa data-placeholder para el estilo CSS.
         element.innerHTML = `
             <h4 class="zone-title" contenteditable="true" data-placeholder="Título de la Zona">${this.data.title}</h4>
-            <span class="delete-btn">×</span>
-            <button class="add-note-in-zone-btn" title="Añadir Nota a Zona">+</button>
-            <button class="view-full-zone-btn">Ver Zona</button>
+            <div class="zone-actions">
+                <button class="organize-zone-btn" title="Organizar notas automáticamente">✨</button>
+                <button class="add-note-in-zone-btn" title="Añadir Nota a Zona">+</button>
+                <button class="view-full-zone-btn">Ver Zona</button>
+                <span class="delete-btn">×</span>
+            </div>
             <div class="resize-handle"></div>
             <div class="zone-grid-container">
                 ${Array(8).fill().map((_, i) => `<div class="zone-grid-cell" data-cell-index="${i}"></div>`).join('')}
@@ -50,6 +53,10 @@ class Zone {
 
         getElement('.add-note-in-zone-btn', this.element).addEventListener('click', () => {
             this.callbacks.onAddNoteToZone(this.data.id);
+        });
+
+        getElement('.organize-zone-btn', this.element).addEventListener('click', () => {
+            if (this.callbacks.onOrganizeNotes) this.callbacks.onOrganizeNotes(this.data.id);
         });
 
         const viewFullBtn = getElement('.view-full-zone-btn', this.element);

@@ -384,20 +384,65 @@ body.dark-mode .sun-icon { display: none; }
 .delete-btn { width: 24px; height: 24px; text-align: center; line-height: 24px; font-size: 20px; border-radius: 50%; cursor: pointer; user-select: none; transition: background-color 0.2s, color 0.2s; color: var(--text-light); }
 .delete-btn:hover { background-color: var(--danger-color); color: white; }
 
-/* ==========================================================================
-   4.1 COMPONENTES: NOTAS DENTRO DE ZONAS (NUEVO)
-   ========================================================================== */
-/* El contenedor de notas de la zona ya no usa grid, ya que las notas son absolutas */
+/* NUEVO: Contenedor de acciones de la zona */
+.zone-actions {
+    position: absolute;
+    top: 12px;
+    right: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 20;
+}
+
+.organize-zone-btn {
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.organize-zone-btn:hover {
+    transform: scale(1.1) rotate(15deg);
+    border-color: var(--primary-accent);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    background: white;
+}
+
+body.dark-mode .organize-zone-btn:hover {
+    background: var(--primary-accent);
+}
+
+/* El contenedor de notas vuelve a ser libre, permitiendo posicionamiento absoluto */
 .zone-notes-container-desktop {
     width: 100%;
     height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
 }
-/* Una nota en una zona ahora es solo visualmente distinta, pero sigue siendo posicionada absolutamente. */
+
+/* Una nota en una zona recupera su libertad pero con un resaltado elegante */
 .note.is-in-zone {
-    /* Se eliminan los overrides de position, left, top, width, height. */
-    /* Se añade un efecto visual para indicar que pertenece a una zona. */
-    box-shadow: 0 0 0 2px var(--primary-accent-dark), 0 8px 25px var(--note-shadow);
-    border: 1px solid var(--primary-accent);
+    box-shadow: 0 8px 25px var(--note-shadow), 0 0 0 1px var(--primary-accent);
+}
+
+.note.is-in-zone:hover {
+    box-shadow: 0 12px 35px var(--note-shadow), 0 0 0 2px var(--primary-accent);
+}
+
+/* Permitir que la nota crezca si el contenido lo requiere pero mantener el estilo */
+.note.is-in-zone .note-main-content {
+    height: 100%;
 }
 /* La redimensión ahora está habilitada para todas las notas, por lo que la regla que la ocultaba se elimina. */
 /* ==========================================================================
