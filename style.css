@@ -381,44 +381,113 @@ body.dark-mode .sun-icon { display: none; }
 .zone-grid-cell.highlight {
     background-color: rgba(90, 125, 203, 0.1);
 }
-.delete-btn { width: 24px; height: 24px; text-align: center; line-height: 24px; font-size: 20px; border-radius: 50%; cursor: pointer; user-select: none; transition: background-color 0.2s, color 0.2s; color: var(--text-light); }
-.delete-btn:hover { background-color: var(--danger-color); color: white; }
+.delete-btn { 
+    width: 28px; 
+    height: 28px; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%; 
+    cursor: pointer; 
+    user-select: none; 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--text-light); 
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.delete-btn:hover { 
+    background-color: var(--danger-color); 
+    color: white; 
+    transform: scale(1.1) rotate(90deg);
+    border-color: var(--danger-color);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+body.dark-mode .delete-btn {
+    background: rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.05);
+}
 
 /* NUEVO: Contenedor de acciones de la zona */
 .zone-actions {
     position: absolute;
-    top: 12px;
-    right: 15px;
+    top: 10px;
+    right: 12px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     z-index: 20;
 }
 
-.organize-zone-btn {
-    background: var(--panel-bg);
-    border: 1px solid var(--panel-border);
-    border-radius: 50%;
-    width: 32px;
-    height: 32px;
+.zone-actions button {
     display: flex;
     align-items: center;
     justify-content: center;
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
     cursor: pointer;
-    font-size: 16px;
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    background: var(--panel-bg);
+    color: var(--text-dark);
+    padding: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-.organize-zone-btn:hover {
-    transform: scale(1.1) rotate(15deg);
+.zone-actions button:hover {
+    transform: translateY(-2px);
     border-color: var(--primary-accent);
-    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-    background: white;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
 }
 
-body.dark-mode .organize-zone-btn:hover {
-    background: var(--primary-accent);
+.zone-actions button svg {
+    flex-shrink: 0;
+}
+
+.organize-zone-btn, .add-note-in-zone-btn, .delete-zone-btn {
+    width: 34px;
+    height: 34px;
+}
+
+.add-note-in-zone-btn {
+    background: var(--success-color) !important;
+    color: white !important;
+    border: none !important;
+}
+
+.delete-zone-btn {
+    color: var(--text-light) !important;
+}
+
+.delete-zone-btn:hover {
+    background: var(--danger-color) !important;
+    color: white !important;
+    border-color: var(--danger-color) !important;
+}
+
+.view-full-zone-btn {
+    padding: 0 14px !important;
+    height: 34px;
+    font-size: 12px;
+    font-weight: 600;
+    gap: 6px;
+    background: var(--primary-accent-dark) !important;
+    color: white !important;
+    border: none !important;
+}
+
+.view-full-zone-btn:hover {
+    background: var(--primary-accent) !important;
+}
+
+.view-full-zone-btn .btn-text {
+    white-space: nowrap;
+}
+
+body.dark-mode .zone-actions button {
+    background: rgba(255, 255, 255, 0.05);
 }
 
 /* El contenedor de notas vuelve a ser libre, permitiendo posicionamiento absoluto */
@@ -1510,37 +1579,76 @@ body.note-view-active .zone.parent-of-zoomed {
     .resize-handle { display: none !important; }
 
     #top-controls {
-        height: 60px;
-        padding: 0 10px;
-        gap: 8px;
-        background: var(--dashboard-bg, rgba(239, 243, 245, 0.8));
-        backdrop-filter: blur(10px);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.9);
-        border-bottom: 1px solid var(--panel-border);
+        height: 70px;
+        padding: 0 16px;
+        gap: 12px;
+        background: rgba(15, 23, 42, 0.3);
+        backdrop-filter: blur(20px) saturate(160%);
+        -webkit-backdrop-filter: blur(20px) saturate(160%);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1000;
+        box-sizing: border-box;
     }
     
     #workspace-title { 
-        font-size: 16px; 
+        font-size: 18px; 
+        font-weight: 700;
         text-align: left; 
-        white-space: nowrap; 
-        overflow: hidden; 
-        text-overflow: ellipsis;
-        transition: color 0.2s ease;
-    }
-    #workspace-title:hover {
-        cursor: pointer;
-        color: var(--primary-accent);
+        color: white;
+        flex-grow: 1;
+        margin: 0;
+        letter-spacing: -0.3px;
     }
 
-    #sidebar-toggle-btn { display: block; padding: 8px 12px; font-size: 18px; line-height: 1; }
-    .profile-avatar { width: 40px; height: 40px; }
-    /* MEJORA RESPONSIVA: Ajustamos el botón "General" para que se vea bien con el icono y texto corto */
-    .control-btn.secondary { 
-        padding: 6px 12px; /* Un poco más de padding horizontal */
-        font-size: 13px; 
+    #sidebar-toggle-btn, #theme-toggle-btn { 
         display: flex; 
-        align-items: center; /* Centrar icono y texto verticalmente */
-        gap: 6px; /* Espacio entre icono y texto */
+        align-items: center; 
+        justify-content: center;
+        width: 46px; 
+        height: 46px; 
+        background: rgba(99, 102, 241, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        color: white;
+        padding: 0;
+        transition: all 0.3s ease;
+    }
+
+    #sidebar-toggle-btn:active, #theme-toggle-btn:active {
+        transform: scale(0.92);
+        background: rgba(99, 102, 241, 0.3);
+    }
+
+    .profile-avatar { 
+        width: 46px; 
+        height: 46px; 
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        transition: transform 0.3s ease;
+        object-fit: cover;
+    }
+
+    .profile-avatar:active {
+        transform: scale(0.92);
+    }
+
+    .control-btn.secondary { 
+        padding: 0 15px;
+        height: 40px;
+        font-size: 13px; 
+        font-weight: 600;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
     }
     
     #mobile-sidebar-container { display: block; }
@@ -1598,11 +1706,37 @@ body.note-view-active .zone.parent-of-zoomed {
         resize: none;
     }
     
-    .zone .add-note-in-zone-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 14px; right: 48px; width: 28px; height: 28px; background-color: var(--success-color); color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 22px; line-height: 1; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.2s ease; }
-    .zone .add-note-in-zone-btn:hover { background-color: #2ecc71; transform: scale(1.05); }
-    .zone .view-full-zone-btn { display: block; position: absolute; top: 14px; right: 85px; padding: 4px 10px; font-size: 11px; font-weight: 600; background-color: var(--primary-accent-dark); color: white; border: none; border-radius: 20px; cursor: pointer; transition: background-color 0.2s; }
-    .zone .view-full-zone-btn:hover { background-color: var(--primary-accent); }
-    .zone .zone-title { width: calc(100% - 165px) !important; }
+    .zone .zone-title { width: calc(100% - 140px) !important; font-size: 14px; }
+    
+    .zone-actions {
+        top: 12px;
+        right: 10px;
+        gap: 6px;
+    }
+
+    .zone-actions button {
+        height: 32px;
+        border-radius: 10px;
+    }
+    
+    .organize-zone-btn, .add-note-in-zone-btn, .delete-zone-btn {
+        width: 32px;
+    }
+
+    .view-full-zone-btn {
+        padding: 0 10px !important;
+    }
+
+    .view-full-zone-btn .btn-text {
+        display: none; /* Solo icono en móviles muy pequeños si es necesario, pero intentaremos mantenerlo */
+    }
+
+    /* Si el ancho es suficiente, mostrar el texto */
+    @media (min-width: 380px) {
+        .view-full-zone-btn .btn-text {
+            display: inline;
+        }
+    }
     .zone .zone-notes-container-mobile { margin-top: 15px; display: flex; flex-direction: column; gap: 12px; padding-left: 15px; border-left: 3px solid var(--primary-accent); }
     
     body.zone-view-active #app > .zone:not(.zone-fullscreen),
@@ -1615,31 +1749,95 @@ body.note-view-active .zone.parent-of-zoomed {
     .zone.zone-fullscreen .delete-btn { top: 14px !important; right: 80px !important; }
     .zone.zone-fullscreen .add-note-in-zone-btn { top: 14px !important; right: 115px !important; }
 
-    #mobile-fab-container { display: flex; position: fixed; bottom: 20px; right: 20px; z-index: 1050; flex-direction: column-reverse; align-items: center; gap: 15px; }
+    #mobile-fab-container { 
+        display: flex; 
+        position: fixed; 
+        bottom: 30px; 
+        right: 25px; 
+        z-index: 2000; 
+        flex-direction: column-reverse; 
+        align-items: center; 
+        gap: 15px; 
+    }
     
-    /* INICIO DE LA CORRECCIÓN */
     .fab-actions { 
         display: flex; 
         flex-direction: column-reverse; 
-        gap: 15px; 
-        pointer-events: none; /* Evita que el contenedor invisible capture clics */
+        gap: 18px; 
+        pointer-events: none;
+        margin-bottom: 5px;
     }
-    /* FIN DE LA CORRECCIÓN */
 
-    .fab-action { width: 48px; height: 48px; background-color: var(--primary-accent-dark); color: white; border-radius: 50%; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s; transform: scale(0.5); opacity: 0; }
-    #fab-toggle-btn { width: 56px; height: 56px; background-color: var(--primary-accent); color: white; border-radius: 50%; border: none; box-shadow: 0 6px 20px rgba(0,0,0,0.25); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.3s ease, background-color 0.3s ease; }
-    #fab-toggle-btn svg { transition: transform 0.3s ease; }
-    #mobile-fab-container.fab-active #fab-toggle-btn { transform: rotate(45deg); background-color: var(--danger-color); }
+    .fab-action { 
+        width: 52px; 
+        height: 52px; 
+        background: var(--primary-accent-dark); 
+        color: white; 
+        border-radius: 50%; 
+        border: none; 
+        box-shadow: 0 8px 20px rgba(0,0,0,0.3); 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        cursor: pointer; 
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        transform: translateY(20px) scale(0); 
+        opacity: 0; 
+    }
+
+    .fab-action svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    #fab-toggle-btn { 
+        width: 64px; 
+        height: 64px; 
+        background: linear-gradient(135deg, var(--primary-accent), var(--primary-accent-dark)); 
+        color: white; 
+        border-radius: 50%; 
+        border: none; 
+        box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4); 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        cursor: pointer; 
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+    }
+
+    #fab-toggle-btn svg { 
+        width: 32px; 
+        height: 32px; 
+        flex-shrink: 0;
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+    }
+
+    #mobile-fab-container.fab-active #fab-toggle-btn { 
+        transform: scale(0.9); 
+        background: var(--danger-color); 
+        box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
+    }
     
-    /* INICIO DE LA CORRECCIÓN */
-    #mobile-fab-container.fab-active .fab-actions {
-        pointer-events: auto; /* Permite que el contenedor capture clics SÓLO cuando está activo */
+    #mobile-fab-container.fab-active #fab-toggle-btn svg {
+        transform: rotate(135deg);
     }
-    /* FIN DE LA CORRECCIÓN */
 
-    #mobile-fab-container.fab-active .fab-action { transform: scale(1); opacity: 1; }
+    #mobile-fab-container.fab-active .fab-actions {
+        pointer-events: auto;
+    }
+
+    #mobile-fab-container.fab-active .fab-action { 
+        transform: translateY(0) scale(1); 
+        opacity: 1; 
+    }
+    
     #mobile-fab-container.fab-active .fab-action:nth-child(1) { transition-delay: 0.1s; }
     #mobile-fab-container.fab-active .fab-action:nth-child(2) { transition-delay: 0.05s; }
+
+    .fab-action:hover {
+        transform: scale(1.1);
+        background: var(--primary-accent);
+    }
 
     .modal-content { padding: 25px 20px; width: 90%; }
     .modal-content h2 { font-size: 22px; }
